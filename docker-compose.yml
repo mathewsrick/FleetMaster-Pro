@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  fleetmaster:
+    build: .
+    container_name: fleetmaster-pro
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env.prod
+    volumes:
+      - ./data:/data
