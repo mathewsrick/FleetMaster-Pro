@@ -6,11 +6,11 @@
   "description": "Fleet Management System with Multi-user support and Excel Export",
   "main": "server.ts",
   "scripts": {
-    "dev:server": "tsx server.ts",
+    "dev:server": "tsx backend/src/server.ts",
     "dev:client": "vite",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "build": "vite build",
-    "start": "tsx server.ts",
+    "start": "tsx backend/src/server.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
