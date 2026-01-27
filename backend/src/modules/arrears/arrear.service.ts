@@ -1,6 +1,8 @@
 import { v4 as uuid } from 'uuid';
 import * as repo from './arrear.repository';
 
+export const getAll = async (userId: string) => repo.findAll(userId);
+
 export const getByDriver = async (userId: string, driverId: string) =>
   repo.findByDriver(userId, driverId);
 

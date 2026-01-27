@@ -1,5 +1,12 @@
 import { dbHelpers } from '../../shared/db';
 
+export const findAll = async (userId: string) =>
+  dbHelpers.prepare(`
+    SELECT * FROM arrears
+    WHERE userId = ?
+    ORDER BY dueDate ASC
+  `).all([userId]);
+
 export const findByDriver = async (userId: string, driverId: string) =>
   dbHelpers.prepare(`
     SELECT * FROM arrears

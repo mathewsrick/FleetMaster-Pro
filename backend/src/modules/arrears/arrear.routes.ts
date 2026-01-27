@@ -3,6 +3,7 @@ import * as controller from './arrear.controller';
 
 const router = Router();
 
+router.get('/', controller.all);
 router.get('/driver/:driverId', controller.byDriver);
 router.post('/:id/pay', controller.pay);
 router.post('/', controller.createFromPartialPayment);

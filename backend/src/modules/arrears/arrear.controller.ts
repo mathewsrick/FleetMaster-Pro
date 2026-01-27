@@ -2,6 +2,10 @@ import * as service from './arrear.service';
 import { v4 as uuid } from 'uuid';
 import { dbHelpers } from '../../shared/db';
 
+export const all = async (req: any, res: any) => {
+  res.json(await service.getAll(req.user.userId));
+}
+
 export const byDriver = async (req: any, res: any) => {
   if (!req.params.driverId) {
     return res.status(400).json({ error: 'Driver ID is required' });
