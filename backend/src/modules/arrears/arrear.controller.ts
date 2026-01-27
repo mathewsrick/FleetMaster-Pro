@@ -3,13 +3,16 @@ import { v4 as uuid } from 'uuid';
 import { dbHelpers } from '../../shared/db';
 
 export const byDriver = async (req: any, res: any) => {
-  res.json(await service.getByDriver(req.userId, req.params.driverId));
+  if (!req.params.driverId) {
+    return res.status(400).json({ error: 'Driver ID is required' });
+  }
+  res.json(await service.getByDriver(req.user.userId, req.params.driverId));
 };
 
 export const pay = async (req: any, res: any) => {
   const { amount, date } = req.body;
 
-  const arrear = await service.pay(req.userId, req.params.id, amount);
+  const arrear = await service.pay(req.user.userId, req.params.id, amount);
 
   dbHelpers.prepare(`
     INSERT INTO payments (
@@ -18,7 +21,7 @@ export const pay = async (req: any, res: any) => {
     ) VALUES (?, ?, ?, ?, ?, ?, 'arrear_payment', ?)
   `).run([
     uuid(),
-    req.userId,
+    req.user.userId,
     amount,
     date,
     arrear.driverId,
@@ -32,7 +35,7 @@ export const pay = async (req: any, res: any) => {
 export const createFromPartialPayment = async (req: any, res: any) => {
   await service.createFromPartialPayment({
     id: uuid(),
-    userId: req.userId,
+    userId: req.user.userId,
     amountOwed: req.body.amountOwed,
     status: 'pending',
     driverId: req.body.driverId,
