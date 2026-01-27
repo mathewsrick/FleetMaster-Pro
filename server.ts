@@ -147,6 +147,8 @@ dbHelpers.exec(`
 // Fix: Cast cors and express.json to any to avoid type mismatches with express app overloads
 app.use(cors() as any);
 app.use(express.json() as any);
+// Servir archivos estáticos de dist
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Fix: Define authenticate as any to prevent RequestHandler version conflicts in route definitions
 const authenticate: any = (req: any, res: any, next: NextFunction) => {

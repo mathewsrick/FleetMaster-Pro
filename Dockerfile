@@ -4,7 +4,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile
+RUN corepack enable && pnpm install --prod && pnpm add tsx
 
 COPY . .
 RUN pnpm build
@@ -26,4 +26,4 @@ ENV PORT=3001
 
 EXPOSE 3001
 
-CMD ["node", "--import", "tsx", "server.ts"]
+CMD ["node", "dist/server.js"]
