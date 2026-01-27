@@ -21,16 +21,17 @@ export const deactivateUserKeys = async (userId: string) =>
     WHERE userId = ?
   `).run([userId]);
 
-export const createKey = async (k: any) =>
+export const createKey = async (k: Subscription) =>
   dbHelpers.prepare(`
     INSERT INTO subscription_keys (
       id, userId, plan, startDate, dueDate, status
     ) VALUES (?, ?, ?, ?, ?, ?)
   `).run([
     k.id,
-    k.userId,
+    k.userId ?? null,
     k.plan,
-    k.startDate,
-    k.dueDate,
+    k.price ?? 0,
+    k.startDate ?? new Date().toISOString(),
+    k.dueDate ?? new Date().toISOString(),
     k.status
   ]);

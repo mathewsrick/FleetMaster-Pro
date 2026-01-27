@@ -1,10 +1,22 @@
 import fs from 'fs';
 import initSqlJs from 'sql.js';
-import dotenv from 'dotenv';
+import { ENV } from '../config/env';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
 
-const dbPath = process.env.DATABASE_PATH || 'fleet.db';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const dbPath = path.resolve(
+  __dirname,
+  '../../storage',
+  ENV.DATABASE_PATH
+);
+console.log('📦 USING DATABASE FILE:', dbPath);
+
+// const dbPath = path.resolve(__dirname, '../../storage', ENV.DATABASE_PATH);
+fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
 const SQL = await initSqlJs();
 let db: any;
@@ -31,20 +43,23 @@ export const dbHelpers = {
     const stmt = db.prepare(sql);
     return {
       all: (params: any[] = []) => {
-        stmt.bind(params);
+        const safeParams = params.map(p => p === undefined ? null : p);
+        stmt.bind(safeParams);
         const rows = [];
         while (stmt.step()) rows.push(stmt.getAsObject());
         stmt.free();
         return rows;
       },
       get: (params: any[] = []) => {
-        stmt.bind(params);
+        const safeParams = params.map(p => p === undefined ? null : p);
+        stmt.bind(safeParams);
         const row = stmt.step() ? stmt.getAsObject() : undefined;
         stmt.free();
         return row;
       },
       run: (params: any[] = []) => {
-        db.run(sql, params);
+        const safeParams = params.map(p => p === undefined ? null : p);
+        db.run(sql, safeParams);
         saveDb();
       }
     };

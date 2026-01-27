@@ -13,7 +13,7 @@ export const createUser = async (u: any) =>
     u.id,
     u.username,
     u.password,
-    u.createdAt
+    u.createdAt ?? new Date().toISOString()
   ]);
 
 export const getActiveSubscription = async (userId: string) =>

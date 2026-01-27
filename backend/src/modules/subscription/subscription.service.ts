@@ -35,12 +35,23 @@ export const activate = async (userId: string, keyId: string) => {
   };
 };
 
-export const generateKey = async (plan: string) => {
+export const generateKey = async (plan: string, price: number) => {
   if (!PLANS[plan]) throw new Error('Invalid plan');
 
-  return {
+  const now = new Date();
+  const due = new Date();
+  due.setDate(due.getDate() + PLANS[plan]);
+
+  const key = {
     id: uuid(),
+    userId: null,
     plan,
-    status: 'active'
+    price,
+    startDate: now,
+    dueDate: due,
+    status: 'active' as const
   };
+
+  await repo.createKey(key);
+  return key;
 };

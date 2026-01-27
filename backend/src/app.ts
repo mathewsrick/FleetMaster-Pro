@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
 import driverRoutes from './modules/drivers/driver.routes';
 import vehicleRoutes from './modules/vehicles/vehicle.routes';
 import expenseRoutes from './modules/expenses/expense.routes';
@@ -12,8 +11,6 @@ import authRoutes from './modules/auth/auth.routes';
 import subscriptionRoutes from './modules/subscription/subscription.routes';
 import { authenticate } from './middlewares/auth.middleware';
 import { requireActiveSubscription } from './middlewares/subscription.middleware';
-
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,8 +32,12 @@ app.use('/api/arrears', authenticate, requireActiveSubscription, arrearRoutes);
 // --------------------
 // FRONTEND
 // --------------------
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
 
 export default app;

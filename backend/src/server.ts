@@ -1,6 +1,8 @@
 // backend/src/server.ts
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({
+  path: '../.env'
+});
 
 import app from './app';
 

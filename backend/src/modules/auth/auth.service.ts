@@ -2,8 +2,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
 import * as repo from './auth.repository';
+import { ENV } from '../../config/env';
 
-const JWT_SECRET = process.env.JWT_SECRET!;
 
 const FIVE_DAYS = 1000 * 60 * 60 * 24 * 5;
 
@@ -50,7 +50,7 @@ export const login = async (username: string, password: string) => {
       userId: user.id,
       accessLevel
     },
-    JWT_SECRET,
+    ENV.JWT_SECRET,
     { expiresIn: '7d' }
   );
 
