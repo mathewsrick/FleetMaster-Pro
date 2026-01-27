@@ -2,14 +2,14 @@ import * as service from './arrear.service';
 import { v4 as uuid } from 'uuid';
 import { dbHelpers } from '../../shared/db';
 
-export const byDriver = (req: any, res: any) => {
-  res.json(service.getByDriver(req.userId, req.params.driverId));
+export const byDriver = async (req: any, res: any) => {
+  res.json(await service.getByDriver(req.userId, req.params.driverId));
 };
 
-export const pay = (req: any, res: any) => {
+export const pay = async (req: any, res: any) => {
   const { amount, date } = req.body;
 
-  const arrear = service.pay(req.userId, req.params.id, amount);
+  const arrear = await service.pay(req.userId, req.params.id, amount);
 
   dbHelpers.prepare(`
     INSERT INTO payments (
@@ -29,8 +29,8 @@ export const pay = (req: any, res: any) => {
   res.json({ success: true });
 };
 
-export const createFromPartialPayment = (req: any, res: any) => {
-  service.createFromPartialPayment({
+export const createFromPartialPayment = async (req: any, res: any) => {
+  await service.createFromPartialPayment({
     id: uuid(),
     userId: req.userId,
     amountOwed: req.body.amountOwed,
@@ -44,12 +44,12 @@ export const createFromPartialPayment = (req: any, res: any) => {
   res.json({ success: true });
 };
 
-export const removeByOriginPayment = (req: any, res: any) => {
-    service.removeByOriginPayment(req.params.paymentId);
+export const removeByOriginPayment = async (req: any, res: any) => {
+    await service.removeByOriginPayment(req.params.paymentId);
     res.json({ success: true });
 };
 
-export const removeById = (req: any, res: any) => {
-    service.removeById(req.params.id);
+export const removeById = async (req: any, res: any) => {
+    await service.removeById(req.params.id);
     res.json({ success: true });
 };

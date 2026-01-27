@@ -1,12 +1,11 @@
-// backend/src/modules/drivers/driver.repository.ts
 import { dbHelpers } from '../../shared/db';
 
-export const findAll = (userId: string) =>
+export const findAll = async (userId: string) =>
   dbHelpers.prepare(
     'SELECT * FROM drivers WHERE userId = ?'
   ).all([userId]);
 
-export const create = (d: any) =>
+export const create = async (d: any) =>
   dbHelpers.prepare(`
     INSERT INTO drivers (id, userId, firstName, lastName, phone, idNumber)
     VALUES (?, ?, ?, ?, ?, ?)
@@ -19,7 +18,7 @@ export const create = (d: any) =>
     d.idNumber,
   ]);
 
-export const update = (userId: string, id: string, d: any) =>
+export const update = async (userId: string, id: string, d: any) =>
   dbHelpers.prepare(`
     UPDATE drivers
     SET firstName=?, lastName=?, phone=?, idNumber=?
@@ -33,12 +32,12 @@ export const update = (userId: string, id: string, d: any) =>
     userId,
   ]);
 
-export const unassignVehicles = (userId: string, driverId: string) =>
+export const unassignVehicles = async (userId: string, driverId: string) =>
   dbHelpers.prepare(
     'UPDATE vehicles SET driverId = NULL WHERE driverId = ? AND userId = ?'
   ).run([driverId, userId]);
 
-export const remove = (userId: string, id: string) =>
+export const remove = async (userId: string, id: string) =>
   dbHelpers.prepare(
     'DELETE FROM drivers WHERE id = ? AND userId = ?'
   ).run([id, userId]);

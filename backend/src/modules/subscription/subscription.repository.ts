@@ -1,26 +1,27 @@
 import { dbHelpers } from '../../shared/db';
+import { Subscription } from './subscription.entity';
 
-export const findKeyById = (keyId: string) =>
+export const findKeyById = async (keyId: string): Promise<Subscription | null> =>
   dbHelpers.prepare(`
     SELECT * FROM subscription_keys
     WHERE id = ? AND status = 'active'
   `).get([keyId]);
 
-export const bindKeyToUser = (userId: string, keyId: string) =>
+export const bindKeyToUser = async (userId: string, keyId: string) =>
   dbHelpers.prepare(`
     UPDATE subscription_keys
     SET userId = ?
     WHERE id = ?
   `).run([userId, keyId]);
 
-export const deactivateUserKeys = (userId: string) =>
+export const deactivateUserKeys = async (userId: string) =>
   dbHelpers.prepare(`
     UPDATE subscription_keys
     SET status = 'expired'
     WHERE userId = ?
   `).run([userId]);
 
-export const createKey = (k: any) =>
+export const createKey = async (k: any) =>
   dbHelpers.prepare(`
     INSERT INTO subscription_keys (
       id, userId, plan, startDate, dueDate, status

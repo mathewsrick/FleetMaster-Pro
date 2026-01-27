@@ -1,20 +1,21 @@
+import { Payment } from './payment.entity';
 import { dbHelpers } from '../../shared/db';
 
-export const findAll = (userId: string) =>
+export const findAll = async (userId: string): Promise<Payment[]> =>
   dbHelpers.prepare(`
     SELECT * FROM payments
     WHERE userId = ?
     ORDER BY date DESC
-  `).all([userId]);
+  `).all([userId]) as Payment[];
 
-export const findByDriver = (userId: string, driverId: string) =>
+export const findByDriver = async (userId: string, driverId: string) =>
   dbHelpers.prepare(`
     SELECT * FROM payments
     WHERE userId = ? AND driverId = ?
     ORDER BY date DESC
   `).all([userId, driverId]);
 
-export const create = (p: any) =>
+export const create = async (p: any) =>
   dbHelpers.prepare(`
     INSERT INTO payments (
       id, userId, amount, date,
@@ -31,13 +32,11 @@ export const create = (p: any) =>
     p.arrearId
   ]);
 
-export const remove = (userId: string, id: string) => {
-    // First remove associated arrears
+export const remove = async (userId: string, id: string) => {
     dbHelpers.prepare(
         'DELETE FROM arrears WHERE paymentId = ? AND userId = ?'
     ).run([id, userId]);
 
-    // Then remove the payment
     return dbHelpers.prepare(
         'DELETE FROM payments WHERE id = ? AND userId = ?'
     ).run([id, userId]);

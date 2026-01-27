@@ -3,24 +3,24 @@ import * as paymentRepo from './payment.repository';
 import * as arrearRepo from '../arrears/arrear.repository';
 import { dbHelpers } from '../../shared/db';
 
-export const getAll = (userId: string) =>
-  paymentRepo.findAll(userId);
+export const getAll = async (userId: string) =>
+    await paymentRepo.findAll(userId);
 
-export const getByDriver = (userId: string, driverId: string) =>
-  paymentRepo.findByDriver(userId, driverId);
+export const getByDriver = async (userId: string, driverId: string) =>
+    await paymentRepo.findByDriver(userId, driverId);
 
-export const create = (userId: string, data: any) => {
+export const create = async (userId: string, data: any) => {
     const payment = {
-        id: data.id || uuid(),
-        userId,
-        ...data,
-        generateArrear: data.generateArrear !== undefined ? data.generateArrear : true
+            id: data.id || uuid(),
+            userId,
+            ...data,
+            generateArrear: data.generateArrear !== undefined ? data.generateArrear : true
     };
 
     // eliminar mora previa
-    arrearRepo.removeByOriginPayment(payment.id);
+    await arrearRepo.removeByOriginPayment(payment.id);
 
-    paymentRepo.create(payment);
+    await paymentRepo.create(payment);
 
     if ((!payment.type || payment.type === 'canon') && payment.generateArrear !== false) {
         const vehicle: any = dbHelpers
@@ -28,7 +28,7 @@ export const create = (userId: string, data: any) => {
             .get([payment.vehicleId]);
 
         if (vehicle && payment.amount < vehicle.canonValue) {
-            arrearRepo.create({
+            await arrearRepo.create({
                 id: uuid(),
                 userId,
                 amountOwed: vehicle.canonValue - payment.amount,
@@ -42,7 +42,6 @@ export const create = (userId: string, data: any) => {
     }
 };
 
-export const remove = (userId: string, id: string) => {
-    paymentRepo.remove(userId, id);
+export const remove = async (userId: string, id: string) => {
+        await paymentRepo.remove(userId, id);
 };
-

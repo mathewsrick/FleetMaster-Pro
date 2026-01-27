@@ -1,26 +1,26 @@
 import { v4 as uuid } from 'uuid';
 import * as repo from './driver.repository';
 
-export const getAll = (userId: string) => {
-  return repo.findAll(userId);
+export const getAll = async (userId: string) => {
+  return await repo.findAll(userId);
 };
 
-export const create = (userId: string, data: any) => {
+export const create = async (userId: string, data: any) => {
   const driver = {
     id: uuid(),
     userId,
     ...data
   };
 
-  repo.create(driver);
+  await repo.create(driver);
   return driver;
 };
 
-export const update = (userId: string, id: string, data: any) => {
-  repo.update(userId, id, data);
+export const update = async (userId: string, id: string, data: any) => {
+  await repo.update(userId, id, data);
 };
 
-export const remove = (userId: string, id: string) => {
-  repo.unassignVehicles(userId, id);
-  repo.remove(userId, id);
+export const remove = async (userId: string, id: string) => {
+  await repo.unassignVehicles(userId, id);
+  await repo.remove(userId, id);
 };

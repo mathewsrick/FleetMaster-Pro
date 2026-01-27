@@ -1,16 +1,16 @@
 import { dbHelpers } from '../../shared/db';
 
-export const findAll = (userId: string) =>
+export const findAll = async (userId: string) =>
   dbHelpers
     .prepare('SELECT * FROM vehicles WHERE userId = ?')
     .all([userId]);
 
-export const findById = (id: string) =>
-  dbHelpers
+export const findById = async (id: string) =>
+  await dbHelpers
     .prepare('SELECT id FROM vehicles WHERE id = ?')
     .get([id]);
 
-export const create = (v: any) =>
+export const create = async (v: any) =>
   dbHelpers.prepare(`
     INSERT INTO vehicles (
       id, userId, year, licensePlate, model, color,
@@ -33,7 +33,7 @@ export const create = (v: any) =>
     v.driverId
   ]);
 
-export const update = (userId: string, v: any) =>
+export const update = async (userId: string, v: any) =>
   dbHelpers.prepare(`
     UPDATE vehicles SET
       year=?, licensePlate=?, model=?, color=?, purchaseDate=?,
@@ -56,7 +56,7 @@ export const update = (userId: string, v: any) =>
     userId
   ]);
 
-export const remove = (userId: string, id: string) =>
+export const remove = async (userId: string, id: string) =>
   dbHelpers
     .prepare('DELETE FROM vehicles WHERE id = ? AND userId = ?')
     .run([id, userId]);

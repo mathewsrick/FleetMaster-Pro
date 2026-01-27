@@ -1,11 +1,11 @@
 import * as repo from './expense.repository';
 
-export const getAll = (userId: string) => {
-  return repo.findAll(userId);
+export const getAll = async (userId: string) => {
+  return await repo.findAll(userId);
 };
 
-export const updateOrCreate = (userId: string, data: any) => {
-  const existing = repo.findById(data.id);
+export const updateOrCreate = async (userId: string, data: any) => {
+  const existing = await repo.findById(data.id);
 
   const expense = {
     ...data,
@@ -13,12 +13,12 @@ export const updateOrCreate = (userId: string, data: any) => {
   };
 
   if (existing) {
-    repo.update(userId, expense);
+    await repo.update(userId, expense);
   } else {
-    repo.create(expense);
+    await repo.create(expense);
   }
 };
 
-export const remove = (userId: string, id: string) => {
-  repo.remove(userId, id);
+export const remove = async (userId: string, id: string) => {
+  await repo.remove(userId, id);
 };

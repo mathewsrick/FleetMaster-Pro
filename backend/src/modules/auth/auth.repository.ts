@@ -1,11 +1,11 @@
 import { dbHelpers } from '../../shared/db';
 
-export const findUserByUsername = (username: string) =>
+export const findUserByUsername = async (username: string) =>
   dbHelpers
     .prepare('SELECT * FROM users WHERE username = ?')
     .get([username]);
 
-export const createUser = (u: any) =>
+export const createUser = async (u: any) =>
   dbHelpers.prepare(`
     INSERT INTO users (id, username, password, createdAt)
     VALUES (?, ?, ?, ?)
@@ -16,7 +16,7 @@ export const createUser = (u: any) =>
     u.createdAt
   ]);
 
-export const getActiveSubscription = (userId: string) =>
+export const getActiveSubscription = async (userId: string) =>
   dbHelpers.prepare(`
     SELECT * FROM subscription_keys
     WHERE userId = ? AND status = 'active'
@@ -24,7 +24,7 @@ export const getActiveSubscription = (userId: string) =>
     LIMIT 1
   `).get([userId]);
 
-export const bindSubscriptionKey = (userId: string, keyId: string) =>
+export const bindSubscriptionKey = async (userId: string, keyId: string) =>
   dbHelpers.prepare(`
     UPDATE subscription_keys
     SET userId = ?

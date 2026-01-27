@@ -7,8 +7,8 @@ const PLANS: Record<string, number> = {
   '12m': 365
 };
 
-export const activate = (userId: string, keyId: string) => {
-  const key = repo.findKeyById(keyId);
+export const activate = async (userId: string, keyId: string) => {
+  const key = await repo.findKeyById(keyId);
   if (!key) {
     throw new Error('Invalid or already used key');
   }
@@ -26,10 +26,8 @@ export const activate = (userId: string, keyId: string) => {
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + days);
 
-  // regla: una sola suscripción activa
-  repo.deactivateUserKeys(userId);
-
-  repo.bindKeyToUser(userId, keyId);
+  await repo.deactivateUserKeys(userId);
+  await repo.bindKeyToUser(userId, keyId);
 
   return {
     startDate,
@@ -37,10 +35,7 @@ export const activate = (userId: string, keyId: string) => {
   };
 };
 
-/**
- * OPCIONAL: generar key luego de confirmar pago
- */
-export const generateKey = (plan: string) => {
+export const generateKey = async (plan: string) => {
   if (!PLANS[plan]) throw new Error('Invalid plan');
 
   return {

@@ -7,26 +7,27 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 
 const FIVE_DAYS = 1000 * 60 * 60 * 24 * 5;
 
-export const register = (username: string, password: string) => {
+export const register = async (username: string, password: string) => {
   const user = {
     id: uuid(),
     username,
-    password: bcrypt.hashSync(password, 10),
+    password: await bcrypt.hash(password, 10),
     createdAt: new Date().toISOString()
   };
 
-  repo.createUser(user);
+  await repo.createUser(user);
 };
 
-export const login = (username: string, password: string) => {
-  const user = repo.findUserByUsername(username);
+export const login = async (username: string, password: string) => {
+  const user = await repo.findUserByUsername(username);
   if (!user) throw new Error('Invalid credentials');
 
-  if (!bcrypt.compareSync(password, user.password)) {
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
     throw new Error('Invalid credentials');
   }
 
-  const subscription = repo.getActiveSubscription(user.id);
+  const subscription = await repo.getActiveSubscription(user.id);
 
   const now = Date.now();
   const createdAt = new Date(user.createdAt).getTime();
