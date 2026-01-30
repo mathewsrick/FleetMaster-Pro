@@ -8,6 +8,9 @@ import Payments from './pages/Payments';
 import Expenses from './pages/Expenses';
 import Reports from './pages/Reports';
 import Login from './pages/Login';
+import Landing from './pages/Landing';
+import Contactanos from './pages/Contactanos';
+import Planes from './pages/Planes';
 import { AuthState } from './types';
 
 const Layout: React.FC<{ children: React.ReactNode, logout: () => void, username: string }> = ({ children, logout, username }) => {
@@ -15,7 +18,7 @@ const Layout: React.FC<{ children: React.ReactNode, logout: () => void, username
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = [
-    { path: '/', label: 'Dashboard', icon: 'fa-chart-pie' },
+    { path: '/dashboard', label: 'Dashboard', icon: 'fa-chart-pie' },
     { path: '/vehicles', label: 'Vehículos', icon: 'fa-car' },
     { path: '/drivers', label: 'Conductores', icon: 'fa-id-card' },
     { path: '/payments', label: 'Pagos', icon: 'fa-hand-holding-dollar' },
@@ -98,23 +101,25 @@ const App: React.FC = () => {
     localStorage.removeItem('fmp_auth');
   };
 
-  if (!auth.isAuthenticated) {
-    return <Login onLogin={login} />;
-  }
-
   return (
     <Router>
-      <Layout logout={logout} username={auth.user?.username || 'User'}>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/vehicles" element={<Vehicles />} />
-          <Route path="/drivers" element={<Drivers />} />
-          <Route path="/payments" element={<Payments />} />
-          <Route path="/expenses" element={<Expenses />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Layout>
+      <Routes>
+        {/* Public landing and info pages */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/contacto" element={<Contactanos />} />
+        <Route path="/planes" element={<Planes />} />
+        <Route path="/login" element={<Login onLogin={login} />} />
+
+        {/* Protected app pages - wrap each with Layout when authenticated */}
+        <Route path="/dashboard" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'}><Dashboard /></Layout> : <Navigate to="/login" replace />} />
+        <Route path="/vehicles" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'}><Vehicles /></Layout> : <Navigate to="/login" replace />} />
+        <Route path="/drivers" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'}><Drivers /></Layout> : <Navigate to="/login" replace />} />
+        <Route path="/payments" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'}><Payments /></Layout> : <Navigate to="/login" replace />} />
+        <Route path="/expenses" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'}><Expenses /></Layout> : <Navigate to="/login" replace />} />
+        <Route path="/reports" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'}><Reports /></Layout> : <Navigate to="/login" replace />} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </Router>
   );
 };
