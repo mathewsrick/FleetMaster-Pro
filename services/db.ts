@@ -21,39 +21,43 @@ const getAuthToken = () => {
   return token;
 };
 
-const request = async <T>(url: string, method: string = 'GET', body?: any): Promise<T> => {
+const request = async <T>(
+  url: string,
+  method: string = 'GET',
+  body?: any
+): Promise<T> => {
   const token = getAuthToken();
+
+  const response = await fetch(`${API_BASE}${url}`, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : ''
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+
+  let data: any = null;
+
   try {
-    const response = await fetch(`${API_BASE}${url}`, {
-      method,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    
-    if (response.status === 401) {
-      localStorage.removeItem('fmp_auth');
-      window.location.reload();
-      throw new Error('Unauthorized');
-    }
-
-    if (!response.ok) {
-      const errData = await response.json();
-      throw new Error(errData.error || 'API request failed');
-    }
-
-    return method === 'DELETE' ? {} as T : await response.json();
-  } catch (error) {
-    console.error(`API Error on ${url}:`, error);
-    throw error;
+    data = await response.json();
+  } catch {
+    // no body
   }
+
+  if (!response.ok) {
+    throw {
+      status: response.status,
+      data
+    };
+  }
+
+  return method === 'DELETE' ? ({} as T) : data;
 };
 
 export const db = {
   init: () => {}, // No op en cliente
-  
+
   // Auth
   login: (credentials: any) => request<any>('/auth/login', 'POST', credentials),
   register: (credentials: any) => request<any>('/auth/register', 'POST', credentials),

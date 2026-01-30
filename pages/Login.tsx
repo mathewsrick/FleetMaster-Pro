@@ -24,12 +24,27 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         setIsRegister(false);
       } else {
         const data = await db.login({ username, password });
+        if (
+          data.accountStatus?.reason === 'TRIAL' &&
+          data.accountStatus?.daysRemaining !== null
+        ) {
+          alert(
+            `Estás usando el período de prueba. Te quedan ${data.accountStatus.daysRemaining} día(s).`
+          );
+        }
         onLogin(data);
       }
     } catch (err: any) {
-      setError(err.message || 'Error en la operación');
-    } finally {
-      setLoading(false);
+      const apiError = err?.data;
+
+      if (apiError?.accountStatus?.reason === 'TRIAL_EXPIRED') {
+        setError(
+          'Tu período de prueba ha finalizado. Activa un plan para continuar usando FleetMaster Pro.'
+        );
+        return;
+      }
+
+      setError(apiError?.error || 'Error en la operación');
     }
   };
 
