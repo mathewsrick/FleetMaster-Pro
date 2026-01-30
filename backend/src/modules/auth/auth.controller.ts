@@ -10,6 +10,9 @@ export const login = async (req: any, res: any) => {
     const result = await service.login(req.body.username, req.body.password);
     res.json(result);
   } catch (e: any) {
-    res.status(401).json({ error: e.message });
+    res.status(401).json({
+      error: e.message,
+      accountStatus: e.accountStatus ?? null
+    });
   }
 };
