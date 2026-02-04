@@ -18,7 +18,8 @@ export const activate = async (req: any, res: any) => {
 
 export const generateKey = async (req: any, res: any) => {
   try {
-    const key = await service.generateKey(req.body.plan);
+    // Fixed: Passing both plan and price as required by the service to match its signature
+    const key = await service.generateKey(req.body.plan, req.body.price);
     res.status(201).json(key);
   } catch (e: any) {
     res.status(400).json({ error: e.message });

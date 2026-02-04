@@ -4,6 +4,20 @@ export interface User {
   username: string;
 }
 
+export interface AccountStatus {
+  accessLevel: 'FULL' | 'LIMITED' | 'BLOCKED';
+  reason: 'ACTIVE_SUBSCRIPTION' | 'TRIAL' | 'TRIAL_EXPIRED';
+  daysRemaining: number;
+  warning?: string | null;
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+  token: string | null;
+  accountStatus?: AccountStatus | null;
+}
+
 export interface Vehicle {
   id: string;
   userId: string;
@@ -61,10 +75,3 @@ export interface Arrear {
   dueDate: string;
   originPaymentId?: string;
 }
-
-export interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
-  token: string | null;
-}
-
