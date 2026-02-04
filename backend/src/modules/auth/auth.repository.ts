@@ -3,6 +3,9 @@ import { dbHelpers } from '../../shared/db';
 export const findUserByUsername = async (username: string) =>
   dbHelpers.prepare('SELECT * FROM users WHERE username = ?').get([username]);
 
+export const findUserById = async (id: string) =>
+  dbHelpers.prepare('SELECT * FROM users WHERE id = ?').get([id]);
+
 export const findUserByConfirmationToken = async (token: string) =>
   dbHelpers.prepare('SELECT * FROM users WHERE confirmationToken = ?').get([token]);
 

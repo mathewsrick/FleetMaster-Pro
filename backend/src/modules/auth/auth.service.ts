@@ -5,20 +5,13 @@ import { v4 as uuid } from 'uuid';
 import * as repo from './auth.repository';
 import { ENV } from '../../config/env';
 import { PlanLimits, PlanType } from '../../../../types';
+import * as emailService from '../../shared/email.service';
 
 const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   free_trial: { maxVehicles: 1, maxDrivers: 1, hasExcelReports: false, hasCustomApi: false },
   basico: { maxVehicles: 3, maxDrivers: 5, hasExcelReports: false, hasCustomApi: false },
   pro: { maxVehicles: 6, maxDrivers: 10, hasExcelReports: true, hasCustomApi: false },
   enterprise: { maxVehicles: 99999, maxDrivers: 99999, hasExcelReports: true, hasCustomApi: true },
-};
-
-// Mock de envío de correos
-const sendEmail = async (to: string, subject: string, body: string) => {
-  console.log(`📧 ENVIANDO EMAIL A: ${to}`);
-  console.log(`Asunto: ${subject}`);
-  console.log(`Cuerpo: ${body}`);
-  return true;
 };
 
 export const register = async (username: string, password: string) => {
@@ -34,12 +27,12 @@ export const register = async (username: string, password: string) => {
   };
   await repo.createUser(user);
 
-  // Simular envío de email
-  await sendEmail(
-    username,
-    "Confirma tu cuenta FleetMaster Pro",
-    `Haz clic aquí para confirmar: /confirm/${confirmationToken}`
-  );
+  // Envío de correo real
+  await emailService.sendEmail({
+    to: username, // Asumimos que el username es el email
+    subject: "Bienvenido a FleetMaster Pro - Confirma tu cuenta",
+    html: emailService.templates.welcome(username, confirmationToken)
+  });
 };
 
 export const confirmAccount = async (token: string) => {
@@ -52,14 +45,14 @@ export const requestPasswordReset = async (username: string) => {
   const user = await repo.findUserByUsername(username);
   if (!user) throw new Error('Usuario no encontrado');
 
-  const resetToken = uuid();
+  const resetToken = Math.random().toString(36).substring(2, 8).toUpperCase(); // Código corto de 6 caracteres
   await repo.setResetToken(user.id, resetToken);
 
-  await sendEmail(
-    username,
-    "Recupera tu contraseña",
-    `Tu código de recuperación es: ${resetToken}`
-  );
+  await emailService.sendEmail({
+    to: username,
+    subject: "Recuperación de Contraseña - FleetMaster Pro",
+    html: emailService.templates.passwordReset(resetToken)
+  });
 };
 
 export const resetPassword = async (token: string, newPass: string) => {
@@ -67,17 +60,16 @@ export const resetPassword = async (token: string, newPass: string) => {
   if (!user) throw new Error('Token de recuperación inválido o expirado');
   const hashedPassword = await bcrypt.hash(newPass, 10);
   await repo.updatePassword(user.id, hashedPassword);
-  await repo.setResetToken(user.id, null); // Limpiar token
+  await repo.setResetToken(user.id, null); 
 };
 
 export const login = async (username: string, password: string) => {
   const user = await repo.findUserByUsername(username);
-  if (!user) throw new Error('Invalid credentials');
+  if (!user) throw new Error('Credenciales inválidas');
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) throw new Error('Invalid credentials');
+  if (!isPasswordValid) throw new Error('Credenciales inválidas');
 
-  // Actualizar última actividad
   await repo.updateLastActivity(user.id);
 
   const now = Date.now();
@@ -112,9 +104,9 @@ export const login = async (username: string, password: string) => {
 
   const token = jwt.sign({ userId: user.id, accessLevel, role: user.role, plan }, ENV.JWT_SECRET, { expiresIn: '7d' });
 
-  return {
-    token,
+  return { 
+    token, 
     user: { id: user.id, username: user.username, role: user.role, isConfirmed: !!user.isConfirmed }, 
-    accountStatus
+    accountStatus 
   };
 };

@@ -1,6 +1,8 @@
 import { v4 as uuid } from 'uuid';
 import * as paymentRepo from './payment.repository';
 import * as arrearRepo from '../arrears/arrear.repository';
+import * as authRepo from '../auth/auth.repository';
+import * as emailService from '../../shared/email.service';
 import { dbHelpers } from '../../shared/db';
 
 export const getAll = async (userId: string) =>
@@ -17,9 +19,7 @@ export const create = async (userId: string, data: any) => {
             generateArrear: data.generateArrear !== undefined ? data.generateArrear : true
     };
 
-    // eliminar mora previa
     await arrearRepo.removeByOriginPayment(payment.id);
-
     await paymentRepo.create(payment);
 
     if ((!payment.type || payment.type === 'canon') && payment.generateArrear !== false) {
@@ -39,6 +39,16 @@ export const create = async (userId: string, data: any) => {
                 originPaymentId: payment.id
             });
         }
+    }
+
+    // Notificar por correo al dueño de la flota
+    const user = await authRepo.findUserById(userId);
+    if (user && user.username.includes('@')) { // Verificación básica de email
+        await emailService.sendEmail({
+            to: user.username,
+            subject: "Comprobante de Pago Recibido - FleetMaster Pro",
+            html: emailService.templates.paymentConfirmation(payment.amount, payment.date, payment.type)
+        });
     }
 };
 

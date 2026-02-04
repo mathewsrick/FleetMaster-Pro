@@ -1,8 +1,12 @@
 import * as service from './auth.service';
 
 export const register = async (req: any, res: any) => {
-  await service.register(req.body.username, req.body.password);
-  res.json({ success: true });
+  try {
+    await service.register(req.body.username, req.body.password);
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
 };
 
 export const login = async (req: any, res: any) => {
@@ -14,5 +18,32 @@ export const login = async (req: any, res: any) => {
       error: e.message,
       accountStatus: e.accountStatus ?? null
     });
+  }
+};
+
+export const confirm = async (req: any, res: any) => {
+  try {
+    await service.confirmAccount(req.params.token);
+    res.json({ success: true, message: 'Cuenta confirmada con éxito.' });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+};
+
+export const requestReset = async (req: any, res: any) => {
+  try {
+    await service.requestPasswordReset(req.body.username);
+    res.json({ success: true, message: 'Código de recuperación enviado.' });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+};
+
+export const resetPassword = async (req: any, res: any) => {
+  try {
+    await service.resetPassword(req.body.token, req.body.newPass);
+    res.json({ success: true, message: 'Contraseña actualizada correctamente.' });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
   }
 };

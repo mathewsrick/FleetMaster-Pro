@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { db } from '../services/db';
@@ -8,9 +7,10 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [view, setView] = useState<'login' | 'register' | 'forgot'>('login');
+  const [view, setView] = useState<'login' | 'register' | 'forgot' | 'reset'>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [resetToken, setResetToken] = useState('');
   const [loading, setLoading] = useState(false);
   const [trialExpired, setTrialExpired] = useState(false);
   const [error, setError] = useState('');
@@ -21,15 +21,19 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setLoading(true);
     setError('');
     setMessage('');
-    
+
     try {
       if (view === 'register') {
         await db.register({ username, password });
-        setMessage('Cuenta creada con éxito. Te enviamos un correo para confirmarla (simulado).');
+        setMessage('Cuenta creada. Por favor revisa tu correo para confirmar tu cuenta.');
         setView('login');
       } else if (view === 'forgot') {
         await db.requestReset(username);
-        setMessage('Si el usuario existe, se envió un código de recuperación al correo.');
+        setMessage('Si el usuario existe, se envió un código de recuperación.');
+        setView('reset');
+      } else if (view === 'reset') {
+        await db.resetPassword(resetToken, password);
+        setMessage('Contraseña actualizada. Ya puedes iniciar sesión.');
         setView('login');
       } else {
         const data = await db.login({ username, password });
@@ -42,7 +46,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       } else if (apiError?.accountStatus?.reason === 'UNCONFIRMED') {
         setError('Debes confirmar tu cuenta por correo antes de entrar.');
       } else {
-        setError(apiError?.error || 'Error en las credenciales.');
+        setError(apiError?.error || 'Error en la operación.');
       }
     } finally {
       setLoading(false);
@@ -51,7 +55,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   if (trialExpired) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 font-sans">
         <div className="max-w-md w-full bg-white rounded-[40px] p-12 text-center shadow-2xl animate-in fade-in zoom-in duration-500">
           <div className="w-24 h-24 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-8">
             <i className="fa-solid fa-hourglass-end"></i>
@@ -70,7 +74,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 selection:bg-indigo-500 selection:text-white font-sans">
       <div className="w-full max-w-md bg-white rounded-[32px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         <div className="bg-indigo-600 p-10 text-center text-white relative">
           <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
@@ -81,6 +85,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             {view === 'login' && 'Acceso Usuarios'}
             {view === 'register' && 'Nuevo Registro'}
             {view === 'forgot' && 'Recuperar Cuenta'}
+            {view === 'reset' && 'Nueva Contraseña'}
           </p>
         </div>
 
@@ -88,20 +93,38 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           {error && <div className="p-4 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold border border-rose-100 flex items-center gap-2"><i className="fa-solid fa-circle-exclamation"></i>{error}</div>}
           {message && <div className="p-4 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-bold border border-emerald-100 flex items-center gap-2"><i className="fa-solid fa-circle-check"></i>{message}</div>}
 
-          <div className="space-y-2">
-            <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest">Correo / Usuario</label>
-            <input 
-              required 
-              value={username} 
-              onChange={e => setUsername(e.target.value)} 
-              className="w-full px-5 py-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold"
-              placeholder="Ej: manager_01"
-            />
-          </div>
-
-          {view !== 'forgot' && (
+          {view !== 'reset' && (
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest">Contraseña</label>
+              <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest">Correo Electrónico</label>
+              <input 
+                required 
+                type="email"
+                value={username} 
+                onChange={e => setUsername(e.target.value)} 
+                className="w-full px-5 py-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold"
+                placeholder="Ej: tu@email.com"
+              />
+            </div>
+          )}
+
+          {view === 'reset' && (
+            <div className="space-y-2">
+              <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest">Código de Seguridad</label>
+              <input 
+                required 
+                value={resetToken} 
+                onChange={e => setResetToken(e.target.value)} 
+                className="w-full px-5 py-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold text-center tracking-[0.2em]"
+                placeholder="CÓDIGO"
+              />
+            </div>
+          )}
+
+          {(view !== 'forgot') && (
+            <div className="space-y-2">
+              <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest">
+                {view === 'reset' ? 'Nueva Contraseña' : 'Contraseña'}
+              </label>
               <input 
                 type="password" 
                 required 
@@ -119,7 +142,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-2xl shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2"
           >
             {loading ? <i className="fa-solid fa-circle-notch fa-spin"></i> : (
-              view === 'login' ? 'Entrar' : (view === 'register' ? 'Crear Cuenta' : 'Enviar Código')
+              view === 'login' ? 'Entrar' : (view === 'register' ? 'Registrarme' : (view === 'forgot' ? 'Enviar Código' : 'Cambiar Contraseña'))
             )}
           </button>
 
@@ -130,7 +153,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 <button type="button" onClick={() => setView('register')} className="text-xs text-slate-400 font-bold uppercase hover:text-indigo-600">¿No tienes cuenta? Registrate</button>
               </>
             )}
-            {(view === 'register' || view === 'forgot') && (
+            {(view === 'register' || view === 'forgot' || view === 'reset') && (
               <button type="button" onClick={() => setView('login')} className="text-xs text-slate-400 font-bold uppercase hover:text-indigo-600">Volver al inicio de sesión</button>
             )}
           </div>
