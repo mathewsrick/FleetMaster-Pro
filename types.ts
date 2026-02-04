@@ -1,4 +1,13 @@
 
+export type PlanType = 'free_trial' | 'basico' | 'pro' | 'enterprise';
+
+export interface PlanLimits {
+  maxVehicles: number;
+  maxDrivers: number;
+  hasExcelReports: boolean;
+  hasCustomApi: boolean;
+}
+
 export interface User {
   id: string;
   username: string;
@@ -7,7 +16,9 @@ export interface User {
 export interface AccountStatus {
   accessLevel: 'FULL' | 'LIMITED' | 'BLOCKED';
   reason: 'ACTIVE_SUBSCRIPTION' | 'TRIAL' | 'TRIAL_EXPIRED';
+  plan: PlanType;
   daysRemaining: number;
+  limits: PlanLimits;
   warning?: string | null;
 }
 

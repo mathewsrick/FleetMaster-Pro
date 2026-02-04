@@ -1,3 +1,4 @@
+
 export type SubscriptionStatus = 'active' | 'inactive';
 
 export interface Subscription {
@@ -5,7 +6,8 @@ export interface Subscription {
     userId: string | null;
     plan: string;
     price: number | null;
-    startDate: Date | null;
-    dueDate: Date | null;
+    startDate: string | null;
+    dueDate: string | null;
     status: SubscriptionStatus;
+    duration?: string;
 }

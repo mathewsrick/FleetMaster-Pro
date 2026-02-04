@@ -35,10 +35,10 @@ app.use('/api/arrears', authenticate, requireActiveSubscription, arrearRoutes);
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'dist')));
 
-  // Fixed: Cast the wildcard route handler to any to resolve TypeScript overload resolution issues
-  app.get('*', ((req: any, res: any) => {
+  // Fixed: Simplified wildcard route to avoid TypeScript overload resolution issues with Express
+  app.get('*', (req: any, res: any) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-  }) as any);
+  });
 }
 
 export default app;

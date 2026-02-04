@@ -10,7 +10,6 @@ export const authenticate: any = (req: any, res: any, next: any) => {
   const token = authHeader.split(' ')[1];
   try {
     const decoded: any = jwt.verify(token, ENV.JWT_SECRET);
-    console.log('User authenticated:', decoded);
     req.user = {
       userId: decoded.userId,
       accessLevel: decoded.accessLevel,

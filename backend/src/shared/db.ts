@@ -13,7 +13,6 @@ const dbPath = path.resolve(
   '../../storage',
   ENV.DATABASE_PATH
 );
-console.log('📦 USING DATABASE FILE:', dbPath);
 
 // const dbPath = path.resolve(__dirname, '../../storage', ENV.DATABASE_PATH);
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
