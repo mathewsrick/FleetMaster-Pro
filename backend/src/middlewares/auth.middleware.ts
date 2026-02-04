@@ -13,6 +13,7 @@ export const authenticate: any = (req: any, res: any, next: any) => {
     req.user = {
       userId: decoded.userId,
       accessLevel: decoded.accessLevel,
+      role: decoded.role, // Importante para SuperAdmin
     };
 
     next();

@@ -9,6 +9,7 @@ import arrearRoutes from './modules/arrears/arrear.routes';
 import paymentRoutes from './modules/payments/payment.routes';
 import authRoutes from './modules/auth/auth.routes';
 import subscriptionRoutes from './modules/subscription/subscription.routes';
+import superadminRoutes from './modules/superadmin/superadmin.routes';
 import { authenticate } from './middlewares/auth.middleware';
 import { requireActiveSubscription } from './middlewares/subscription.middleware';
 
@@ -17,28 +18,24 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// middlewares base
 app.use(cors() as any);
 app.use(express.json() as any);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/subscription', authenticate, subscriptionRoutes);
+app.use('/api/superadmin', superadminRoutes);
 app.use('/api/vehicles', authenticate, requireActiveSubscription, vehicleRoutes);
 app.use('/api/drivers', authenticate, requireActiveSubscription, driverRoutes);
 app.use('/api/expenses', authenticate, requireActiveSubscription, expenseRoutes);
 app.use('/api/payments', authenticate, requireActiveSubscription, paymentRoutes);
 app.use('/api/arrears', authenticate, requireActiveSubscription, arrearRoutes);
 
-// --------------------
-// FRONTEND
-// --------------------
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')));
-
-  // Fixed: Simplified wildcard route to avoid TypeScript overload resolution issues with Express
-  app.get('*', (req: any, res: any) => {
+  // Added fix: Use 'as any' to avoid RequestHandler type mismatch in different Express versions or TS configurations
+  app.use(express.static(path.join(__dirname, 'dist')) as any);
+  app.get('*', ((req: any, res: any) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-  });
+  }) as any);
 }
 
 export default app;

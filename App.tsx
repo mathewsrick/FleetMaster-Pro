@@ -10,9 +10,9 @@ import Reports from './pages/Reports';
 import Login from './pages/Login';
 import Landing from './pages/Landing';
 import PricingCheckout from './pages/PricingCheckout';
+import SuperAdmin from './pages/SuperAdmin';
 import { AuthState, AccountStatus } from './types';
 
-// TrialBanner: Muestra el tiempo restante del periodo de prueba
 const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) => {
   if (!status || status.reason !== 'TRIAL') return null;
   return (
@@ -24,8 +24,7 @@ const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) =>
   );
 };
 
-// Layout: Estructura principal de la aplicación con barra lateral y navegación
-const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username: string; status?: AccountStatus | null }> = ({ children, logout, username, status }) => {
+const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username: string; role?: string; status?: AccountStatus | null }> = ({ children, logout, username, role, status }) => {
   const location = useLocation();
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: 'fa-chart-pie' },
@@ -36,11 +35,14 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
     { path: '/reports', label: 'Reportes', icon: 'fa-file-lines' },
   ];
 
+  if (role === 'SUPERADMIN') {
+    navItems.unshift({ path: '/superadmin', label: 'Admin SaaS', icon: 'fa-shield-halved' });
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <TrialBanner status={status} />
       <div className="flex flex-1">
-        {/* Sidebar */}
         <aside className="w-64 bg-slate-900 text-white hidden lg:flex flex-col">
           <div className="p-8 flex items-center gap-3">
             <div className="bg-indigo-600 p-2 rounded-lg">
@@ -53,7 +55,7 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${location.pathname === item.path ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${location.pathname === item.path ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
               >
                 <i className={`fa-solid ${item.icon} w-5`}></i>
                 {item.label}
@@ -68,18 +70,14 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 overflow-auto">
           <header className="bg-white h-20 border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-40">
-            <div className="lg:hidden bg-indigo-600 p-2 rounded-lg text-white">
-              <i className="fa-solid fa-truck-fast"></i>
-            </div>
             <div className="flex items-center gap-4 ml-auto">
               <div className="text-right">
                 <p className="text-sm font-black text-slate-900">{username}</p>
-                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{status?.plan || 'Free Trial'}</p>
+                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{role === 'SUPERADMIN' ? 'Control Maestro' : (status?.plan || 'Free Trial')}</p>
               </div>
-              <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold border border-slate-200">
+              <div className="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-black border border-slate-200">
                 {username[0]}
               </div>
             </div>
@@ -117,14 +115,15 @@ const App: React.FC = () => {
         <Route path="/" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Landing />} />
         <Route path="/login" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLogin={login} />} />
         <Route path="/pricing-checkout" element={<PricingCheckout />} />
-        
-        <Route path="/dashboard" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} status={auth.accountStatus}><Dashboard /></Layout> : <Navigate to="/" />} />
-        <Route path="/vehicles" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} status={auth.accountStatus}><Vehicles /></Layout> : <Navigate to="/" />} />
-        <Route path="/drivers" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} status={auth.accountStatus}><Drivers /></Layout> : <Navigate to="/" />} />
-        <Route path="/payments" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} status={auth.accountStatus}><Payments /></Layout> : <Navigate to="/" />} />
-        <Route path="/expenses" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} status={auth.accountStatus}><Expenses /></Layout> : <Navigate to="/" />} />
-        <Route path="/reports" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} status={auth.accountStatus}><Reports /></Layout> : <Navigate to="/" />} />
-        
+
+        <Route path="/dashboard" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Dashboard /></Layout> : <Navigate to="/" />} />
+        <Route path="/superadmin" element={auth.isAuthenticated && auth.user?.role === 'SUPERADMIN' ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><SuperAdmin /></Layout> : <Navigate to="/" />} />
+        <Route path="/vehicles" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Vehicles /></Layout> : <Navigate to="/" />} />
+        <Route path="/drivers" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Drivers /></Layout> : <Navigate to="/" />} />
+        <Route path="/payments" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Payments /></Layout> : <Navigate to="/" />} />
+        <Route path="/expenses" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Expenses /></Layout> : <Navigate to="/" />} />
+        <Route path="/reports" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Reports /></Layout> : <Navigate to="/" />} />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

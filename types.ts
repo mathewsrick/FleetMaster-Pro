@@ -1,5 +1,5 @@
-
 export type PlanType = 'free_trial' | 'basico' | 'pro' | 'enterprise';
+export type UserRole = 'USER' | 'SUPERADMIN';
 
 export interface PlanLimits {
   maxVehicles: number;
@@ -11,11 +11,14 @@ export interface PlanLimits {
 export interface User {
   id: string;
   username: string;
+  role: UserRole;
+  isConfirmed: boolean;
+  lastActivity?: string;
 }
 
 export interface AccountStatus {
   accessLevel: 'FULL' | 'LIMITED' | 'BLOCKED';
-  reason: 'ACTIVE_SUBSCRIPTION' | 'TRIAL' | 'TRIAL_EXPIRED';
+  reason: 'ACTIVE_SUBSCRIPTION' | 'TRIAL' | 'TRIAL_EXPIRED' | 'UNCONFIRMED';
   plan: PlanType;
   daysRemaining: number;
   limits: PlanLimits;
@@ -29,6 +32,7 @@ export interface AuthState {
   accountStatus?: AccountStatus | null;
 }
 
+// ... Resto de interfaces permanecen igual (Vehicle, Driver, etc.)
 export interface Vehicle {
   id: string;
   userId: string;

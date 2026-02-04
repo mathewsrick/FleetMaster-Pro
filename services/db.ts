@@ -1,5 +1,5 @@
 
-import { Vehicle, Driver, Payment, Expense, Arrear } from '../types';
+import { Vehicle, Driver, Payment, Expense, Arrear, User } from '../types';
 
 const getApiBase = () => {
   try {
@@ -17,10 +17,7 @@ export const formatDateDisplay = (dateStr: string) => {
   if (!dateStr) return 'N/A';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const year = String(d.getUTCFullYear()).slice(-2);
-  return `${day}-${month}-${year}`;
+  return d.toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
 };
 
 const getAuth = () => {
@@ -28,11 +25,7 @@ const getAuth = () => {
   return auth ? JSON.parse(auth) : null;
 };
 
-const request = async <T>(
-  url: string,
-  method: string = 'GET',
-  body?: any
-): Promise<T> => {
+const request = async <T>(url: string, method: string = 'GET', body?: any): Promise<T> => {
   const auth = getAuth();
   const token = auth?.token;
 
@@ -46,14 +39,8 @@ const request = async <T>(
   });
 
   let data: any = null;
-  try {
-    data = await response.json();
-  } catch {}
-
-  if (!response.ok) {
-    throw { status: response.status, data };
-  }
-
+  try { data = await response.json(); } catch {}
+  if (!response.ok) throw { status: response.status, data };
   return data;
 };
 
@@ -61,12 +48,19 @@ export const db = {
   init: () => {},
   login: (credentials: any) => request<any>('/auth/login', 'POST', credentials),
   register: (credentials: any) => request<any>('/auth/register', 'POST', credentials),
+  requestReset: (username: string) => request('/auth/request-reset', 'POST', { username }),
+  resetPassword: (token: string, newPass: string) => request('/auth/reset-password', 'POST', { token, newPass }),
+  
+  // SuperAdmin
+  getAdminStats: () => request<any>('/superadmin/stats'),
+  getAdminUsers: () => request<User[]>('/superadmin/users'),
+
+  // Flota
   getVehicles: () => request<Vehicle[]>('/vehicles'),
   saveVehicle: (v: Vehicle) => request('/vehicles', 'POST', v),
-  deleteVehicle: (id: string) => request(`/vehicles/${id}`, 'DELETE'),
   getDrivers: () => request<Driver[]>('/drivers'),
-  saveDriver: (d: Driver, isEdit: boolean) =>
-    isEdit ? request(`/drivers/${d.id}`, 'PUT', d) : request('/drivers', 'POST', d),
+  saveDriver: (d: Driver, isEdit: boolean) => isEdit ? request(`/drivers/${d.id}`, 'PUT', d) : request('/drivers', 'POST', d),
+  // Added fix: Missing deleteDriver method to resolve reference error in Drivers.tsx
   deleteDriver: (id: string) => request(`/drivers/${id}`, 'DELETE'),
   getPayments: () => request<Payment[]>('/payments'),
   savePayment: (p: Payment) => request('/payments', 'POST', p),
@@ -74,7 +68,6 @@ export const db = {
   getPaymentsByDriver: (driverId: string) => request<Payment[]>(`/payments/driver/${driverId}`),
   getExpenses: () => request<Expense[]>('/expenses'),
   saveExpense: (e: Expense) => request('/expenses', 'POST', e),
-  deleteExpense: (id: string) => request(`/expenses/${id}`, 'DELETE'),
   getArrears: () => request<Arrear[]>('/arrears'),
   getArrearsByDriver: (driverId: string) => request<Arrear[]>(`/arrears/driver/${driverId}`),
   assignDriver: (driverId: string, vehicleId: string | null) => request('/assign', 'POST', { driverId, vehicleId })
