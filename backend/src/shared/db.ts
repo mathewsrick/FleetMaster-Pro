@@ -1,4 +1,3 @@
-
 import fs from 'fs';
 import initSqlJs from 'sql.js';
 import { ENV } from '../config/env';
@@ -65,6 +64,7 @@ dbHelpers.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     username TEXT UNIQUE,
+    email TEXT UNIQUE,
     password TEXT,
     role TEXT DEFAULT 'USER',
     isConfirmed INTEGER DEFAULT 0,
@@ -87,7 +87,6 @@ dbHelpers.exec(`
   )
 `);
 
-// ... Tablas de drivers, vehicles, payments, expenses, arrears se mantienen igual ...
 dbHelpers.exec(`CREATE TABLE IF NOT EXISTS drivers (id TEXT PRIMARY KEY, userId TEXT, firstName TEXT NOT NULL, lastName TEXT NOT NULL, phone TEXT, idNumber TEXT)`);
 dbHelpers.exec(`CREATE TABLE IF NOT EXISTS vehicles (id TEXT PRIMARY KEY, userId TEXT, year INTEGER, licensePlate TEXT, model TEXT, color TEXT, purchaseDate TEXT, insurance TEXT, insuranceNumber TEXT, soatExpiration TEXT, techExpiration TEXT, canonValue REAL, driverId TEXT)`);
 dbHelpers.exec(`CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY, userId TEXT, amount REAL, date TEXT, driverId TEXT, vehicleId TEXT, type TEXT DEFAULT 'canon', arrearId TEXT)`);
@@ -95,12 +94,12 @@ dbHelpers.exec(`CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, userId
 dbHelpers.exec(`CREATE TABLE IF NOT EXISTS arrears (id TEXT PRIMARY KEY, userId TEXT, amountOwed REAL, status TEXT DEFAULT 'pending', driverId TEXT, vehicleId TEXT, dueDate TEXT, originPaymentId TEXT)`);
 
 // Insertar SuperAdmin por defecto si no existe
-const adminExists = dbHelpers.prepare('SELECT id FROM users WHERE username = ?').get(['rmatheus']);
+const adminExists = dbHelpers.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(['rmatheus', 'admin@fleetmaster.pro']);
 if (!adminExists) {
   const hashedPassword = bcrypt.hashSync('4994818', 10);
   dbHelpers.prepare(`
-    INSERT INTO users (id, username, password, role, isConfirmed, createdAt)
-    VALUES (?, ?, ?, 'SUPERADMIN', 1, ?)
-  `).run(['admin-uuid-001', 'rmatheus', hashedPassword, new Date().toISOString()]);
-  console.log('✅ SuperAdmin rmatheus creado.');
+    INSERT INTO users (id, username, email, password, role, isConfirmed, createdAt)
+    VALUES (?, ?, ?, ?, 'SUPERADMIN', 1, ?)
+  `).run(['admin-uuid-001', 'rmatheus', 'admin@fleetmaster.pro', hashedPassword, new Date().toISOString()]);
+  console.log('✅ SuperAdmin rmatheus creado con email admin@fleetmaster.pro.');
 }

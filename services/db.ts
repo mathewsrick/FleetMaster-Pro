@@ -1,4 +1,3 @@
-
 import { Vehicle, Driver, Payment, Expense, Arrear, User } from '../types';
 
 const getApiBase = () => {
@@ -46,11 +45,11 @@ const request = async <T>(url: string, method: string = 'GET', body?: any): Prom
 
 export const db = {
   init: () => {},
-  login: (credentials: any) => request<any>('/auth/login', 'POST', credentials),
-  register: (credentials: any) => request<any>('/auth/register', 'POST', credentials),
-  requestReset: (username: string) => request('/auth/request-reset', 'POST', { username }),
+  login: (credentials: { identifier: string; password: string }) => request<any>('/auth/login', 'POST', credentials),
+  register: (credentials: { email: string; username: string; password: string }) => request<any>('/auth/register', 'POST', credentials),
+  requestReset: (identifier: string) => request('/auth/request-reset', 'POST', { identifier }),
   resetPassword: (token: string, newPass: string) => request('/auth/reset-password', 'POST', { token, newPass }),
-  
+
   // SuperAdmin
   getAdminStats: () => request<any>('/superadmin/stats'),
   getAdminUsers: () => request<User[]>('/superadmin/users'),
@@ -60,7 +59,6 @@ export const db = {
   saveVehicle: (v: Vehicle) => request('/vehicles', 'POST', v),
   getDrivers: () => request<Driver[]>('/drivers'),
   saveDriver: (d: Driver, isEdit: boolean) => isEdit ? request(`/drivers/${d.id}`, 'PUT', d) : request('/drivers', 'POST', d),
-  // Added fix: Missing deleteDriver method to resolve reference error in Drivers.tsx
   deleteDriver: (id: string) => request(`/drivers/${id}`, 'DELETE'),
   getPayments: () => request<Payment[]>('/payments'),
   savePayment: (p: Payment) => request('/payments', 'POST', p),

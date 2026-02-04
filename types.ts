@@ -11,6 +11,7 @@ export interface PlanLimits {
 export interface User {
   id: string;
   username: string;
+  email: string;
   role: UserRole;
   isConfirmed: boolean;
   lastActivity?: string;
@@ -32,7 +33,6 @@ export interface AuthState {
   accountStatus?: AccountStatus | null;
 }
 
-// ... Resto de interfaces permanecen igual (Vehicle, Driver, etc.)
 export interface Vehicle {
   id: string;
   userId: string;

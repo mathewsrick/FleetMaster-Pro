@@ -3,6 +3,12 @@ import { dbHelpers } from '../../shared/db';
 export const findUserByUsername = async (username: string) =>
   dbHelpers.prepare('SELECT * FROM users WHERE username = ?').get([username]);
 
+export const findUserByEmail = async (email: string) =>
+  dbHelpers.prepare('SELECT * FROM users WHERE email = ?').get([email]);
+
+export const findUserByIdentifier = async (identifier: string) =>
+  dbHelpers.prepare('SELECT * FROM users WHERE username = ? OR email = ?').get([identifier, identifier]);
+
 export const findUserById = async (id: string) =>
   dbHelpers.prepare('SELECT * FROM users WHERE id = ?').get([id]);
 
@@ -14,9 +20,9 @@ export const findUserByResetToken = async (token: string) =>
 
 export const createUser = async (u: any) =>
   dbHelpers.prepare(`
-    INSERT INTO users (id, username, password, role, isConfirmed, confirmationToken, createdAt)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run([u.id, u.username, u.password, u.role, u.isConfirmed, u.confirmationToken, u.createdAt]);
+    INSERT INTO users (id, username, email, password, role, isConfirmed, confirmationToken, createdAt)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run([u.id, u.username, u.email, u.password, u.role, u.isConfirmed, u.confirmationToken, u.createdAt]);
 
 export const confirmUser = async (id: string) =>
   dbHelpers.prepare('UPDATE users SET isConfirmed = 1, confirmationToken = NULL WHERE id = ?').run([id]);

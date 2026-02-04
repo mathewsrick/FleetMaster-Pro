@@ -8,6 +8,8 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [view, setView] = useState<'login' | 'register' | 'forgot' | 'reset'>('login');
+  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [resetToken, setResetToken] = useState('');
@@ -21,22 +23,22 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setLoading(true);
     setError('');
     setMessage('');
-
+    
     try {
       if (view === 'register') {
-        await db.register({ username, password });
+        await db.register({ email, username, password });
         setMessage('Cuenta creada. Por favor revisa tu correo para confirmar tu cuenta.');
         setView('login');
       } else if (view === 'forgot') {
-        await db.requestReset(username);
-        setMessage('Si el usuario existe, se envió un código de recuperación.');
+        await db.requestReset(identifier);
+        setMessage('Si el usuario o correo existe, se envió un código de recuperación.');
         setView('reset');
       } else if (view === 'reset') {
         await db.resetPassword(resetToken, password);
         setMessage('Contraseña actualizada. Ya puedes iniciar sesión.');
         setView('login');
       } else {
-        const data = await db.login({ username, password });
+        const data = await db.login({ identifier, password });
         onLogin(data);
       }
     } catch (err: any) {
@@ -93,18 +95,47 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           {error && <div className="p-4 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold border border-rose-100 flex items-center gap-2"><i className="fa-solid fa-circle-exclamation"></i>{error}</div>}
           {message && <div className="p-4 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-bold border border-emerald-100 flex items-center gap-2"><i className="fa-solid fa-circle-check"></i>{message}</div>}
 
-          {view !== 'reset' && (
+          {/* Campo Identificador para Login / Forgot */}
+          {(view === 'login' || view === 'forgot') && (
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest">Correo Electrónico</label>
+              <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest">
+                Usuario o Correo
+              </label>
               <input 
                 required 
-                type="email"
-                value={username} 
-                onChange={e => setUsername(e.target.value)} 
+                value={identifier} 
+                onChange={e => setIdentifier(e.target.value)} 
                 className="w-full px-5 py-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold"
-                placeholder="Ej: tu@email.com"
+                placeholder="Ej: manager_01 o juan@email.com"
               />
             </div>
+          )}
+
+          {/* Campos específicos para Registro */}
+          {view === 'register' && (
+            <>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest">Correo Electrónico</label>
+                <input 
+                  required 
+                  type="email"
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)} 
+                  className="w-full px-5 py-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold"
+                  placeholder="Ej: juan@email.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest">Nombre de Usuario</label>
+                <input 
+                  required 
+                  value={username} 
+                  onChange={e => setUsername(e.target.value)} 
+                  className="w-full px-5 py-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold"
+                  placeholder="Ej: manager_juan"
+                />
+              </div>
+            </>
           )}
 
           {view === 'reset' && (

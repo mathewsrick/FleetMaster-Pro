@@ -1,4 +1,3 @@
-
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
@@ -14,10 +13,18 @@ const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   enterprise: { maxVehicles: 99999, maxDrivers: 99999, hasExcelReports: true, hasCustomApi: true },
 };
 
-export const register = async (username: string, password: string) => {
+export const register = async (email: string, username: string, password: string) => {
+  // Validar si ya existe
+  const existingEmail = await repo.findUserByEmail(email);
+  if (existingEmail) throw new Error('El correo electrónico ya está registrado.');
+  
+  const existingUsername = await repo.findUserByUsername(username);
+  if (existingUsername) throw new Error('El nombre de usuario ya está en uso.');
+
   const confirmationToken = uuid();
   const user = {
     id: uuid(),
+    email,
     username,
     password: await bcrypt.hash(password, 10),
     role: 'USER',
@@ -27,9 +34,8 @@ export const register = async (username: string, password: string) => {
   };
   await repo.createUser(user);
 
-  // Envío de correo real
   await emailService.sendEmail({
-    to: username, // Asumimos que el username es el email
+    to: email,
     subject: "Bienvenido a FleetMaster Pro - Confirma tu cuenta",
     html: emailService.templates.welcome(username, confirmationToken)
   });
@@ -41,15 +47,15 @@ export const confirmAccount = async (token: string) => {
   await repo.confirmUser(user.id);
 };
 
-export const requestPasswordReset = async (username: string) => {
-  const user = await repo.findUserByUsername(username);
+export const requestPasswordReset = async (identifier: string) => {
+  const user = await repo.findUserByIdentifier(identifier);
   if (!user) throw new Error('Usuario no encontrado');
 
-  const resetToken = Math.random().toString(36).substring(2, 8).toUpperCase(); // Código corto de 6 caracteres
+  const resetToken = Math.random().toString(36).substring(2, 8).toUpperCase();
   await repo.setResetToken(user.id, resetToken);
 
   await emailService.sendEmail({
-    to: username,
+    to: user.email,
     subject: "Recuperación de Contraseña - FleetMaster Pro",
     html: emailService.templates.passwordReset(resetToken)
   });
@@ -63,8 +69,8 @@ export const resetPassword = async (token: string, newPass: string) => {
   await repo.setResetToken(user.id, null); 
 };
 
-export const login = async (username: string, password: string) => {
-  const user = await repo.findUserByUsername(username);
+export const login = async (identifier: string, password: string) => {
+  const user = await repo.findUserByIdentifier(identifier);
   if (!user) throw new Error('Credenciales inválidas');
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -106,7 +112,7 @@ export const login = async (username: string, password: string) => {
 
   return { 
     token, 
-    user: { id: user.id, username: user.username, role: user.role, isConfirmed: !!user.isConfirmed }, 
+    user: { id: user.id, username: user.username, email: user.email, role: user.role, isConfirmed: !!user.isConfirmed }, 
     accountStatus 
   };
 };

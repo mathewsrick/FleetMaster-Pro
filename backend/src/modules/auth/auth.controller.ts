@@ -2,7 +2,8 @@ import * as service from './auth.service';
 
 export const register = async (req: any, res: any) => {
   try {
-    await service.register(req.body.username, req.body.password);
+    const { email, username, password } = req.body;
+    await service.register(email, username, password);
     res.json({ success: true });
   } catch (e: any) {
     res.status(400).json({ error: e.message });
@@ -11,7 +12,8 @@ export const register = async (req: any, res: any) => {
 
 export const login = async (req: any, res: any) => {
   try {
-    const result = await service.login(req.body.username, req.body.password);
+    const { identifier, password } = req.body;
+    const result = await service.login(identifier, password);
     res.json(result);
   } catch (e: any) {
     res.status(401).json({
@@ -32,7 +34,7 @@ export const confirm = async (req: any, res: any) => {
 
 export const requestReset = async (req: any, res: any) => {
   try {
-    await service.requestPasswordReset(req.body.username);
+    await service.requestPasswordReset(req.body.identifier);
     res.json({ success: true, message: 'Código de recuperación enviado.' });
   } catch (e: any) {
     res.status(400).json({ error: e.message });

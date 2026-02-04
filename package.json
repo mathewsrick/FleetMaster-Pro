@@ -5,11 +5,11 @@
   "description": "Fleet Management System with Multi-user support and Email Notifications",
   "main": "server.ts",
   "scripts": {
-    "dev:server": "tsx server.ts",
+    "dev:server": "tsx --env-file backend/.env backend/src/server.ts",
     "dev:client": "vite",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "build": "vite build",
-    "start": "tsx server.ts",
+    "start": "tsx --env-file backend/.env backend/src/server.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

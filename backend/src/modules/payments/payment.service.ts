@@ -41,11 +41,11 @@ export const create = async (userId: string, data: any) => {
         }
     }
 
-    // Notificar por correo al dueño de la flota
+    // Notificar por correo al dueño de la flota utilizando su email registrado
     const user = await authRepo.findUserById(userId);
-    if (user && user.username.includes('@')) { // Verificación básica de email
+    if (user && user.email) {
         await emailService.sendEmail({
-            to: user.username,
+            to: user.email,
             subject: "Comprobante de Pago Recibido - FleetMaster Pro",
             html: emailService.templates.paymentConfirmation(payment.amount, payment.date, payment.type)
         });
