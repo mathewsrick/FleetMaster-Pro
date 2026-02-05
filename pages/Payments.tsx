@@ -8,7 +8,9 @@ const Payments: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [arrears, setArrears] = useState<Arrear[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -27,8 +29,6 @@ const Payments: React.FC = () => {
     arrearId: null,
   });
 
-  const authData = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
-
   useEffect(() => {
     loadData();
   }, [page, limit, dateRange]);
@@ -36,19 +36,19 @@ const Payments: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [res, d, v, a] = await Promise.all([
+      const [p, d, v, a] = await Promise.all([
         db.getPayments({ page, limit, ...dateRange }),
         db.getDrivers(1, 1000),
         db.getVehicles(1, 1000),
         db.getArrears(),
       ]);
-      setPayments(res.data);
-      setTotal(res.total);
+      setPayments(p.data);
+      setTotal(p.total);
       setDrivers(d.data);
       setVehicles(v.data);
       setArrears(a);
-    } catch (err: any) {
-      alert(err.data?.error || 'Error cargando datos.');
+    } catch (error) {
+      console.error("Error loading data", error);
     } finally {
       setLoading(false);
     }
@@ -67,37 +67,46 @@ const Payments: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.driverId || !formData.vehicleId) return;
+    if (!formData.driverId || !formData.vehicleId || saving) return;
 
-    setLoading(true);
+    setSaving(true);
     try {
       if (formData.type === 'arrear_payment' && formData.arrearId) {
         await db.payArrear(formData.arrearId, {
-          amount: formData.amount!,
-          date: formData.date!,
+          amount: formData.amount || 0,
+          date: formData.date || new Date().toISOString().split('T')[0],
         });
       } else {
         await db.savePayment({
           ...formData,
-          id: crypto.randomUUID(),
+          id: editingId || crypto.randomUUID(),
         } as Payment);
       }
+
+      setEditingId(null);
+      setFormData({
+        amount: 0,
+        date: new Date().toISOString().split('T')[0],
+        driverId: '',
+        vehicleId: '',
+        type: 'canon',
+        arrearId: null,
+      });
       setIsModalOpen(false);
-      setFormData({ amount: 0, date: new Date().toISOString().split('T')[0], driverId: '', vehicleId: '', type: 'canon', arrearId: null });
       setPage(1);
       await loadData();
     } catch (err: any) {
-      alert(err?.data?.message || 'Error al procesar el pago.');
+      alert(err?.data?.message || 'Error al procesar el pago. Por favor intente de nuevo.');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const selectedDriverArrears = arrears.filter(
+  const driverPendingArrears = arrears.filter(
     a => a.driverId === formData.driverId && a.status === 'pending'
   );
 
-  const totalOwed = selectedDriverArrears.reduce((sum, a) => sum + a.amountOwed, 0);
+  const totalOwed = driverPendingArrears.reduce((sum, a) => sum + a.amountOwed, 0);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -106,7 +115,7 @@ const Payments: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Caja y Recaudos</h1>
-          <p className="text-slate-500 text-sm font-medium">Historial paginado y búsqueda por fechas</p>
+          <p className="text-slate-500 text-sm font-medium">Registro de cánones y abonos a moras</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
@@ -136,10 +145,13 @@ const Payments: React.FC = () => {
           </div>
 
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setEditingId(null);
+              setIsModalOpen(true);
+            }}
             className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-100/50 active:scale-95 transition-all"
           >
-            <i className="fa-solid fa-plus"></i> Nuevo Pago
+            <i className="fa-solid fa-cash-register"></i> Nuevo Ingreso
           </button>
         </div>
       </div>
@@ -157,29 +169,31 @@ const Payments: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
+              {loading && payments.length === 0 ? (
                 <tr><td colSpan={5} className="p-12 text-center text-indigo-600"><i className="fa-solid fa-circle-notch fa-spin text-2xl"></i></td></tr>
               ) : payments.length === 0 ? (
-                <tr><td colSpan={5} className="p-12 text-center text-slate-400 font-bold">No hay registros para este periodo.</td></tr>
+                <tr><td colSpan={5} className="p-12 text-center text-slate-400 font-bold italic">No hay registros para este periodo.</td></tr>
               ) : (
                 payments.map(p => {
                   const driver = drivers.find(d => d.id === p.driverId);
                   const vehicle = vehicles.find(v => v.id === p.vehicleId);
                   return (
                     <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 text-xs text-slate-500 font-mono">{formatDateDisplay(p.date)}</td>
+                      <td className="px-6 py-4 text-sm text-slate-500 font-mono">{formatDateDisplay(p.date)}</td>
                       <td className="px-6 py-4">
                         <p className="font-bold text-slate-800 text-sm">{driver ? `${driver.firstName} ${driver.lastName}` : 'N/A'}</p>
                         <p className="text-[10px] font-black text-indigo-600 uppercase tracking-tighter">{vehicle?.licensePlate}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${p.type === 'arrear_payment' ? 'bg-amber-50 text-amber-600' : 'bg-indigo-50 text-indigo-600'}`}>
-                          {p.type === 'arrear_payment' ? 'MORA' : 'CANON'}
+                        <span className={`text-[10px] font-black px-2 py-1 rounded-lg border uppercase tracking-widest ${p.type === 'arrear_payment' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
+                          {p.type === 'arrear_payment' ? 'ABONO MORA' : 'CANON SEMANAL'}
                         </span>
                       </td>
                       <td className="px-6 py-4 font-black text-slate-900">${p.amount.toLocaleString()}</td>
                       <td className="px-6 py-4 text-right">
-                        <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 uppercase tracking-widest">Procesado</span>
+                        <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 uppercase tracking-widest flex items-center justify-end gap-1">
+                          <i className="fa-solid fa-check-double text-[8px]"></i> Recibido
+                        </span>
                       </td>
                     </tr>
                   );
@@ -226,86 +240,174 @@ const Payments: React.FC = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-[32px] w-full max-w-lg p-8 shadow-2xl transform animate-in fade-in zoom-in duration-300">
-            <h2 className="text-2xl font-black text-slate-900 mb-6">Registrar Ingreso</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-               {formData.driverId && (
-                 <div className={`p-4 rounded-2xl border transition-all ${totalOwed > 0 ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'}`}>
-                   <div className="flex justify-between items-center">
-                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estado de Deuda</span>
-                     <span className={`text-sm font-black ${totalOwed > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                       {totalOwed > 0 ? `$${totalOwed.toLocaleString()}` : 'Al Día'}
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-8 transform animate-in fade-in zoom-in duration-300">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-black text-slate-900">Registrar Ingreso</h2>
+              <button 
+                onClick={() => !saving && setIsModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+                disabled={saving}
+              >
+                <i className="fa-solid fa-xmark text-xl"></i>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className={`space-y-6 transition-opacity ${saving ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+              <div>
+                <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest mb-2 block">Conductor</label>
+                <select
+                  required
+                  disabled={saving}
+                  value={formData.driverId || ''}
+                  onChange={e => handleDriverChange(e.target.value)}
+                  className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-bold transition-all appearance-none"
+                >
+                  <option value="">Seleccione un conductor...</option>
+                  {drivers.map(d => (
+                    <option key={d.id} value={d.id}>
+                      {d.firstName} {d.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {formData.driverId && (
+                 <div className={`p-5 rounded-2xl border-2 transition-all flex justify-between items-center ${totalOwed > 0 ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'}`}>
+                   <div>
+                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Resumen de Cuenta</span>
+                     <span className={`text-sm font-black uppercase tracking-tight ${totalOwed > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                       {totalOwed > 0 ? 'Tiene Saldo Pendiente' : 'Cuenta al Día'}
+                     </span>
+                   </div>
+                   <div className="text-right">
+                     <span className={`text-xl font-black ${totalOwed > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                       ${totalOwed.toLocaleString()}
                      </span>
                    </div>
                  </div>
-               )}
+              )}
 
-               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Conductor</label>
-                <select 
-                  required 
-                  value={formData.driverId}
-                  onChange={e => handleDriverChange(e.target.value)} 
-                  className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm"
-                >
-                  <option value="">Seleccione Conductor...</option>
-                  {drivers.map(d => <option key={d.id} value={d.id}>{d.firstName} {d.lastName}</option>)}
-                </select>
-               </div>
+              <div>
+                <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest mb-2 block">Tipo de Ingreso</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => setFormData({ ...formData, type: 'canon', arrearId: null })}
+                    className={`py-3 px-4 rounded-xl border-2 text-sm font-black transition-all ${
+                      formData.type === 'canon'
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-100'
+                        : 'bg-slate-50 text-slate-500 border-transparent hover:border-slate-200'
+                    }`}
+                  >
+                    Canon Semanal
+                  </button>
+                  <button
+                    type="button"
+                    disabled={saving || driverPendingArrears.length === 0}
+                    onClick={() =>
+                      setFormData({ ...formData, type: 'arrear_payment' })
+                    }
+                    className={`py-3 px-4 rounded-xl border-2 text-sm font-black transition-all ${
+                      formData.type === 'arrear_payment'
+                        ? 'bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-100'
+                        : 'bg-slate-50 text-slate-500 border-transparent hover:border-slate-200'
+                    } disabled:opacity-30`}
+                  >
+                    Abono a Mora
+                  </button>
+                </div>
+              </div>
 
-               <div className="flex p-1 bg-slate-100 rounded-2xl">
-                 <button
-                  type="button"
-                  onClick={() => setFormData({...formData, type: 'canon', arrearId: null})}
-                  className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.type === 'canon' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}
-                 >
-                   Canon Semanal
-                 </button>
-                 <button
-                  type="button"
-                  disabled={selectedDriverArrears.length === 0}
-                  onClick={() => setFormData({...formData, type: 'arrear_payment'})}
-                  className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.type === 'arrear_payment' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-400'} disabled:opacity-30`}
-                 >
-                   Abono a Mora
-                 </button>
-               </div>
-
-               {formData.type === 'arrear_payment' && (
-                 <div>
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Factura de Mora Pendiente</label>
-                   <select 
+              {formData.type === 'arrear_payment' && (
+                <div className="animate-in slide-in-from-top-2 duration-300">
+                  <label className="text-xs font-black text-amber-600 uppercase ml-1 tracking-widest mb-2 block">
+                    Seleccionar Deuda Pendiente
+                  </label>
+                  <select
                     required
+                    disabled={saving}
                     value={formData.arrearId || ''}
                     onChange={e => {
-                      const selected = selectedDriverArrears.find(a => a.id === e.target.value);
-                      setFormData({...formData, arrearId: e.target.value, amount: selected?.amountOwed || 0});
+                      const selected = arrears.find(a => a.id === e.target.value);
+                      setFormData({
+                        ...formData,
+                        arrearId: e.target.value,
+                        amount: selected?.amountOwed || 0,
+                      });
                     }}
-                    className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm"
-                   >
-                     <option value="">Seleccione Deuda...</option>
-                     {selectedDriverArrears.map(a => (
-                       <option key={a.id} value={a.id}>Deuda del {a.dueDate} - (${a.amountOwed.toLocaleString()})</option>
-                     ))}
-                   </select>
-                 </div>
-               )}
+                    className="w-full px-5 py-4 border-2 border-amber-200 rounded-2xl bg-amber-50 font-bold text-amber-900 outline-none focus:bg-white transition-all appearance-none"
+                  >
+                    <option value="">Seleccione una mora...</option>
+                    {driverPendingArrears.map(a => (
+                      <option key={a.id} value={a.id}>
+                        Deuda del {formatDateDisplay(a.dueDate)} - (${a.amountOwed.toLocaleString()})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
-               <div className="grid grid-cols-2 gap-4">
-                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Monto ($)</label>
-                  <input type="number" required placeholder="0.00" value={formData.amount || ''} onChange={e => setFormData({...formData, amount: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none" />
-                 </div>
-                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Fecha</label>
-                  <input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none text-sm" />
-                 </div>
-               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest mb-2 block">Monto ($)</label>
+                  <input
+                    type="number"
+                    required
+                    disabled={saving}
+                    value={formData.amount}
+                    onChange={e =>
+                      setFormData({ ...formData, amount: Number(e.target.value) })
+                    }
+                    className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-black transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-widest mb-2 block">Fecha de Pago</label>
+                  <input
+                    type="date"
+                    required
+                    disabled={saving}
+                    value={formData.date}
+                    onChange={e =>
+                      setFormData({ ...formData, date: e.target.value })
+                    }
+                    className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-bold transition-all"
+                  />
+                </div>
+              </div>
 
-               <div className="flex gap-4 pt-6">
-                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 font-black text-slate-400 uppercase text-[10px] tracking-widest">Cerrar</button>
-                 <button type="submit" disabled={loading} className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-emerald-100/50 transition-all active:scale-95">Confirmar Pago</button>
-               </div>
+              <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-100">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 px-6 py-4 border-2 border-slate-100 rounded-2xl font-black text-slate-400 hover:bg-slate-50 transition-all disabled:opacity-50 uppercase text-[10px] tracking-widest"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className={`flex-[2] px-6 py-4 rounded-2xl font-black flex items-center justify-center gap-3 transition-all shadow-xl uppercase text-[10px] tracking-widest ${
+                    saving 
+                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100 active:scale-95'
+                  }`}
+                >
+                  {saving ? (
+                    <>
+                      <i className="fa-solid fa-circle-notch fa-spin"></i>
+                      Procesando...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa-solid fa-cloud-upload"></i>
+                      Confirmar Ingreso
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
           </div>
         </div>
