@@ -17,7 +17,7 @@ export const register = async (email: string, username: string, password: string
   // Validar si ya existe
   const existingEmail = await repo.findUserByEmail(email);
   if (existingEmail) throw new Error('El correo electrónico ya está registrado.');
-  
+
   const existingUsername = await repo.findUserByUsername(username);
   if (existingUsername) throw new Error('El nombre de usuario ya está en uso.');
 
