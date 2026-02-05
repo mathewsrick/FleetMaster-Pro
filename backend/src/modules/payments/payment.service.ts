@@ -22,16 +22,19 @@ export const create = async (userId: string, data: any) => {
     await arrearRepo.removeByOriginPayment(payment.id);
     await paymentRepo.create(payment);
 
+    let createdArrearAmount = 0;
+
     if ((!payment.type || payment.type === 'canon') && payment.generateArrear !== false) {
         const vehicle: any = dbHelpers
             .prepare('SELECT canonValue FROM vehicles WHERE id = ?')
             .get([payment.vehicleId]);
 
         if (vehicle && payment.amount < vehicle.canonValue) {
+            createdArrearAmount = vehicle.canonValue - payment.amount;
             await arrearRepo.create({
                 id: uuid(),
                 userId,
-                amountOwed: vehicle.canonValue - payment.amount,
+                amountOwed: createdArrearAmount,
                 status: 'pending',
                 driverId: payment.driverId,
                 vehicleId: payment.vehicleId,
@@ -41,13 +44,25 @@ export const create = async (userId: string, data: any) => {
         }
     }
 
+    // Obtener todas las moras pendientes para el reporte en el correo
+    const allPendingArrears = await arrearRepo.findByDriver(userId, payment.driverId);
+    const pendingArrears = allPendingArrears.filter((a: any) => a.status === 'pending');
+    const totalAccumulatedDebt = pendingArrears.reduce((sum: number, a: any) => sum + a.amountOwed, 0);
+
     // Notificar por correo al dueño de la flota utilizando su email registrado
     const user = await authRepo.findUserById(userId);
     if (user && user.email) {
         await emailService.sendEmail({
             to: user.email,
-            subject: "Comprobante de Pago Recibido - FleetMaster Pro",
-            html: emailService.templates.paymentConfirmation(payment.amount, payment.date, payment.type)
+            subject: `Recibo de Pago - $${payment.amount.toLocaleString()} - ${payment.date}`,
+            html: emailService.templates.paymentConfirmation(
+                payment.amount,
+                payment.date,
+                payment.type,
+                createdArrearAmount,
+                totalAccumulatedDebt,
+                pendingArrears
+            )
         });
     }
 };

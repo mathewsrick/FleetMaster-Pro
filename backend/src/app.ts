@@ -21,6 +21,10 @@ const app = express();
 
 app.use(cors() as any);
 app.use(express.json() as any);
+app.use(
+  '/public',
+  express.static(path.join(process.cwd(), 'src/public'))
+);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/subscription', authenticate, subscriptionRoutes);

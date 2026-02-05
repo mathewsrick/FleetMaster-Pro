@@ -1,4 +1,3 @@
-
 import nodemailer from 'nodemailer';
 import { ENV } from '../config/env';
 
@@ -30,52 +29,107 @@ export const sendEmail = async ({ to, subject, html }: EmailOptions) => {
     return true;
   } catch (error) {
     console.error('Error sending email:', error);
-    // En desarrollo, no bloqueamos el flujo si falla el correo
     return false;
   }
 };
 
+const LOGO_HTML = `
+  <div style="text-align: center; margin-bottom: 24px;">
+    <div style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 14px; border-radius: 16px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
+       <img
+          src="${ENV.APP_URL}/public/assets/truck-fast-solid-full.png"
+          alt="FleetMaster Pro"
+          width="32"
+          height="32"
+          style="display:block"
+       />
+    </div>
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 900; color: #1e293b; font-size: 22px; margin-top: 12px; letter-spacing: -0.025em;">FleetMaster <span style="color: #4f46e5;">Pro</span></div>
+  </div>
+`;
+
 export const templates = {
   welcome: (username: string, token: string) => `
-    <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 40px; border-radius: 20px;">
-      <h2 style="color: #4f46e5;">¡Bienvenido a FleetMaster Pro!</h2>
-      <p>Hola <strong>${username}</strong>,</p>
-      <p>Gracias por unirte a la plataforma líder en gestión de flotas. Para activar tu cuenta y comenzar tu trial, por favor confirma tu correo electrónico:</p>
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${ENV.APP_URL}/#/confirm/${token}" style="background-color: #4f46e5; color: white; padding: 15px 25px; text-decoration: none; border-radius: 10px; font-weight: bold;">Confirmar Cuenta</a>
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+      ${LOGO_HTML}
+      <h2 style="color: #1e293b; text-align: center; font-size: 24px; margin-bottom: 24px;">¡Bienvenido a bordo, ${username}!</h2>
+      <p style="font-size: 16px; line-height: 1.6;">Gracias por confiar en <strong>FleetMaster Pro</strong> para la gestión de tu flota. Estamos emocionados de ayudarte a optimizar tu negocio.</p>
+      <p style="font-size: 16px; line-height: 1.6;">Para comenzar, activa tu cuenta haciendo clic en el siguiente botón:</p>
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="${ENV.APP_URL}/#/confirm/${token}" style="background-color: #4f46e5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);">Confirmar mi cuenta</a>
       </div>
-      <p style="font-size: 12px; color: #666;">Si no creaste esta cuenta, puedes ignorar este correo.</p>
+      <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-top: 40px; border-top: 1px solid #f1f5f9; pt: 24px;">Si no has creado esta cuenta, puedes ignorar este mensaje.</p>
     </div>
   `,
   passwordReset: (token: string) => `
-    <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 40px; border-radius: 20px;">
-      <h2 style="color: #4f46e5;">Recuperación de Contraseña</h2>
-      <p>Has solicitado restablecer tu contraseña. Utiliza el siguiente código para completar el proceso:</p>
-      <div style="background: #f3f4f6; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;">
-        <span style="font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #1f2937;">${token}</span>
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+      ${LOGO_HTML}
+      <h2 style="color: #1e293b; text-align: center; font-size: 24px; margin-bottom: 24px;">Recuperación de Acceso</h2>
+      <p style="font-size: 16px; line-height: 1.6;">Has solicitado restablecer tu contraseña en FleetMaster Pro. Utiliza el siguiente código de seguridad:</p>
+      <div style="background: #f8fafc; padding: 32px; text-align: center; border-radius: 16px; margin: 32px 0; border: 1px dashed #cbd5e1;">
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: monospace;">${token}</span>
       </div>
-      <p style="font-size: 12px; color: #666;">Este código expirará en 24 horas.</p>
+      <p style="font-size: 14px; color: #64748b; text-align: center;">Este código expirará por seguridad. No compartas este código con nadie.</p>
     </div>
   `,
-  paymentConfirmation: (amount: number, date: string, type: string) => `
-    <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 40px; border-radius: 20px;">
-      <h2 style="color: #10b981;">Confirmación de Pago Recibido</h2>
-      <p>Se ha registrado un nuevo ingreso en tu sistema:</p>
-      <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+  paymentConfirmation: (amount: number, date: string, type: string, createdArrear: number, totalDebt: number, pendingArrears: any[]) => `
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+      ${LOGO_HTML}
+      <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 32px;">
+        <h2 style="color: #15803d; margin: 0; font-size: 20px;">Comprobante de Pago Exitoso</h2>
+        <p style="color: #166534; font-size: 14px; margin: 8px 0 0 0;">Tu pago ha sido procesado y registrado correctamente.</p>
+      </div>
+
+      <h3 style="color: #1e293b; font-size: 16px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 16px;">Detalle de la Transacción</h3>
+      <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Monto:</strong></td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$${amount.toLocaleString()}</td>
+          <td style="padding: 12px 0; color: #64748b; font-size: 14px;">Monto Recibido:</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b; font-weight: 800; font-size: 18px;">$${amount.toLocaleString()}</td>
         </tr>
         <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Concepto:</strong></td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${type === 'canon' ? 'Canon Semanal' : 'Abono a Mora'}</td>
+          <td style="padding: 12px 0; color: #64748b; font-size: 14px;">Concepto:</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b; font-weight: 600;">${type === 'canon' ? 'Canon Semanal' : 'Abono a Mora'}</td>
         </tr>
         <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Fecha:</strong></td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${date}</td>
+          <td style="padding: 12px 0; color: #64748b; font-size: 14px;">Fecha de Registro:</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b;">${date}</td>
         </tr>
+        ${createdArrear > 0 ? `
+        <tr>
+          <td style="padding: 12px 0; color: #e11d48; font-size: 14px; font-weight: bold;">Nueva Mora Generada:</td>
+          <td style="padding: 12px 0; text-align: right; color: #e11d48; font-weight: 800;">$${createdArrear.toLocaleString()}</td>
+        </tr>
+        ` : ''}
       </table>
-      <p style="font-size: 12px; color: #666;">FleetMaster Pro - Tu flota bajo control.</p>
+
+      ${totalDebt > 0 ? `
+      <div style="margin-top: 40px; padding: 24px; background-color: #fff1f2; border-radius: 20px; border: 1px solid #fecdd3;">
+        <h3 style="color: #be123c; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px 0; display: flex; align-items: center;">
+          Resumen de Deuda Pendiente
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          ${pendingArrears.map(a => `
+            <tr>
+              <td style="padding: 6px 0; color: #9f1239;">Mora del ${a.dueDate}</td>
+              <td style="padding: 6px 0; text-align: right; color: #be123c; font-weight: bold;">$${a.amountOwed.toLocaleString()}</td>
+            </tr>
+          `).join('')}
+          <tr style="border-top: 1px solid #fda4af;">
+            <td style="padding: 12px 0 0 0; font-weight: 800; color: #9f1239; font-size: 15px;">TOTAL ACUMULADO:</td>
+            <td style="padding: 12px 0 0 0; text-align: right; font-weight: 900; color: #e11d48; font-size: 18px;">$${totalDebt.toLocaleString()}</td>
+          </tr>
+        </table>
+      </div>
+      ` : `
+      <div style="margin-top: 40px; padding: 16px; background-color: #f0fdf4; border-radius: 12px; text-align: center; border: 1px solid #dcfce7;">
+        <p style="color: #15803d; font-size: 13px; font-weight: bold; margin: 0;">¡Tu cuenta está al día! No tienes moras pendientes.</p>
+      </div>
+      `}
+
+      <div style="margin-top: 48px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 24px;">
+        <p style="font-size: 12px; color: #94a3b8; margin: 0;">Este es un comprobante automático generado por FleetMaster Pro.</p>
+        <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">© 2025 FleetMaster Pro System.</p>
+      </div>
     </div>
   `
 };
