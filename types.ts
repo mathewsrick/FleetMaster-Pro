@@ -56,6 +56,7 @@ export interface Vehicle {
   techExpiration: string;
   canonValue: number;
   driverId: string | null;
+  photos?: string[]; // Array de base64 strings
 }
 
 export interface Driver {
@@ -66,6 +67,7 @@ export interface Driver {
   phone: string;
   idNumber: string;
   vehicleId: string | null;
+  documentPhoto?: string; // base64 string
 }
 
 export interface Payment {

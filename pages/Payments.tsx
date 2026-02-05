@@ -259,7 +259,7 @@ const Payments: React.FC = () => {
 
               {formData.driverId && (
                  <div className={`rounded-3xl border-2 overflow-hidden transition-all ${totalOwed > 0 ? 'bg-rose-50/50 border-rose-100' : 'bg-emerald-50/50 border-emerald-100'}`}>
-                   <div className="py-1.5 px-5 flex justify-between items-start">
+                   <div className="p-5 flex justify-between items-start">
                      <div>
                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">Saldo Acumulado</span>
                        <span className={`text-xs font-black uppercase tracking-tight ${totalOwed > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
@@ -272,7 +272,7 @@ const Payments: React.FC = () => {
                        </span>
                      </div>
                    </div>
-
+                   
                    {driverPendingArrears.length > 0 && (
                      <div className="border-t border-rose-100/50 bg-white/50 max-h-32 overflow-y-auto">
                        <table className="w-full text-left">

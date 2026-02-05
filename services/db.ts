@@ -1,4 +1,3 @@
-
 import { Vehicle, Driver, Payment, Expense, Arrear, User, PaginatedResponse } from '../types';
 
 const getApiBase = () => {
@@ -18,7 +17,7 @@ export const formatDateDisplay = (dateStr: string) => {
   if (!dateStr) return 'N/A';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
-  return d.toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+  return d.toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'2-digit' });
 };
 
 const getAuth = () => {
@@ -30,13 +29,15 @@ const request = async <T>(url: string, method: string = 'GET', body?: any): Prom
   const auth = getAuth();
   const token = auth?.token;
 
+  const isFormData = body instanceof FormData;
+
   const response = await fetch(`${API_BASE}${url}`, {
     method,
     headers: {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       Authorization: token ? `Bearer ${token}` : ''
     },
-    body: body ? JSON.stringify(body) : undefined
+    body: isFormData ? body : (body ? JSON.stringify(body) : undefined)
   });
 
   let data: any = null;
@@ -53,6 +54,18 @@ export const db = {
   requestReset: (identifier: string) => request('/auth/request-reset', 'POST', { identifier }),
   resetPassword: (token: string, newPass: string) => request('/auth/reset-password', 'POST', { token, newPass }),
   
+  // Métodos de carga de archivos
+  uploadVehiclePhotos: (files: File[]) => {
+    const formData = new FormData();
+    files.forEach(file => formData.append('photos', file));
+    return request<{ urls: string[] }>('/uploads/vehicles', 'POST', formData);
+  },
+  uploadDriverDocument: (file: File) => {
+    const formData = new FormData();
+    formData.append('document', file);
+    return request<{ url: string }>('/uploads/drivers', 'POST', formData);
+  },
+
   getAdminStats: () => request<any>('/superadmin/stats'),
   getAdminUsers: () => request<User[]>('/superadmin/users'),
 
