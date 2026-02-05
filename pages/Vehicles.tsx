@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/db';
-import { Vehicle, Driver } from '../types';
+import { Vehicle } from '../types';
 
 const Vehicles: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [total, setTotal] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [loading, setLoading] = useState(true);
   
   const authData = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
   const limits = authData.accountStatus?.limits;
-  const reachedLimit = limits ? vehicles.length >= limits.maxVehicles : false;
+  const reachedLimit = limits ? total >= limits.maxVehicles : false;
 
   const initialForm = {
     year: new Date().getFullYear(), licensePlate: '', model: '', color: '',
@@ -26,9 +27,14 @@ const Vehicles: React.FC = () => {
   useEffect(() => { loadData(); }, [page, limit]);
 
   const loadData = async () => {
-    const [v, d] = await Promise.all([db.getVehicles(page, limit), db.getDrivers()]);
-    setVehicles(v);
-    setDrivers(d);
+    setLoading(true);
+    try {
+      const res = await db.getVehicles(page, limit);
+      setVehicles(res.data);
+      setTotal(res.total);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,12 +51,14 @@ const Vehicles: React.FC = () => {
     }
   };
 
+  const totalPages = Math.ceil(total / limit);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Vehículos</h1>
-          <p className="text-slate-500 text-sm font-medium">{vehicles.length} / {limits?.maxVehicles || 0} activos en plan {authData.accountStatus?.plan}</p>
+          <p className="text-slate-500 text-sm font-medium">{total} / {limits?.maxVehicles || 0} activos en plan {authData.accountStatus?.plan}</p>
         </div>
         <button 
           onClick={() => { setEditingId(null); setFormData(initialForm); setIsModalOpen(true); }} 
@@ -60,18 +68,6 @@ const Vehicles: React.FC = () => {
           <i className="fa-solid fa-plus"></i>
           {reachedLimit ? 'Límite Alcanzado' : 'Añadir Vehículo'}
         </button>
-      </div>
-
-      <div className="flex justify-end">
-        <select 
-          value={limit} 
-          onChange={(e) => {setLimit(Number(e.target.value)); setPage(1);}}
-          className="px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-600 text-sm shadow-sm"
-        >
-          <option value={5}>5 por página</option>
-          <option value={10}>10 por página</option>
-          <option value={25}>25 por página</option>
-        </select>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -85,7 +81,9 @@ const Vehicles: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {vehicles.map(v => (
+            {loading ? (
+              <tr><td colSpan={4} className="p-12 text-center text-indigo-600"><i className="fa-solid fa-circle-notch fa-spin text-2xl"></i></td></tr>
+            ) : vehicles.map(v => (
               <tr key={v.id} className="hover:bg-slate-50/50 transition-colors group">
                 <td className="px-6 py-4 font-bold text-slate-800">
                   {v.model} <span className="text-xs text-slate-400 ml-1 font-medium">{v.year}</span>
@@ -104,24 +102,40 @@ const Vehicles: React.FC = () => {
           </tbody>
         </table>
 
-        {/* Paginación */}
-        <div className="px-6 py-4 bg-slate-50 border-t flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-400">Página {page}</span>
-          <div className="flex gap-2">
-            <button 
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-              className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all"
+        {/* Paginación Footer */}
+        <div className="px-6 py-4 bg-slate-50 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-xs font-bold text-slate-400 tracking-tight">
+            Mostrando <span className="text-slate-900">{vehicles.length}</span> de <span className="text-slate-900">{total}</span> vehículos 
+            <span className="mx-2 opacity-50">•</span> Página {page} de {totalPages || 1}
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <select 
+              value={limit} 
+              onChange={(e) => {setLimit(Number(e.target.value)); setPage(1);}}
+              className="px-3 py-2 bg-white border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-600 shadow-sm"
             >
-              <i className="fa-solid fa-chevron-left"></i>
-            </button>
-            <button 
-              disabled={vehicles.length < limit}
-              onClick={() => setPage(page + 1)}
-              className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all"
-            >
-              <i className="fa-solid fa-chevron-right"></i>
-            </button>
+              <option value={5}>5 por pág.</option>
+              <option value={10}>10 por pág.</option>
+              <option value={25}>25 por pág.</option>
+            </select>
+            
+            <div className="flex gap-1">
+              <button 
+                disabled={page === 1 || loading}
+                onClick={() => setPage(page - 1)}
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all"
+              >
+                <i className="fa-solid fa-chevron-left text-xs"></i>
+              </button>
+              <button 
+                disabled={page === totalPages || total === 0 || loading}
+                onClick={() => setPage(page + 1)}
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all"
+              >
+                <i className="fa-solid fa-chevron-right text-xs"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>

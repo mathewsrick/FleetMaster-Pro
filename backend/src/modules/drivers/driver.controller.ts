@@ -1,7 +1,7 @@
 import * as service from './driver.service';
 
 export const getAll = async (req: any, res: any) => {
-  res.json(await service.getAll(req.user.userId));
+  res.json(await service.getAll(req.user.userId, req.query));
 };
 
 export const create = async (req: any, res: any) => {
@@ -12,11 +12,7 @@ export const create = async (req: any, res: any) => {
     if (error.code === 'PLAN_LIMIT_DRIVERS') {
       return res.status(403).json(error);
     }
-
-    res.status(500).json({
-      error: 'INTERNAL_ERROR',
-      message: 'Unexpected error',
-    });
+    res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
   }
 };
 

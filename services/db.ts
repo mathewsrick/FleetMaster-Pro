@@ -1,3 +1,4 @@
+
 import { Vehicle, Driver, Payment, Expense, Arrear, User, PaginatedResponse } from '../types';
 
 const getApiBase = () => {
@@ -55,13 +56,12 @@ export const db = {
   getAdminStats: () => request<any>('/superadmin/stats'),
   getAdminUsers: () => request<User[]>('/superadmin/users'),
 
-  getVehicles: (page = 1, limit = 100) => request<Vehicle[]>(`/vehicles?page=${page}&limit=${limit}`),
+  getVehicles: (page = 1, limit = 100) => request<PaginatedResponse<Vehicle>>(`/vehicles?page=${page}&limit=${limit}`),
   saveVehicle: (v: Vehicle) => request('/vehicles', 'POST', v),
-  getDrivers: (page = 1, limit = 100) => request<Driver[]>(`/drivers?page=${page}&limit=${limit}`),
+  getDrivers: (page = 1, limit = 100) => request<PaginatedResponse<Driver>>(`/drivers?page=${page}&limit=${limit}`),
   saveDriver: (d: Driver, isEdit: boolean) => isEdit ? request(`/drivers/${d.id}`, 'PUT', d) : request('/drivers', 'POST', d),
   deleteDriver: (id: string) => request(`/drivers/${id}`, 'DELETE'),
   
-  // Fix: Added optional search parameter to getPayments
   getPayments: (params: { page?: number, limit?: number, startDate?: string, endDate?: string, search?: string } = {}) => {
     const q = new URLSearchParams(params as any).toString();
     return request<PaginatedResponse<Payment>>(`/payments?${q}`);
@@ -71,7 +71,6 @@ export const db = {
   payArrear: (arrearId: string, data: { amount: number; date: string }) => request(`/arrears/${arrearId}/pay`, 'POST', data),
   getPaymentsByDriver: (driverId: string) => request<Payment[]>(`/payments/driver/${driverId}`),
   
-  // Fix: Added optional search parameter to getExpenses
   getExpenses: (params: { page?: number, limit?: number, startDate?: string, endDate?: string, search?: string } = {}) => {
     const q = new URLSearchParams(params as any).toString();
     return request<PaginatedResponse<Expense>>(`/expenses?${q}`);

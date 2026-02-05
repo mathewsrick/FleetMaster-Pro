@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-// import { Link } from 'react-router-dom';
-import { db, formatDateDisplay } from '../services/db';
+import { db } from '../services/db';
 import { Driver, Vehicle, Payment, Arrear } from '../types';
 
 const Drivers: React.FC = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [total, setTotal] = useState(0);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [allArrears, setAllArrears] = useState<Arrear[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [loading, setLoading] = useState(true);
 
   const [historyDriver, setHistoryDriver] = useState<Driver | null>(null);
   const [driverPayments, setDriverPayments] = useState<Payment[]>([]);
@@ -20,31 +20,28 @@ const Drivers: React.FC = () => {
 
   const authData = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
   const limits = authData.accountStatus?.limits;
-  const reachedLimit = limits ? drivers.length >= limits.maxDrivers : false;
+  const reachedLimit = limits ? total >= limits.maxDrivers : false;
 
-  const initialForm = {
-    firstName: '',
-    lastName: '',
-    phone: '',
-    idNumber: '',
-    vehicleId: null,
-  };
-
+  const initialForm = { firstName: '', lastName: '', phone: '', idNumber: '', vehicleId: null };
   const [formData, setFormData] = useState<Partial<Driver>>(initialForm);
 
-  useEffect(() => {
-    loadData();
-  }, [page, limit]);
+  useEffect(() => { loadData(); }, [page, limit]);
 
   const loadData = async () => {
-    const [d, v, a] = await Promise.all([
-      db.getDrivers(page, limit),
-      db.getVehicles(),
-      db.getArrears(),
-    ]);
-    setDrivers(d);
-    setVehicles(v);
-    setAllArrears(a);
+    setLoading(true);
+    try {
+      const [dRes, v, a] = await Promise.all([
+        db.getDrivers(page, limit),
+        db.getVehicles(1, 1000), // Obtener todos para el selector
+        db.getArrears(),
+      ]);
+      setDrivers(dRes.data);
+      setTotal(dRes.total);
+      setVehicles(v.data);
+      setAllArrears(a);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOpenHistory = async (driver: Driver) => {
@@ -62,28 +59,15 @@ const Drivers: React.FC = () => {
     e.preventDefault();
     try {
       const isEdit = Boolean(editingId);
-      const driver: Driver = {
-        ...formData,
-        id: isEdit ? editingId! : crypto.randomUUID(),
-      } as Driver;
-
+      const driver: Driver = { ...formData, id: isEdit ? editingId! : crypto.randomUUID() } as Driver;
       await db.saveDriver(driver, isEdit);
-
-      if (driver.vehicleId) {
-        await db.assignDriver(driver.id, driver.vehicleId);
-      }
-
+      if (driver.vehicleId) await db.assignDriver(driver.id, driver.vehicleId);
       setEditingId(null);
       setFormData(initialForm);
       setIsModalOpen(false);
       loadData();
     } catch (err: any) {
-      if (err?.data?.error === 'PLAN_LIMIT_DRIVERS') {
-        setIsModalOpen(false);
-        setIsUpgradeModalOpen(true);
-      } else {
-        alert(err?.data?.message || 'Ocurrió un error inesperado.');
-      }
+      alert(err?.data?.message || 'Error al guardar conductor.');
     }
   };
 
@@ -94,37 +78,25 @@ const Drivers: React.FC = () => {
     }
   };
 
+  const totalPages = Math.ceil(total / limit);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Directorio de Conductores</h1>
-          <p className="text-slate-500 text-sm font-medium">{drivers.length} activos en plan {authData.accountStatus?.plan}</p>
+          <p className="text-slate-500 text-sm font-medium">{total} activos en plan {authData.accountStatus?.plan}</p>
         </div>
         <button
           onClick={() => { setEditingId(null); setFormData(initialForm); setIsModalOpen(true); }}
           disabled={reachedLimit}
           className={`px-6 py-2.5 rounded-xl font-black transition-all flex items-center gap-2 shadow-lg active:scale-95 ${
-            reachedLimit 
-              ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' 
-              : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100'
+            reachedLimit ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100'
           }`}
         >
           <i className="fa-solid fa-user-plus"></i> 
           {reachedLimit ? 'Límite Alcanzado' : 'Registrar Nuevo'}
         </button>
-      </div>
-
-      <div className="flex justify-end">
-        <select 
-          value={limit} 
-          onChange={(e) => {setLimit(Number(e.target.value)); setPage(1);}}
-          className="px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-600 text-sm shadow-sm"
-        >
-          <option value={5}>5 por página</option>
-          <option value={10}>10 por página</option>
-          <option value={25}>25 por página</option>
-        </select>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -138,7 +110,9 @@ const Drivers: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {drivers.map(d => {
+            {loading ? (
+              <tr><td colSpan={4} className="p-12 text-center text-indigo-600"><i className="fa-solid fa-circle-notch fa-spin text-2xl"></i></td></tr>
+            ) : drivers.map(d => {
               const vehicle = vehicles.find(v => v.driverId === d.id);
               const pendingArrears = allArrears.filter(a => a.driverId === d.id && a.status === 'pending');
               const totalOwed = pendingArrears.reduce((sum, a) => sum + a.amountOwed, 0);
@@ -151,13 +125,9 @@ const Drivers: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     {totalOwed > 0 ? (
-                      <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-100 uppercase tracking-widest">
-                        Deuda: ${totalOwed.toLocaleString()}
-                      </span>
+                      <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-100 uppercase tracking-widest">Deuda: ${totalOwed.toLocaleString()}</span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase tracking-widest">
-                        Al Día
-                      </span>
+                      <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase tracking-widest">Al Día</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -178,29 +148,44 @@ const Drivers: React.FC = () => {
           </tbody>
         </table>
 
-        {/* Paginación */}
-        <div className="px-6 py-4 bg-slate-50 border-t flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-400">Página {page}</span>
-          <div className="flex gap-2">
-            <button 
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-              className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all"
+        {/* Paginación Footer */}
+        <div className="px-6 py-4 bg-slate-50 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-xs font-bold text-slate-400 tracking-tight">
+            Mostrando <span className="text-slate-900">{drivers.length}</span> de <span className="text-slate-900">{total}</span> conductores
+            <span className="mx-2 opacity-50">•</span> Página {page} de {totalPages || 1}
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <select 
+              value={limit} 
+              onChange={(e) => {setLimit(Number(e.target.value)); setPage(1);}}
+              className="px-3 py-2 bg-white border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-600 shadow-sm"
             >
-              <i className="fa-solid fa-chevron-left"></i>
-            </button>
-            <button 
-              disabled={drivers.length < limit}
-              onClick={() => setPage(page + 1)}
-              className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all"
-            >
-              <i className="fa-solid fa-chevron-right"></i>
-            </button>
+              <option value={5}>5 por pág.</option>
+              <option value={10}>10 por pág.</option>
+              <option value={25}>25 por pág.</option>
+            </select>
+            
+            <div className="flex gap-1">
+              <button 
+                disabled={page === 1 || loading}
+                onClick={() => setPage(page - 1)}
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all"
+              >
+                <i className="fa-solid fa-chevron-left text-xs"></i>
+              </button>
+              <button 
+                disabled={page === totalPages || total === 0 || loading}
+                onClick={() => setPage(page + 1)}
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all"
+              >
+                <i className="fa-solid fa-chevron-right text-xs"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Modal Historial y Editar se mantienen... */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-[32px] w-full max-w-lg p-8 shadow-2xl transform animate-in fade-in zoom-in duration-300">

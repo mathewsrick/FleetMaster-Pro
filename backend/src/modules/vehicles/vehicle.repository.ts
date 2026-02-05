@@ -1,9 +1,19 @@
 import { dbHelpers } from '../../shared/db';
 
-export const findAll = async (userId: string) =>
-  dbHelpers
-    .prepare('SELECT * FROM vehicles WHERE userId = ?')
-    .all([userId]);
+export const findAll = async (userId: string, options: { page: number, limit: number }) => {
+  const { page, limit } = options;
+  const offset = (page - 1) * limit;
+
+  const data = dbHelpers
+    .prepare('SELECT * FROM vehicles WHERE userId = ? ORDER BY licensePlate ASC LIMIT ? OFFSET ?')
+    .all([userId, limit, offset]);
+
+  const total = dbHelpers
+    .prepare('SELECT COUNT(*) as count FROM vehicles WHERE userId = ?')
+    .get([userId]).count;
+
+  return { data, total };
+};
 
 export const findById = async (id: string) =>
   await dbHelpers
