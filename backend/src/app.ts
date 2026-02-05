@@ -10,6 +10,7 @@ import paymentRoutes from './modules/payments/payment.routes';
 import authRoutes from './modules/auth/auth.routes';
 import subscriptionRoutes from './modules/subscription/subscription.routes';
 import superadminRoutes from './modules/superadmin/superadmin.routes';
+import assignmentRoutes from './modules/assignment/assignment.routes';
 import { authenticate } from './middlewares/auth.middleware';
 import { requireActiveSubscription } from './middlewares/subscription.middleware';
 
@@ -29,9 +30,9 @@ app.use('/api/drivers', authenticate, requireActiveSubscription, driverRoutes);
 app.use('/api/expenses', authenticate, requireActiveSubscription, expenseRoutes);
 app.use('/api/payments', authenticate, requireActiveSubscription, paymentRoutes);
 app.use('/api/arrears', authenticate, requireActiveSubscription, arrearRoutes);
+app.use('/api/assign', authenticate, requireActiveSubscription, assignmentRoutes);
 
 if (process.env.NODE_ENV === 'production') {
-  // Added fix: Use 'as any' to avoid RequestHandler type mismatch in different Express versions or TS configurations
   app.use(express.static(path.join(__dirname, 'dist')) as any);
   app.get('*', ((req: any, res: any) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
