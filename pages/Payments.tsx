@@ -272,7 +272,7 @@ const Payments: React.FC = () => {
                        </span>
                      </div>
                    </div>
-                   
+
                    {driverPendingArrears.length > 0 && (
                      <div className="border-t border-rose-100/50 bg-white/50 max-h-32 overflow-y-auto">
                        <table className="w-full text-left">
