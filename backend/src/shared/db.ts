@@ -23,8 +23,8 @@ if (fs.existsSync(dbPath)) {
 
 const saveDb = () => {
   const data = db.export();
-  const buffer = Buffer.from(data);
-  fs.writeFileSync(dbPath, buffer);
+  // Node.js fs.writeFileSync accepts Uint8Array (returned by db.export()) directly.
+  fs.writeFileSync(dbPath, data);
 };
 
 export const dbHelpers = {

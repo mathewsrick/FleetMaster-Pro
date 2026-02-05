@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
@@ -11,6 +10,7 @@ import Login from './pages/Login';
 import Landing from './pages/Landing';
 import PricingCheckout from './pages/PricingCheckout';
 import SuperAdmin from './pages/SuperAdmin';
+import ConfirmAccount from './pages/ConfirmAccount';
 import { AuthState, AccountStatus } from './types';
 
 const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) => {
@@ -114,6 +114,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Landing />} />
         <Route path="/login" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLogin={login} />} />
+        <Route path="/confirm/:token" element={<ConfirmAccount />} />
         <Route path="/pricing-checkout" element={<PricingCheckout />} />
 
         <Route path="/dashboard" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Dashboard /></Layout> : <Navigate to="/" />} />

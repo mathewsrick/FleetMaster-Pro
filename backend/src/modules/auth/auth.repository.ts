@@ -18,6 +18,9 @@ export const findUserByConfirmationToken = async (token: string) =>
 export const findUserByResetToken = async (token: string) =>
   dbHelpers.prepare('SELECT * FROM users WHERE resetToken = ?').get([token]);
 
+export const findUserByConfirmedToken = async (token: string) =>
+  dbHelpers.prepare('SELECT * FROM users WHERE confirmationToken = ? AND isConfirmed = 1').get([token]);
+
 export const createUser = async (u: any) =>
   dbHelpers.prepare(`
     INSERT INTO users (id, username, email, password, role, isConfirmed, confirmationToken, createdAt)
@@ -25,7 +28,7 @@ export const createUser = async (u: any) =>
   `).run([u.id, u.username, u.email, u.password, u.role, u.isConfirmed, u.confirmationToken, u.createdAt]);
 
 export const confirmUser = async (id: string) =>
-  dbHelpers.prepare('UPDATE users SET isConfirmed = 1, confirmationToken = NULL WHERE id = ?').run([id]);
+  dbHelpers.prepare('UPDATE users SET isConfirmed = 1 WHERE id = ?').run([id]);
 
 export const setResetToken = async (id: string, token: string | null) =>
   dbHelpers.prepare('UPDATE users SET resetToken = ? WHERE id = ?').run([token, id]);

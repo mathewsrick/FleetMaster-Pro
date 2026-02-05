@@ -43,7 +43,14 @@ export const register = async (email: string, username: string, password: string
 
 export const confirmAccount = async (token: string) => {
   const user = await repo.findUserByConfirmationToken(token);
-  if (!user) throw new Error('Token de confirmación inválido');
+
+  if (!user) {
+    // buscar si ya fue confirmado antes
+    const alreadyConfirmed = await repo.findUserByConfirmedToken(token);
+    if (alreadyConfirmed) return;
+    throw new Error('Token de confirmación inválido');
+  }
+
   await repo.confirmUser(user.id);
 };
 

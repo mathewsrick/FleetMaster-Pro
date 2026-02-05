@@ -47,6 +47,7 @@ export const db = {
   init: () => {},
   login: (credentials: { identifier: string; password: string }) => request<any>('/auth/login', 'POST', credentials),
   register: (credentials: { email: string; username: string; password: string }) => request<any>('/auth/register', 'POST', credentials),
+  confirm: (token: string) => request<any>(`/auth/confirm/${token}`, 'GET'),
   requestReset: (identifier: string) => request('/auth/request-reset', 'POST', { identifier }),
   resetPassword: (token: string, newPass: string) => request('/auth/reset-password', 'POST', { token, newPass }),
 
