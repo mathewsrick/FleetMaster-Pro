@@ -11,7 +11,7 @@ const Payments: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const limit = 10;
+  const [limit, setLimit] = useState(10);
 
   const [dateRange, setDateRange] = useState({
     startDate: '',
@@ -32,7 +32,7 @@ const Payments: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [page, dateRange]);
+  }, [page, limit, dateRange]);
 
   const loadData = async () => {
     setLoading(true);
@@ -97,8 +97,6 @@ const Payments: React.FC = () => {
     a => a.driverId === formData.driverId && a.status === 'pending'
   );
 
-  const totalAccumulatedDebt = selectedDriverArrears.reduce((sum, a) => sum + a.amountOwed, 0);
-
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -111,23 +109,23 @@ const Payments: React.FC = () => {
         
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <div className="flex bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-            <div className="flex items-center px-3 bg-slate-50 border-r border-slate-200 text-slate-400 text-xs font-bold">DESDE</div>
+            <div className="flex items-center px-3 bg-slate-50 border-r border-slate-200 text-slate-400 text-[10px] font-black tracking-widest">DESDE</div>
             <input 
               type="date" 
               value={dateRange.startDate} 
-              onChange={e => setDateRange({ ...dateRange, startDate: e.target.value })}
+              onChange={e => {setDateRange({ ...dateRange, startDate: e.target.value }); setPage(1);}}
               className="px-3 py-2 text-xs font-bold outline-none"
             />
-            <div className="flex items-center px-3 bg-slate-50 border-x border-slate-200 text-slate-400 text-xs font-bold">HASTA</div>
+            <div className="flex items-center px-3 bg-slate-50 border-x border-slate-200 text-slate-400 text-[10px] font-black tracking-widest">HASTA</div>
             <input 
               type="date" 
               value={dateRange.endDate} 
-              onChange={e => setDateRange({ ...dateRange, endDate: e.target.value })}
+              onChange={e => {setDateRange({ ...dateRange, endDate: e.target.value }); setPage(1);}}
               className="px-3 py-2 text-xs font-bold outline-none"
             />
             {(dateRange.startDate || dateRange.endDate) && (
               <button 
-                onClick={() => setDateRange({ startDate: '', endDate: '' })}
+                onClick={() => {setDateRange({ startDate: '', endDate: '' }); setPage(1);}}
                 className="px-3 bg-rose-50 text-rose-500 border-l border-slate-200 hover:bg-rose-100 transition-colors"
               >
                 <i className="fa-solid fa-xmark"></i>
@@ -137,11 +135,23 @@ const Payments: React.FC = () => {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-100/50"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-100/50 active:scale-95 transition-all"
           >
             <i className="fa-solid fa-plus"></i> Nuevo Pago
           </button>
         </div>
+      </div>
+
+      <div className="flex justify-end mb-4">
+        <select 
+          value={limit} 
+          onChange={(e) => {setLimit(Number(e.target.value)); setPage(1);}}
+          className="px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-600 text-sm shadow-sm"
+        >
+          <option value={5}>5 por página</option>
+          <option value={10}>10 por página</option>
+          <option value={25}>25 por página</option>
+        </select>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -152,7 +162,7 @@ const Payments: React.FC = () => {
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Conductor / Vehículo</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tipo</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Monto</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Estado</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -177,7 +187,9 @@ const Payments: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 font-black text-slate-900">${p.amount.toLocaleString()}</td>
-                    <td className="px-6 py-4"><span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">EFECTIVO</span></td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">PROCESADO</span>
+                    </td>
                   </tr>
                 );
               })
@@ -187,19 +199,22 @@ const Payments: React.FC = () => {
 
         {totalPages > 1 && (
           <div className="px-6 py-4 bg-slate-50 border-t flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400">Página {page} de {totalPages} ({total} registros)</span>
+            <span className="text-xs font-bold text-slate-400 tracking-tight">
+              Página <span className="text-slate-900">{page}</span> de <span className="text-slate-900">{totalPages}</span> 
+              <span className="ml-2 opacity-50">•</span> <span className="ml-2">{total} resultados</span>
+            </span>
             <div className="flex gap-2">
               <button 
                 disabled={page === 1 || loading}
                 onClick={() => setPage(page - 1)}
-                className="w-8 h-8 rounded-lg bg-white border flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30"
+                className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all disabled:opacity-30 disabled:pointer-events-none"
               >
                 <i className="fa-solid fa-chevron-left"></i>
               </button>
               <button 
                 disabled={page === totalPages || loading}
                 onClick={() => setPage(page + 1)}
-                className="w-8 h-8 rounded-lg bg-white border flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30"
+                className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all disabled:opacity-30 disabled:pointer-events-none"
               >
                 <i className="fa-solid fa-chevron-right"></i>
               </button>
@@ -224,7 +239,6 @@ const Payments: React.FC = () => {
                   {drivers.map(d => <option key={d.id} value={d.id}>{d.firstName} {d.lastName}</option>)}
                 </select>
                </div>
-               {/* Resto del formulario simplificado para brevedad */}
                <div className="grid grid-cols-2 gap-4">
                  <input type="number" required placeholder="Monto" value={formData.amount} onChange={e => setFormData({...formData, amount: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none" />
                  <input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />

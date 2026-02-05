@@ -1,7 +1,7 @@
 import { dbHelpers } from '../../shared/db';
 
-export const findAll = async (userId: string, options: { page: number, limit: number, startDate?: string, endDate?: string }) => {
-  const { page, limit, startDate, endDate } = options;
+export const findAll = async (userId: string, options: { page: number, limit: number, startDate?: string, endDate?: string, search?: string }) => {
+  const { page, limit, startDate, endDate, search } = options;
   const offset = (page - 1) * limit;
 
   let query = 'SELECT * FROM expenses WHERE userId = ?';
@@ -12,6 +12,12 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
     query += ' AND date BETWEEN ? AND ?';
     countQuery += ' AND date BETWEEN ? AND ?';
     params.push(startDate, endDate);
+  }
+
+  if (search) {
+    query += ' AND description LIKE ?';
+    countQuery += ' AND description LIKE ?';
+    params.push(`%${search}%`);
   }
 
   query += ' ORDER BY date DESC LIMIT ? OFFSET ?';

@@ -51,7 +51,7 @@ export const db = {
   confirm: (token: string) => request<any>(`/auth/confirm/${token}`, 'GET'),
   requestReset: (identifier: string) => request('/auth/request-reset', 'POST', { identifier }),
   resetPassword: (token: string, newPass: string) => request('/auth/reset-password', 'POST', { token, newPass }),
-
+  
   getAdminStats: () => request<any>('/superadmin/stats'),
   getAdminUsers: () => request<User[]>('/superadmin/users'),
 
@@ -60,21 +60,23 @@ export const db = {
   getDrivers: (page = 1, limit = 100) => request<Driver[]>(`/drivers?page=${page}&limit=${limit}`),
   saveDriver: (d: Driver, isEdit: boolean) => isEdit ? request(`/drivers/${d.id}`, 'PUT', d) : request('/drivers', 'POST', d),
   deleteDriver: (id: string) => request(`/drivers/${id}`, 'DELETE'),
-
-  getPayments: (params: { page?: number, limit?: number, startDate?: string, endDate?: string } = {}) => {
+  
+  // Fix: Added optional search parameter to getPayments
+  getPayments: (params: { page?: number, limit?: number, startDate?: string, endDate?: string, search?: string } = {}) => {
     const q = new URLSearchParams(params as any).toString();
     return request<PaginatedResponse<Payment>>(`/payments?${q}`);
   },
-
+  
   savePayment: (p: Payment) => request('/payments', 'POST', p),
   payArrear: (arrearId: string, data: { amount: number; date: string }) => request(`/arrears/${arrearId}/pay`, 'POST', data),
   getPaymentsByDriver: (driverId: string) => request<Payment[]>(`/payments/driver/${driverId}`),
-
-  getExpenses: (params: { page?: number, limit?: number, startDate?: string, endDate?: string } = {}) => {
+  
+  // Fix: Added optional search parameter to getExpenses
+  getExpenses: (params: { page?: number, limit?: number, startDate?: string, endDate?: string, search?: string } = {}) => {
     const q = new URLSearchParams(params as any).toString();
     return request<PaginatedResponse<Expense>>(`/expenses?${q}`);
   },
-
+  
   saveExpense: (e: Expense) => request('/expenses', 'POST', e),
   getArrears: () => request<Arrear[]>('/arrears'),
   getArrearsByDriver: (driverId: string) => request<Arrear[]>(`/arrears/driver/${driverId}`),

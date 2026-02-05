@@ -12,6 +12,7 @@ export const getAll = async (userId: string, query: any, plan: string) => {
   const limit = parseInt(query.limit) || 10;
   let startDate = query.startDate;
   let endDate = query.endDate;
+  const search = query.search || '';
 
   const restriction = PLAN_RESTRICTIONS[plan] || PLAN_RESTRICTIONS.free_trial;
 
@@ -31,7 +32,7 @@ export const getAll = async (userId: string, query: any, plan: string) => {
     }
   }
 
-  const result = await repo.findAll(userId, { page, limit, startDate, endDate });
+  const result = await repo.findAll(userId, { page, limit, startDate, endDate, search });
   return { ...result, page, limit };
 };
 
