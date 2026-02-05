@@ -19,6 +19,7 @@ const Dashboard: React.FC = () => {
       try {
         setLoading(true);
 
+        // Fetching data from API which returns paginated responses for payments and expenses
         const [v, d, p, e] = await Promise.all([
           db.getVehicles(),
           db.getDrivers(),
@@ -26,11 +27,12 @@ const Dashboard: React.FC = () => {
           db.getExpenses(),
         ]);
 
+        // Fix: Extract .data from paginated response
         setData({
           vehicles: v,
           drivers: d,
-          payments: p,
-          expenses: e,
+          payments: p.data,
+          expenses: e.data,
         });
       } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -47,7 +49,7 @@ const Dashboard: React.FC = () => {
     const totalExpenses = data.expenses.reduce((sum, e) => sum + e.amount, 0);
     const activeVehicles = data.vehicles.filter(v => v.driverId).length;
     const totalPotentialCanon = data.vehicles.reduce((sum, v) => sum + (v.driverId ? v.canonValue : 0), 0);
-    
+
     return {
       totalPayments,
       totalExpenses,

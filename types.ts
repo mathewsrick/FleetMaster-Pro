@@ -6,6 +6,8 @@ export interface PlanLimits {
   maxDrivers: number;
   hasExcelReports: boolean;
   hasCustomApi: boolean;
+  maxHistoryDays: number | null; // null = ilimitado
+  maxRangeDays: number | null;    // null = ilimitado
 }
 
 export interface User {
@@ -31,6 +33,13 @@ export interface AuthState {
   user: User | null;
   token: string | null;
   accountStatus?: AccountStatus | null;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface Vehicle {

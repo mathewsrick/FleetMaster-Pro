@@ -1,12 +1,27 @@
 import { Payment } from './payment.entity';
 import { dbHelpers } from '../../shared/db';
 
-export const findAll = async (userId: string): Promise<Payment[]> =>
-  dbHelpers.prepare(`
-    SELECT * FROM payments
-    WHERE userId = ?
-    ORDER BY date DESC
-  `).all([userId]) as Payment[];
+export const findAll = async (userId: string, options: { page: number, limit: number, startDate?: string, endDate?: string }): Promise<{ data: Payment[], total: number }> => {
+  const { page, limit, startDate, endDate } = options;
+  const offset = (page - 1) * limit;
+  
+  let query = 'SELECT * FROM payments WHERE userId = ?';
+  let countQuery = 'SELECT COUNT(*) as count FROM payments WHERE userId = ?';
+  const params: any[] = [userId];
+
+  if (startDate && endDate) {
+    query += ' AND date BETWEEN ? AND ?';
+    countQuery += ' AND date BETWEEN ? AND ?';
+    params.push(startDate, endDate);
+  }
+
+  query += ' ORDER BY date DESC LIMIT ? OFFSET ?';
+  
+  const data = dbHelpers.prepare(query).all([...params, limit, offset]) as Payment[];
+  const total = dbHelpers.prepare(countQuery).get(params).count;
+
+  return { data, total };
+};
 
 export const findByDriver = async (userId: string, driverId: string) =>
   dbHelpers.prepare(`
@@ -34,7 +49,7 @@ export const create = async (p: any) =>
 
 export const remove = async (userId: string, id: string) => {
     dbHelpers.prepare(
-        'DELETE FROM arrears WHERE paymentId = ? AND userId = ?'
+        'DELETE FROM arrears WHERE originPaymentId = ? AND userId = ?'
     ).run([id, userId]);
 
     return dbHelpers.prepare(

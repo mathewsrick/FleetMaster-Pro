@@ -7,14 +7,13 @@ import { PlanLimits, PlanType } from '../../../../types';
 import * as emailService from '../../shared/email.service';
 
 const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
-  free_trial: { maxVehicles: 1, maxDrivers: 1, hasExcelReports: false, hasCustomApi: false },
-  basico: { maxVehicles: 3, maxDrivers: 5, hasExcelReports: false, hasCustomApi: false },
-  pro: { maxVehicles: 6, maxDrivers: 10, hasExcelReports: true, hasCustomApi: false },
-  enterprise: { maxVehicles: 99999, maxDrivers: 99999, hasExcelReports: true, hasCustomApi: true },
+  free_trial: { maxVehicles: 1, maxDrivers: 1, hasExcelReports: false, hasCustomApi: false, maxHistoryDays: 30, maxRangeDays: null },
+  basico: { maxVehicles: 3, maxDrivers: 5, hasExcelReports: false, hasCustomApi: false, maxHistoryDays: 30, maxRangeDays: null },
+  pro: { maxVehicles: 6, maxDrivers: 10, hasExcelReports: true, hasCustomApi: false, maxHistoryDays: null, maxRangeDays: 90 },
+  enterprise: { maxVehicles: 99999, maxDrivers: 99999, hasExcelReports: true, hasCustomApi: true, maxHistoryDays: null, maxRangeDays: null },
 };
 
 export const register = async (email: string, username: string, password: string) => {
-  // Validar si ya existe
   const existingEmail = await repo.findUserByEmail(email);
   if (existingEmail) throw new Error('El correo electrónico ya está registrado.');
 
@@ -43,24 +42,19 @@ export const register = async (email: string, username: string, password: string
 
 export const confirmAccount = async (token: string) => {
   const user = await repo.findUserByConfirmationToken(token);
-
   if (!user) {
-    // buscar si ya fue confirmado antes
     const alreadyConfirmed = await repo.findUserByConfirmedToken(token);
     if (alreadyConfirmed) return;
     throw new Error('Token de confirmación inválido');
   }
-
   await repo.confirmUser(user.id);
 };
 
 export const requestPasswordReset = async (identifier: string) => {
   const user = await repo.findUserByIdentifier(identifier);
   if (!user) throw new Error('Usuario no encontrado');
-
   const resetToken = Math.random().toString(36).substring(2, 8).toUpperCase();
   await repo.setResetToken(user.id, resetToken);
-
   await emailService.sendEmail({
     to: user.email,
     subject: "Recuperación de Contraseña - FleetMaster Pro",
@@ -117,9 +111,9 @@ export const login = async (identifier: string, password: string) => {
 
   const token = jwt.sign({ userId: user.id, accessLevel, role: user.role, plan }, ENV.JWT_SECRET, { expiresIn: '7d' });
 
-  return { 
-    token, 
+  return {
+    token,
     user: { id: user.id, username: user.username, email: user.email, role: user.role, isConfirmed: !!user.isConfirmed }, 
-    accountStatus 
+    accountStatus
   };
 };

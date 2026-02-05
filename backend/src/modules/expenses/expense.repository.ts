@@ -1,13 +1,26 @@
 import { dbHelpers } from '../../shared/db';
 
-export const findAll = async (userId: string) =>
-  dbHelpers
-    .prepare(`
-      SELECT * FROM expenses
-      WHERE userId = ?
-      ORDER BY date DESC
-    `)
-    .all([userId]);
+export const findAll = async (userId: string, options: { page: number, limit: number, startDate?: string, endDate?: string }) => {
+  const { page, limit, startDate, endDate } = options;
+  const offset = (page - 1) * limit;
+
+  let query = 'SELECT * FROM expenses WHERE userId = ?';
+  let countQuery = 'SELECT COUNT(*) as count FROM expenses WHERE userId = ?';
+  const params: any[] = [userId];
+
+  if (startDate && endDate) {
+    query += ' AND date BETWEEN ? AND ?';
+    countQuery += ' AND date BETWEEN ? AND ?';
+    params.push(startDate, endDate);
+  }
+
+  query += ' ORDER BY date DESC LIMIT ? OFFSET ?';
+
+  const data = dbHelpers.prepare(query).all([...params, limit, offset]);
+  const total = dbHelpers.prepare(countQuery).get(params).count;
+
+  return { data, total };
+};
 
 export const findById = async (id: string) =>
   dbHelpers

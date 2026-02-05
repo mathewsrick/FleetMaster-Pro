@@ -5,8 +5,46 @@ import * as authRepo from '../auth/auth.repository';
 import * as emailService from '../../shared/email.service';
 import { dbHelpers } from '../../shared/db';
 
-export const getAll = async (userId: string) =>
-    await paymentRepo.findAll(userId);
+const PLAN_RESTRICTIONS: any = {
+  free_trial: { maxHistoryDays: 30, maxRangeDays: null },
+  basico: { maxHistoryDays: 30, maxRangeDays: null },
+  pro: { maxHistoryDays: null, maxRangeDays: 90 },
+  enterprise: { maxHistoryDays: null, maxRangeDays: null }
+};
+
+export const getAll = async (userId: string, query: any, plan: string) => {
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
+  let startDate = query.startDate;
+  let endDate = query.endDate;
+
+  const restriction = PLAN_RESTRICTIONS[plan] || PLAN_RESTRICTIONS.free_trial;
+
+  // Aplicar Restricción de Historial (Free/Básico)
+  if (restriction.maxHistoryDays) {
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() - restriction.maxHistoryDays);
+    const minDateStr = minDate.toISOString().split('T')[0];
+    
+    if (!startDate || startDate < minDateStr) {
+      startDate = minDateStr;
+    }
+  }
+
+  // Aplicar Restricción de Rango (Pro)
+  if (restriction.maxRangeDays && startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
+    
+    if (diffDays > restriction.maxRangeDays) {
+      throw new Error(`Su plan Pro permite un rango máximo de ${restriction.maxRangeDays} días de búsqueda.`);
+    }
+  }
+
+  const result = await paymentRepo.findAll(userId, { page, limit, startDate, endDate });
+  return { ...result, page, limit };
+};
 
 export const getByDriver = async (userId: string, driverId: string) =>
     await paymentRepo.findByDriver(userId, driverId);
@@ -44,20 +82,18 @@ export const create = async (userId: string, data: any) => {
         }
     }
 
-    // Obtener todas las moras pendientes para el reporte en el correo
     const allPendingArrears = await arrearRepo.findByDriver(userId, payment.driverId);
     const pendingArrears = allPendingArrears.filter((a: any) => a.status === 'pending');
     const totalAccumulatedDebt = pendingArrears.reduce((sum: number, a: any) => sum + a.amountOwed, 0);
 
-    // Notificar por correo al dueño de la flota utilizando su email registrado
     const user = await authRepo.findUserById(userId);
     if (user && user.email) {
         await emailService.sendEmail({
             to: user.email,
             subject: `Recibo de Pago - $${payment.amount.toLocaleString()} - ${payment.date}`,
             html: emailService.templates.paymentConfirmation(
-                payment.amount,
-                payment.date,
+                payment.amount, 
+                payment.date, 
                 payment.type,
                 createdArrearAmount,
                 totalAccumulatedDebt,

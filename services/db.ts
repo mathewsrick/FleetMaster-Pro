@@ -1,7 +1,8 @@
-import { Vehicle, Driver, Payment, Expense, Arrear, User } from '../types';
+import { Vehicle, Driver, Payment, Expense, Arrear, User, PaginatedResponse } from '../types';
 
 const getApiBase = () => {
   try {
+    const meta = import.meta as any;
     // @ts-ignore
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
       return import.meta.env.VITE_API_URL;
@@ -51,21 +52,29 @@ export const db = {
   requestReset: (identifier: string) => request('/auth/request-reset', 'POST', { identifier }),
   resetPassword: (token: string, newPass: string) => request('/auth/reset-password', 'POST', { token, newPass }),
 
-  // SuperAdmin
   getAdminStats: () => request<any>('/superadmin/stats'),
   getAdminUsers: () => request<User[]>('/superadmin/users'),
 
-  // Flota
-  getVehicles: () => request<Vehicle[]>('/vehicles'),
+  getVehicles: (page = 1, limit = 100) => request<Vehicle[]>(`/vehicles?page=${page}&limit=${limit}`),
   saveVehicle: (v: Vehicle) => request('/vehicles', 'POST', v),
-  getDrivers: () => request<Driver[]>('/drivers'),
+  getDrivers: (page = 1, limit = 100) => request<Driver[]>(`/drivers?page=${page}&limit=${limit}`),
   saveDriver: (d: Driver, isEdit: boolean) => isEdit ? request(`/drivers/${d.id}`, 'PUT', d) : request('/drivers', 'POST', d),
   deleteDriver: (id: string) => request(`/drivers/${id}`, 'DELETE'),
-  getPayments: () => request<Payment[]>('/payments'),
+
+  getPayments: (params: { page?: number, limit?: number, startDate?: string, endDate?: string } = {}) => {
+    const q = new URLSearchParams(params as any).toString();
+    return request<PaginatedResponse<Payment>>(`/payments?${q}`);
+  },
+
   savePayment: (p: Payment) => request('/payments', 'POST', p),
   payArrear: (arrearId: string, data: { amount: number; date: string }) => request(`/arrears/${arrearId}/pay`, 'POST', data),
   getPaymentsByDriver: (driverId: string) => request<Payment[]>(`/payments/driver/${driverId}`),
-  getExpenses: () => request<Expense[]>('/expenses'),
+
+  getExpenses: (params: { page?: number, limit?: number, startDate?: string, endDate?: string } = {}) => {
+    const q = new URLSearchParams(params as any).toString();
+    return request<PaginatedResponse<Expense>>(`/expenses?${q}`);
+  },
+
   saveExpense: (e: Expense) => request('/expenses', 'POST', e),
   getArrears: () => request<Arrear[]>('/arrears'),
   getArrearsByDriver: (driverId: string) => request<Arrear[]>(`/arrears/driver/${driverId}`),

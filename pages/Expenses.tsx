@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { db, formatDateDisplay } from '../services/db';
 import { Expense, Vehicle } from '../types';
@@ -18,8 +17,10 @@ const Expenses: React.FC = () => {
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
+    // db.getExpenses returns a PaginatedResponse<Expense>
     const [e, v] = await Promise.all([db.getExpenses(), db.getVehicles()]);
-    const sortedExpenses = [...e].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // Fix: Access .data from the paginated result
+    const sortedExpenses = [...e.data].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setExpenses(sortedExpenses);
     setVehicles(v);
   };

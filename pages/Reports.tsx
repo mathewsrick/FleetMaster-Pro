@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { db, formatDateDisplay } from '../services/db';
 import { Vehicle, Driver, Payment, Expense, Arrear } from '../types';
@@ -18,6 +17,7 @@ const Reports: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      // db.getPayments and db.getExpenses return PaginatedResponse<T>
       const [v, d, p, e, a] = await Promise.all([
         db.getVehicles(),
         db.getDrivers(),
@@ -25,7 +25,8 @@ const Reports: React.FC = () => {
         db.getExpenses(),
         db.getArrears()
       ]);
-      setData({ vehicles: v, drivers: d, payments: p, expenses: e, arrears: a });
+      // Fix: Access .data from paginated results for payments and expenses
+      setData({ vehicles: v, drivers: d, payments: p.data, expenses: e.data, arrears: a });
       setLoading(false);
     };
     load();
@@ -42,7 +43,7 @@ const Reports: React.FC = () => {
     const totalIncome = data.payments.reduce((sum, p) => sum + p.amount, 0);
     const totalExpenses = data.expenses.reduce((sum, e) => sum + e.amount, 0);
     const totalDebt = data.arrears.filter(a => a.status === 'pending').reduce((sum, a) => sum + a.amountOwed, 0);
-    
+
     const vehicleBreakdown = data.vehicles.map(v => {
       const vIncome = data.payments.filter(p => p.vehicleId === v.id).reduce((sum, p) => sum + p.amount, 0);
       const vExpenses = data.expenses.filter(e => e.vehicleId === v.id).reduce((sum, e) => sum + e.amount, 0);

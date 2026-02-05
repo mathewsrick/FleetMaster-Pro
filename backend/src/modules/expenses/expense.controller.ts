@@ -1,7 +1,13 @@
 import * as service from './expense.service';
 
 export const getAll = async (req: any, res: any) => {
-  res.json(await service.getAll(req.user.userId));
+  const plan = req.user.plan || 'free_trial';
+  try {
+    const result = await service.getAll(req.user.userId, req.query, plan);
+    res.json(result);
+  } catch (error: any) {
+    res.status(403).json({ error: error.message });
+  }
 };
 
 export const save = async (req: any, res: any) => {
