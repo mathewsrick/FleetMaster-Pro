@@ -101,5 +101,4 @@ if (!adminExists) {
     INSERT INTO users (id, username, email, password, role, isConfirmed, createdAt)
     VALUES (?, ?, ?, ?, 'SUPERADMIN', 1, ?)
   `).run(['admin-uuid-001', 'rmatheus', 'admin@fleetmaster.pro', hashedPassword, new Date().toISOString()]);
-  console.log('✅ SuperAdmin rmatheus creado con email admin@fleetmaster.pro.');
 }

@@ -5,8 +5,19 @@ export const getAll = async (req: any, res: any) => {
 };
 
 export const create = async (req: any, res: any) => {
-  const driver = await service.create(req.user.userId, req.body);
-  res.status(201).json(driver);
+  try {
+    const driver = await service.create(req.user.userId, req.body);
+    res.status(201).json(driver);
+  } catch (error: any) {
+    if (error.code === 'PLAN_LIMIT_DRIVERS') {
+      return res.status(403).json(error);
+    }
+
+    res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Unexpected error',
+    });
+  }
 };
 
 export const update = async (req: any, res: any) => {

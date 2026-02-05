@@ -20,7 +20,10 @@ export const create = async (userId: string, data: any) => {
   const limit = PLAN_MAX_DRIVERS[plan] || 1;
 
   if (userDrivers.length >= limit) {
-    throw new Error(`Limit reached for plan ${plan.toUpperCase()}. Max: ${limit} drivers.`);
+    throw {
+      code: 'PLAN_LIMIT_DRIVERS',
+      message: `Limit reached for plan ${plan.toUpperCase()}. Max: ${limit} drivers.`,
+    };
   }
 
   const driver = { id: uuid(), userId, ...data };

@@ -1,4 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { db, formatDateDisplay } from '../services/db';
 import { Driver, Vehicle, Payment, Arrear } from '../types';
 
@@ -7,12 +9,18 @@ const Drivers: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [allArrears, setAllArrears] = useState<Arrear[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [historyDriver, setHistoryDriver] = useState<Driver | null>(null);
   const [driverPayments, setDriverPayments] = useState<Payment[]>([]);
   const [driverArrears, setDriverArrears] = useState<Arrear[]>([]);
   const [historyTab, setHistoryTab] = useState<'payments' | 'arrears'>('payments');
+
+  // Obtener límites del plan desde el auth
+  const authData = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
+  const limits = authData.accountStatus?.limits;
+  const reachedLimit = limits ? drivers.length >= limits.maxDrivers : false;
 
   const initialForm = {
     firstName: '',
@@ -39,7 +47,6 @@ const Drivers: React.FC = () => {
     setAllArrears(a);
   };
 
-
   const handleOpenHistory = async (driver: Driver) => {
     setHistoryDriver(driver);
     const [payments, arrears] = await Promise.all([
@@ -53,24 +60,31 @@ const Drivers: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      const isEdit = Boolean(editingId);
+      const driver: Driver = {
+        ...formData,
+        id: isEdit ? editingId! : crypto.randomUUID(),
+      } as Driver;
 
-    const isEdit = Boolean(editingId);
+      await db.saveDriver(driver, isEdit);
 
-    const driver: Driver = {
-      ...formData,
-      id: isEdit ? editingId! : crypto.randomUUID(),
-    } as Driver;
+      if (driver.vehicleId) {
+        await db.assignDriver(driver.id, driver.vehicleId);
+      }
 
-    await db.saveDriver(driver, isEdit);
-
-    if (driver.vehicleId) {
-      await db.assignDriver(driver.id, driver.vehicleId);
+      setEditingId(null);
+      setFormData(initialForm);
+      setIsModalOpen(false);
+      loadData();
+    } catch (err: any) {
+      if (err?.data?.error === 'PLAN_LIMIT_DRIVERS') {
+        setIsModalOpen(false);
+        setIsUpgradeModalOpen(true);
+      } else {
+        alert(err?.data?.message || 'Ocurrió un error inesperado.');
+      }
     }
-
-    setEditingId(null);
-    setFormData(initialForm);
-    setIsModalOpen(false);
-    loadData();
   };
 
   const handleDelete = async (id: string) => {
@@ -88,18 +102,26 @@ const Drivers: React.FC = () => {
             Directorio de Conductores
           </h1>
           <p className="text-slate-500 text-sm">
-            Gestión de cartera y asignación de activos
+            {drivers.length} / {limits?.maxDrivers || 0} usados en plan {authData.accountStatus?.plan}
           </p>
         </div>
         <button
           onClick={() => {
-            setEditingId(null);
-            setFormData(initialForm);
-            setIsModalOpen(true);
+            if (!reachedLimit || editingId) {
+              setEditingId(null);
+              setFormData(initialForm);
+              setIsModalOpen(true);
+            }
           }}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-indigo-100"
+          disabled={reachedLimit && !editingId}
+          className={`px-6 py-2 rounded-xl font-bold transition-all flex items-center gap-2 ${
+            reachedLimit && !editingId 
+              ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+              : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100'
+          }`}
         >
-          <i className="fa-solid fa-user-plus"></i> Registrar Nuevo
+          <i className="fa-solid fa-user-plus"></i> 
+          {reachedLimit && !editingId ? 'Límite de Plan Alcanzado' : 'Registrar Nuevo'}
         </button>
       </div>
 
@@ -150,7 +172,7 @@ const Drivers: React.FC = () => {
                           <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse"></span>
                           Deuda: ${totalOwed.toLocaleString()}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-bold">
+                        <span className="text-[10px] text-slate-400 font-bold ml-1">
                           {pendingArrears.length} cuotas pendientes
                         </span>
                       </div>
@@ -206,6 +228,36 @@ const Drivers: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Modal de Upgrade de Plan */}
+      {isUpgradeModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
+          <div className="bg-white rounded-[40px] w-full max-w-md p-12 text-center shadow-2xl animate-in fade-in zoom-in duration-300">
+            <div className="w-24 h-24 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-8">
+              <i className="fa-solid fa-crown"></i>
+            </div>
+            <h2 className="text-3xl font-black text-slate-900 mb-4">¡Límite Alcanzado!</h2>
+            <p className="text-slate-500 font-medium mb-10 leading-relaxed">
+              Has alcanzado el número máximo de conductores permitidos en tu plan actual (<strong>{authData.accountStatus?.plan}</strong>). 
+              Sube de nivel para seguir gestionando tu flota sin restricciones.
+            </p>
+            <div className="space-y-4">
+              <Link 
+                to="/pricing-checkout" 
+                className="block w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
+              >
+                Actualizar Plan Ahora
+              </Link>
+              <button 
+                onClick={() => setIsUpgradeModalOpen(false)}
+                className="block w-full bg-slate-50 text-slate-500 font-black py-4 rounded-2xl hover:bg-slate-100 transition-all"
+              >
+                Tal vez luego
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Historial */}
       {historyDriver && (
@@ -318,6 +370,7 @@ const Drivers: React.FC = () => {
           </div>
         </div>
       )}
+      
       {/* Modal de Crear/Editar Conductor */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">

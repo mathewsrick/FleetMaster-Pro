@@ -27,7 +27,12 @@ export const save = async (userId: string, data: any) => {
     }
   }
 
-  const vehicle = { ...data, userId };
+  const vehicle = {
+    ...data,
+    userId,
+    licensePlate: data.licensePlate?.toUpperCase()
+  };
+
   if (existing) {
     await repo.update(userId, vehicle);
   } else {
