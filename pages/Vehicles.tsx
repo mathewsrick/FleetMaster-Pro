@@ -3,6 +3,8 @@ import { db, formatDateDisplay } from '../services/db';
 import { Vehicle, Payment, Expense } from '../types';
 import Swal from 'sweetalert2';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 const Vehicles: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [total, setTotal] = useState(0);
@@ -16,7 +18,7 @@ const Vehicles: React.FC = () => {
   const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
@@ -51,7 +53,7 @@ const Vehicles: React.FC = () => {
     setIsDetailOpen(true);
     try {
       const [p, e] = await Promise.all([
-        db.getPayments({ limit: 100 }), 
+        db.getPayments({ limit: 100 }),
         db.getExpenses({ limit: 100 })
       ]);
       setVehicleHistory({
@@ -69,7 +71,7 @@ const Vehicles: React.FC = () => {
     const filesArray = Array.from(files);
     const slotsAvailable = 5 - (previews.length);
     const newFiles = filesArray.slice(0, slotsAvailable);
-    
+
     setPendingFiles(prev => [...prev, ...newFiles]);
     const newPreviews = newFiles.map(f => URL.createObjectURL(f));
     setPreviews(prev => [...prev, ...newPreviews]);
@@ -90,7 +92,7 @@ const Vehicles: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving) return;
-    
+
     setSaving(true);
     try {
       let finalPhotos = [...(formData.photos || [])];
@@ -101,7 +103,7 @@ const Vehicles: React.FC = () => {
 
       const vehicle = { ...formData, photos: finalPhotos, id: editingId || crypto.randomUUID() } as Vehicle;
       await db.saveVehicle(vehicle);
-      
+
       Swal.fire({ icon: 'success', title: 'Vehículo guardado', showConfirmButton: false, timer: 1500 });
       setIsModalOpen(false);
       loadData();
@@ -122,18 +124,18 @@ const Vehicles: React.FC = () => {
             {reachedLimit && <span className="text-[8px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-black uppercase tracking-tighter border border-amber-200 animate-pulse">Límite Alcanzado</span>}
           </div>
         </div>
-        <button 
-          onClick={() => { 
-            setEditingId(null); 
-            setFormData(initialForm); 
-            setPreviews([]); 
+        <button
+          onClick={() => {
+            setEditingId(null);
+            setFormData(initialForm);
+            setPreviews([]);
             setPendingFiles([]);
-            setIsModalOpen(true); 
-          }} 
+            setIsModalOpen(true);
+          }}
           disabled={reachedLimit || loading}
           className={`px-6 py-2.5 rounded-xl font-black shadow-lg transition-all flex items-center gap-2 active:scale-95 ${
-            reachedLimit 
-            ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' 
+            reachedLimit
+            ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
             : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100'
           }`}
         >
@@ -177,12 +179,12 @@ const Vehicles: React.FC = () => {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                        <button title="Ver Detalle Operativo" onClick={() => handleShowDetail(v)} className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all shadow-sm border border-transparent hover:border-indigo-100"><i className="fa-solid fa-eye"></i></button>
-                       <button onClick={() => { 
-                         setEditingId(v.id); 
-                         setFormData(v); 
+                       <button onClick={() => {
+                         setEditingId(v.id);
+                         setFormData(v);
                          setPreviews(v.photos || []);
                          setPendingFiles([]);
-                         setIsModalOpen(true); 
+                         setIsModalOpen(true);
                        }} className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"><i className="fa-solid fa-pen-to-square"></i></button>
                     </div>
                   </td>
@@ -210,14 +212,14 @@ const Vehicles: React.FC = () => {
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2">Fotos de Inspección</h3>
                     <div className="grid grid-cols-3 gap-3">
                        {selectedVehicle.photos && selectedVehicle.photos.length > 0 ? selectedVehicle.photos.map((src, idx) => (
-                          <div key={idx} className="aspect-square bg-slate-100 rounded-2xl overflow-hidden border border-slate-200">
-                             <img src={`/api${src}`} className="w-full h-full object-cover" />
+                         <div key={idx} className="aspect-square bg-slate-100 rounded-2xl overflow-hidden border border-slate-200">
+                            <img src={`${API_URL}${src}`} className="w-full h-full object-cover" />
                           </div>
                        )) : (
                           <div className="col-span-3 py-12 text-center text-slate-300 italic text-sm">No hay fotos registradas.</div>
                        )}
                     </div>
-                    
+
                     <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 shadow-inner">
                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estatus Legal y Seguro</h4>
                        <div className="flex justify-between text-sm"><span className="font-bold text-slate-500">Vencimiento SOAT:</span><span className={`font-black ${new Date(selectedVehicle.soatExpiration) < new Date() ? 'text-rose-500' : 'text-emerald-500'}`}>{selectedVehicle.soatExpiration || 'N/A'}</span></div>
@@ -278,7 +280,7 @@ const Vehicles: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Vencimiento SOAT</label>
+                  <label className="text-[10px) font-black text-slate-400 uppercase tracking-widest mb-1 block">Vencimiento SOAT</label>
                   <input type="date" required value={formData.soatExpiration || ''} onChange={e => setFormData({...formData, soatExpiration: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />
                 </div>
                 <div>
@@ -307,7 +309,7 @@ const Vehicles: React.FC = () => {
                 <div className="flex flex-wrap gap-3">
                   {previews.map((url, idx) => (
                     <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden group border border-slate-200">
-                      <img src={url.startsWith('blob:') ? url : `/api${url}`} className="w-full h-full object-cover" />
+                      <img src={url.startsWith('blob:') ? url : `${API_URL}${url}`} className="w-full h-full object-cover" />
                       <button type="button" onClick={() => removePreview(idx)} className="absolute top-1 right-1 bg-rose-500 text-white w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><i className="fa-solid fa-times text-[10px]"></i></button>
                     </div>
                   ))}

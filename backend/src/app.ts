@@ -24,31 +24,28 @@ const app = express();
 app.use(cors() as any);
 app.use(express.json() as any);
 
-// Ensure upload directories exist
-const uploadBase = path.join(__dirname, '../public/uploads');
-['vehicles', 'drivers'].forEach(sub => {
-  const p = path.join(uploadBase, sub);
+const publicPath = path.join(process.cwd(), 'backend/public');
+
+// asegurar uploads
+['uploads/vehicles', 'uploads/drivers'].forEach(dir => {
+  const p = path.join(publicPath, dir);
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 });
 
-// Serve static uploads
-app.use('/uploads', express.static(uploadBase) as any);
-app.use(
-  '/public',
-  express.static(path.join(process.cwd(), 'src/public'))
-);
+// Exponer la carpeta public bajo /api/public para compatibilidad con el frontend
+// Fix: Use 'as any' to bypass type definition conflicts in Express middleware/router overloads
+app.use('/api/public', express.static(publicPath) as any);
 
-
-app.use('/api/auth', authRoutes);
-app.use('/api/uploads', authenticate, uploadRoutes);
-app.use('/api/subscription', authenticate, subscriptionRoutes);
-app.use('/api/superadmin', superadminRoutes);
-app.use('/api/vehicles', authenticate, requireActiveSubscription, vehicleRoutes);
-app.use('/api/drivers', authenticate, requireActiveSubscription, driverRoutes);
-app.use('/api/expenses', authenticate, requireActiveSubscription, expenseRoutes);
-app.use('/api/payments', authenticate, requireActiveSubscription, paymentRoutes);
-app.use('/api/arrears', authenticate, requireActiveSubscription, arrearRoutes);
-app.use('/api/assign', authenticate, requireActiveSubscription, assignmentRoutes);
+app.use('/api/auth', authRoutes as any);
+app.use('/api/uploads', authenticate as any, uploadRoutes as any);
+app.use('/api/subscription', authenticate as any, subscriptionRoutes as any);
+app.use('/api/superadmin', superadminRoutes as any);
+app.use('/api/vehicles', authenticate as any, requireActiveSubscription as any, vehicleRoutes as any);
+app.use('/api/drivers', authenticate as any, requireActiveSubscription as any, driverRoutes as any);
+app.use('/api/expenses', authenticate as any, requireActiveSubscription as any, expenseRoutes as any);
+app.use('/api/payments', authenticate as any, requireActiveSubscription as any, paymentRoutes as any);
+app.use('/api/arrears', authenticate as any, requireActiveSubscription as any, arrearRoutes as any);
+app.use('/api/assign', authenticate as any, requireActiveSubscription as any, assignmentRoutes as any);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'dist')) as any);

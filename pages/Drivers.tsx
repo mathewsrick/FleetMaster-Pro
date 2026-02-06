@@ -3,6 +3,8 @@ import { db, formatDateDisplay } from '../services/db';
 import { Driver, Vehicle, Payment, Arrear } from '../types';
 import Swal from 'sweetalert2';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 const Drivers: React.FC = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [total, setTotal] = useState(0);
@@ -11,7 +13,7 @@ const Drivers: React.FC = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [driverHistory, setDriverHistory] = useState<{ payments: Payment[], arrears: Arrear[] }>({ payments: [], arrears: [] });
-  
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -69,7 +71,7 @@ const Drivers: React.FC = () => {
     try {
       let licenseUrl = formData.licensePhoto || '';
       let idUrl = formData.idPhoto || '';
-      
+
       if (pendingLicense) {
         const { url } = await db.uploadDriverDocument(pendingLicense);
         licenseUrl = url;
@@ -80,19 +82,19 @@ const Drivers: React.FC = () => {
       }
 
       const isEdit = Boolean(editingId);
-      const driver: Driver = { 
-        ...formData, 
-        licensePhoto: licenseUrl, 
-        idPhoto: idUrl, 
-        id: isEdit ? editingId! : crypto.randomUUID() 
+      const driver: Driver = {
+        ...formData,
+        licensePhoto: licenseUrl,
+        idPhoto: idUrl,
+        id: isEdit ? editingId! : crypto.randomUUID()
       } as Driver;
 
       await db.saveDriver(driver, isEdit);
-      
+
       if (formData.vehicleId) {
         await db.assignDriver(driver.id, formData.vehicleId);
       }
-      
+
       Swal.fire({ icon: 'success', title: 'Completado', text: 'Conductor guardado con éxito.', timer: 1500, showConfirmButton: false });
 
       setEditingId(null);
@@ -138,18 +140,18 @@ const Drivers: React.FC = () => {
           </div>
         </div>
         <button
-          onClick={() => { 
-            setEditingId(null); 
-            setFormData(initialForm); 
+          onClick={() => {
+            setEditingId(null);
+            setFormData(initialForm);
             setPreviews({ license: '', idCard: '' });
             setPendingLicense(null);
             setPendingIdCard(null);
-            setIsModalOpen(true); 
+            setIsModalOpen(true);
           }}
           disabled={reachedLimit || loading}
           className={`px-6 py-2.5 rounded-xl font-black shadow-lg transition-all flex items-center gap-2 active:scale-95 ${
-            reachedLimit 
-            ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' 
+            reachedLimit
+            ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
             : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100'
           }`}
         >
@@ -246,7 +248,11 @@ const Drivers: React.FC = () => {
                          <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-tighter">Licencia de Conducción</p>
                          <div className="aspect-[3/2] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner group">
                             {selectedDriver.licensePhoto ? (
-                               <img src={`/api${selectedDriver.licensePhoto}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in" onClick={() => window.open(`/api${selectedDriver.licensePhoto}`, '_blank')} />
+                                <img
+                                  src={`${API_URL}${selectedDriver.licensePhoto}`}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
+                                  onClick={() => window.open(`${API_URL}${selectedDriver.licensePhoto}`, '_blank')}
+                                />
                             ) : (
                                <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
                                   <i className="fa-solid fa-id-card text-3xl"></i>
@@ -259,7 +265,11 @@ const Drivers: React.FC = () => {
                          <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-tighter">Documento Identidad (Cédula)</p>
                          <div className="aspect-[3/2] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner group">
                             {selectedDriver.idPhoto ? (
-                               <img src={`/api${selectedDriver.idPhoto}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in" onClick={() => window.open(`/api${selectedDriver.idPhoto}`, '_blank')} />
+                              <img
+                                src={`${API_URL}${selectedDriver.idPhoto}`}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
+                                onClick={() => window.open(`${API_URL}${selectedDriver.idPhoto}`, '_blank')}
+                              />
                             ) : (
                                <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
                                   <i className="fa-solid fa-address-card text-3xl"></i>
@@ -343,14 +353,20 @@ const Drivers: React.FC = () => {
                    </select>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Licencia de Conducción</label>
                   <div className="flex flex-col gap-3">
                     {previews.license && (
                       <div className="w-full aspect-[2/1] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-                        <img src={previews.license.startsWith('blob:') ? previews.license : `/api${previews.license}`} className="w-full h-full object-cover" />
+                        <img
+                          src={previews.license.startsWith('blob:')
+                            ? previews.license
+                            : `${API_URL}${previews.license}`
+                          }
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                     )}
                     <label className="w-full p-4 bg-slate-50 border-2 border-dashed rounded-2xl text-center text-[10px] font-black text-slate-400 cursor-pointer hover:border-indigo-600 hover:text-indigo-600 uppercase transition-all shadow-inner">
@@ -367,7 +383,13 @@ const Drivers: React.FC = () => {
                   <div className="flex flex-col gap-3">
                     {previews.idCard && (
                       <div className="w-full aspect-[2/1] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-                        <img src={previews.idCard.startsWith('blob:') ? previews.idCard : `/api${previews.idCard}`} className="w-full h-full object-cover" />
+                        <img
+                          src={previews.idCard.startsWith('blob:')
+                            ? previews.idCard
+                            : `${API_URL}${previews.idCard}`
+                          }
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                     )}
                     <label className="w-full p-4 bg-slate-50 border-2 border-dashed rounded-2xl text-center text-[10px] font-black text-slate-400 cursor-pointer hover:border-indigo-600 hover:text-indigo-600 uppercase transition-all shadow-inner">

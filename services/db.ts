@@ -5,7 +5,7 @@ const getApiBase = () => {
     const meta = import.meta as any;
     // @ts-ignore
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
-      return import.meta.env.VITE_API_URL;
+      return import.meta.env.VITE_API_URL + '/api';
     }
   } catch (e) {}
   return '/api';
