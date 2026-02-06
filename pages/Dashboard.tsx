@@ -3,6 +3,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { db } from '../services/db';
 import { Vehicle, Driver, Payment, Expense } from '../types';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 const Dashboard: React.FC = () => {
   const [data, setData] = useState({
     vehicles: [] as Vehicle[],
@@ -66,7 +68,9 @@ const Dashboard: React.FC = () => {
     const today = new Date();
     const soat = new Date(selectedVehicle.soatExpiration);
     const daysToSoat = Math.ceil((soat.getTime() - today.getTime()) / (1000 * 3600 * 24));
-    return { totalRev, totalExp, net: totalRev - totalExp, daysToSoat, paymentCount: vPayments.length };
+    const tecno = new Date(selectedVehicle.techExpiration);
+    const daysToTecno = Math.ceil((tecno.getTime() - today.getTime()) / (1000 * 3600 * 24));
+    return { totalRev, totalExp, net: totalRev - totalExp, daysToSoat, daysToTecno, paymentCount: vPayments.length };
   }, [selectedVehicle, data]);
 
   const chartData = useMemo(() => {
@@ -147,13 +151,53 @@ const Dashboard: React.FC = () => {
         {selectedVehicle && vehicleStats ? (
           <div className="p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-1 space-y-4">
-              <div className="aspect-video bg-slate-100 rounded-xl flex items-center justify-center text-4xl text-slate-300 border border-slate-200"><i className="fa-solid fa-car"></i></div>
+              <div className="aspect-video bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+                {selectedVehicle.photos && selectedVehicle.photos.length > 0 ? (
+                  <img
+                    src={`${API_URL}${selectedVehicle.photos[0]}`}
+                    className="w-full h-full object-cover cursor-pointer"
+                    onClick={() => window.open(`${API_URL}${selectedVehicle.photos[0]}`, '_blank')}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-4xl text-slate-300">
+                  <i className="fa-solid fa-car"></i>
+                  </div>
+                )}
+              </div>
               <div><h3 className="text-xl font-bold text-slate-900">{selectedVehicle.model}</h3><p className="text-sm font-mono text-indigo-600 font-bold tracking-widest">{selectedVehicle.licensePlate}</p></div>
             </div>
             <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100"><p className="text-xs font-bold text-slate-400 uppercase mb-3">Rendimiento Bruto</p><p className="text-2xl font-bold text-slate-900">${vehicleStats.totalRev.toLocaleString()}</p></div>
               <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100"><p className="text-xs font-bold text-slate-400 uppercase mb-3">Balance Neto</p><p className={`text-2xl font-bold ${vehicleStats.net >= 0 ? 'text-indigo-600' : 'text-rose-600'}`}>${vehicleStats.net.toLocaleString()}</p></div>
-              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100"><p className="text-xs font-bold text-slate-400 uppercase mb-3">Estado Legal</p><div className="flex items-center gap-2 mb-2"><div className={`w-3 h-3 rounded-full ${vehicleStats.daysToSoat < 10 ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`}></div><p className="text-sm font-bold">SOAT Vigente</p></div><p className="text-xs text-slate-500">Exp: {selectedVehicle.soatExpiration}</p></div>
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase mb-3">Estado Legal</p>
+
+                {/* SOAT */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${
+                      vehicleStats.daysToSoat < 10 ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'
+                    }`} />
+                    <p className="text-sm font-bold">SOAT</p>
+                  </div>
+                  <span className="text-xs font-mono text-slate-600">
+                    {selectedVehicle.soatExpiration}
+                  </span>
+                </div>
+
+                {/* TECNO */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${
+                      vehicleStats.daysToTecno < 10 ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'
+                    }`} />
+                    <p className="text-sm font-bold">TECNO</p>
+                  </div>
+                  <span className="text-xs font-mono text-slate-600">
+                    {selectedVehicle.techExpiration}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
