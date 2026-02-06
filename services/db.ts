@@ -17,7 +17,7 @@ export const formatDateDisplay = (dateStr: string) => {
   if (!dateStr) return 'N/A';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
-  return d.toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'2-digit' });
+  return d.toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
 };
 
 const getAuth = () => {
@@ -54,7 +54,7 @@ export const db = {
   requestReset: (identifier: string) => request('/auth/request-reset', 'POST', { identifier }),
   resetPassword: (token: string, newPass: string) => request('/auth/reset-password', 'POST', { token, newPass }),
   
-  // Métodos de carga de archivos
+  // File upload methods
   uploadVehiclePhotos: (files: File[]) => {
     const formData = new FormData();
     files.forEach(file => formData.append('photos', file));

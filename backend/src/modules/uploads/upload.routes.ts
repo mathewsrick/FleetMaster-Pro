@@ -3,27 +3,28 @@ import { upload } from '../../shared/multer.config';
 
 const router = Router();
 
-// Carga múltiple para vehículos
-// Fix: Use 'as any' on multer middleware to bypass TypeScript type compatibility issues between different versions of Express/Multer types
+// Multi-upload for vehicle photos
 router.post('/vehicles', upload.array('photos', 5) as any, (req: any, res: any) => {
   try {
-    const files = req.files as Express.Multer.File[];
+    // Use any[] to avoid "Cannot find namespace 'Express'" if Multer types are not globally registered
+    const files = req.files as any[];
+    if (!files) return res.status(400).json({ error: 'No files uploaded' });
+    
     const urls = files.map(file => `/uploads/vehicles/${file.filename}`);
     res.json({ urls });
   } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Carga única para documentos de conductores
-// Fix: Use 'as any' on multer middleware to bypass TypeScript type compatibility issues between different versions of Express/Multer types
+// Single upload for driver document
 router.post('/drivers', upload.single('document') as any, (req: any, res: any) => {
   try {
-    if (!req.file) throw new Error('No se recibió ningún archivo');
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const url = `/uploads/drivers/${req.file.filename}`;
     res.json({ url });
   } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 

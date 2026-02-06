@@ -22,31 +22,27 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 app.use(cors() as any);
-// Aumentar límite de JSON para otros metadatos, aunque las fotos ya no irán aquí
-app.use(express.json({ limit: '10mb' }) as any);
+app.use(express.json() as any);
 
-// Crear carpetas de carga si no existen
-const uploadDir = path.join(__dirname, '../public/uploads/vehicles');
-const driverDir = path.join(__dirname, '../public/uploads/drivers');
-fs.mkdirSync(uploadDir, { recursive: true });
-fs.mkdirSync(driverDir, { recursive: true });
+// Ensure upload directories exist
+const uploadBase = path.join(__dirname, '../public/uploads');
+['vehicles', 'drivers'].forEach(sub => {
+  const p = path.join(uploadBase, sub);
+  if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
+});
 
-app.use(
-  '/uploads',
-  express.static(
-    path.join(process.cwd(), 'backend', 'public', 'uploads')
-  )
-);
-
+// Serve static uploads
+app.use('/uploads', express.static(uploadBase) as any);
 app.use(
   '/public',
   express.static(path.join(process.cwd(), 'src/public'))
 );
 
+
 app.use('/api/auth', authRoutes);
+app.use('/api/uploads', authenticate, uploadRoutes);
 app.use('/api/subscription', authenticate, subscriptionRoutes);
 app.use('/api/superadmin', superadminRoutes);
-app.use('/api/uploads', authenticate, uploadRoutes); // Nueva ruta de carga
 app.use('/api/vehicles', authenticate, requireActiveSubscription, vehicleRoutes);
 app.use('/api/drivers', authenticate, requireActiveSubscription, driverRoutes);
 app.use('/api/expenses', authenticate, requireActiveSubscription, expenseRoutes);

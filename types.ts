@@ -6,8 +6,8 @@ export interface PlanLimits {
   maxDrivers: number;
   hasExcelReports: boolean;
   hasCustomApi: boolean;
-  maxHistoryDays: number | null; // null = ilimitado
-  maxRangeDays: number | null;    // null = ilimitado
+  maxHistoryDays: number | null;
+  maxRangeDays: number | null;
 }
 
 export interface User {
@@ -56,7 +56,8 @@ export interface Vehicle {
   techExpiration: string;
   canonValue: number;
   driverId: string | null;
-  photos?: string[]; // Array de base64 strings
+  driverName?: string; // Para visualización en listas
+  photos?: string[];
 }
 
 export interface Driver {
@@ -67,7 +68,10 @@ export interface Driver {
   phone: string;
   idNumber: string;
   vehicleId: string | null;
-  documentPhoto?: string; // base64 string
+  vehiclePlate?: string; // Para visualización
+  licensePhoto?: string; 
+  idPhoto?: string;
+  totalDebt?: number; // Calculado en backend
 }
 
 export interface Payment {

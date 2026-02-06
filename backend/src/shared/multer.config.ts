@@ -1,49 +1,31 @@
+
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import { v4 as uuid } from 'uuid';
+import { fileURLToPath } from 'url';
 
-const getUploadPath = (folder: 'drivers' | 'vehicles') => {
-  const uploadPath = path.join(
-    process.cwd(),
-    'backend',
-    'public',
-    'uploads',
-    folder
-  );
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-  // crear carpeta si no existe
-  if (!fs.existsSync(uploadPath)) {
-    fs.mkdirSync(uploadPath, { recursive: true });
-  }
-
-  return uploadPath;
-};
-
+// Storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const folder =
-      file.fieldname === 'documents' ? 'drivers' : 'vehicles';
-
-    const uploadPath = getUploadPath(folder);
-    cb(null, uploadPath);
+    const subfolder = file.fieldname === 'photos' ? 'vehicles' : 'drivers';
+    cb(null, path.join(__dirname, '../../public/uploads', subfolder));
   },
-
-  filename: (_req, file, cb) => {
+  filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     cb(null, `${uuid()}${ext}`);
   }
 });
 
-const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-
-  if (allowedTypes.includes(file.mimetype)) {
+// File validation
+const fileFilter = (req: any, file: any, cb: any) => {
+  const allowed = ['image/jpeg', 'image/jpg', 'image/png'];
+  if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(
-      new Error('Formato de archivo no permitido. Solo JPG, JPEG y PNG.')
-    );
+    cb(new Error('Formato no válido. Solo JPG y PNG.'), false);
   }
 };
 
@@ -51,6 +33,6 @@ export const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 8 * 1024 * 1024 // 8MB
+    fileSize: 8 * 1024 * 1024 // 8MB limit
   }
 });
