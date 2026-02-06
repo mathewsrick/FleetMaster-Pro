@@ -53,7 +53,7 @@ export const templates = {
     <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
       ${LOGO_HTML}
       <h2 style="color: #1e293b; text-align: center; font-size: 24px; margin-bottom: 24px;">¡Bienvenido a bordo, ${username}!</h2>
-      <p style="font-size: 16px; line-height: 1.6;">Gracias por confiar en <strong>FleetMaster Pro</strong> para la gestión de tu flota.</p>
+      <p style="font-size: 16px; line-height: 1.6; text-align: center;">Gracias por confiar en <strong>FleetMaster Pro</strong> para la gestión de tu flota.</p>
       <div style="text-align: center; margin: 40px 0;">
         <a href="${ENV.APP_URL}/#/confirm/${token}" style="background-color: #4f46e5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);">Confirmar mi cuenta</a>
       </div>

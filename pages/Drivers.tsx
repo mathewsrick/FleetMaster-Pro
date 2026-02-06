@@ -39,7 +39,6 @@ const Drivers: React.FC = () => {
         db.getDrivers(page, limit),
         db.getVehicles(1, 1000)
       ]);
-      // Los drivers vienen del backend ya con vehiclePlate gracias al JOIN
       setDrivers(dRes.data);
       setTotal(dRes.total);
       setVehicles(v.data);
@@ -135,7 +134,7 @@ const Drivers: React.FC = () => {
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Conductores</h1>
           <div className="flex items-center gap-2 mt-1">
             <p className="text-slate-500 text-sm font-medium uppercase text-[10px] tracking-widest">{total} / {limits?.maxDrivers} registrados</p>
-            {reachedLimit && <span className="text-[8px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-black uppercase tracking-tighter shadow-sm border border-amber-200 animate-pulse">Límite Alcanzado</span>}
+            {reachedLimit && <span className="text-[8px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-black uppercase tracking-tighter border border-amber-200 animate-pulse">Límite Alcanzado</span>}
           </div>
         </div>
         <button
@@ -183,10 +182,10 @@ const Drivers: React.FC = () => {
                     {d.vehiclePlate ? (
                       <div className="flex items-center gap-2">
                          <i className="fa-solid fa-car-side text-indigo-300"></i>
-                         <span className="text-[10px] font-black bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase tracking-widest shadow-sm">{d.vehiclePlate}</span>
+                         <span className="text-[10px] font-black bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase tracking-widest shadow-sm font-mono">{d.vehiclePlate}</span>
                       </div>
                     ) : (
-                      <span className="text-[10px] font-bold text-slate-300 italic uppercase bg-slate-50 px-2 py-1 rounded-lg">Sin Vehículo</span>
+                      <span className="text-[10px] font-bold text-slate-300 italic uppercase bg-slate-50 px-2 py-1 rounded-lg tracking-wider">Sin Vehículo</span>
                     )}
                   </td>
                   <td className="px-6 py-4">

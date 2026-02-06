@@ -39,7 +39,6 @@ const Vehicles: React.FC = () => {
     setLoading(true);
     try {
       const vRes = await db.getVehicles(page, limit);
-      // vRes.data ya contiene driverName gracias al JOIN en el repositorio
       setVehicles(vRes.data);
       setTotal(vRes.total);
     } finally {
@@ -120,7 +119,7 @@ const Vehicles: React.FC = () => {
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Vehículos</h1>
           <div className="flex items-center gap-2 mt-1">
             <p className="text-slate-500 text-sm font-medium uppercase text-[10px] tracking-widest">{total} / {limits?.maxVehicles} activos</p>
-            {reachedLimit && <span className="text-[8px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-black uppercase tracking-tighter shadow-sm border border-amber-200 animate-pulse">Límite Alcanzado</span>}
+            {reachedLimit && <span className="text-[8px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-black uppercase tracking-tighter border border-amber-200 animate-pulse">Límite Alcanzado</span>}
           </div>
         </div>
         <button 
@@ -169,10 +168,10 @@ const Vehicles: React.FC = () => {
                     {v.driverName ? (
                        <div className="flex items-center gap-2">
                           <i className="fa-solid fa-circle-user text-indigo-400"></i>
-                          <span className="text-sm font-bold text-slate-600">{v.driverName}</span>
+                          <span className="text-sm font-bold text-slate-700">{v.driverName}</span>
                        </div>
                     ) : (
-                       <span className="text-[10px] font-bold text-slate-300 italic uppercase bg-slate-50 px-2 py-1 rounded-lg">Disponible</span>
+                       <span className="text-[10px] font-bold text-slate-300 italic uppercase bg-slate-50 px-2 py-1 rounded-lg tracking-wider">Disponible</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
