@@ -13,6 +13,7 @@ import subscriptionRoutes from './modules/subscription/subscription.routes';
 import superadminRoutes from './modules/superadmin/superadmin.routes';
 import assignmentRoutes from './modules/assignment/assignment.routes';
 import uploadRoutes from './modules/uploads/upload.routes';
+import contactRoutes from './modules/contact/contact.routes';
 import { authenticate } from './middlewares/auth.middleware';
 import { requireActiveSubscription } from './middlewares/subscription.middleware';
 
@@ -33,10 +34,10 @@ const publicPath = path.join(process.cwd(), 'backend/public');
 });
 
 // Exponer la carpeta public bajo /api/public para compatibilidad con el frontend
-// Fix: Use 'as any' to bypass type definition conflicts in Express middleware/router overloads
 app.use('/api/public', express.static(publicPath) as any);
 
 app.use('/api/auth', authRoutes as any);
+app.use('/api/contact', contactRoutes as any);
 app.use('/api/uploads', authenticate as any, uploadRoutes as any);
 app.use('/api/subscription', authenticate as any, subscriptionRoutes as any);
 app.use('/api/superadmin', superadminRoutes as any);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { db } from '../services/db';
 
 const Landing: React.FC = () => {
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -7,17 +8,24 @@ const Landing: React.FC = () => {
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulación de envío
-    setTimeout(() => {
+    setError('');
+    
+    try {
+      await db.submitContactForm(contactForm);
       setIsSubmitting(false);
       setSubmitted(true);
       setContactForm({ name: '', email: '', message: '' });
-      setTimeout(() => setSubmitted(false), 5000);
-    }, 1500);
+      setTimeout(() => setSubmitted(false), 8000);
+    } catch (err: any) {
+      console.error(err);
+      setIsSubmitting(false);
+      setError('Ocurrió un error al enviar tu mensaje. Por favor intenta de nuevo.');
+    }
   };
 
   return (
@@ -184,7 +192,7 @@ const Landing: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Email de Soporte</p>
-                  <p className="font-bold">soporte@fleetmaster.hub</p>
+                  <p className="font-bold">contacto@fleetmasterhub.com</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -193,7 +201,7 @@ const Landing: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Oficina Central</p>
-                  <p className="font-bold">Bogotá, Colombia</p>
+                  <p className="font-bold">Medellín, Colombia</p>
                 </div>
               </div>
             </div>
@@ -211,6 +219,11 @@ const Landing: React.FC = () => {
               </div>
             )}
             <form onSubmit={handleContactSubmit} className="space-y-6">
+              {error && (
+                <div className="p-4 bg-rose-50 text-rose-600 text-xs font-bold rounded-xl border border-rose-100">
+                  <i className="fa-solid fa-circle-exclamation mr-2"></i> {error}
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Tu Nombre</label>

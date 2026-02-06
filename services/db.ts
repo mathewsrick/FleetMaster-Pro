@@ -2,7 +2,6 @@ import { Vehicle, Driver, Payment, Expense, Arrear, User, PaginatedResponse } fr
 
 const getApiBase = () => {
   try {
-    const meta = import.meta as any;
     // @ts-ignore
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
       return import.meta.env.VITE_API_URL + '/api';
@@ -54,6 +53,9 @@ export const db = {
   requestReset: (identifier: string) => request('/auth/request-reset', 'POST', { identifier }),
   resetPassword: (token: string, newPass: string) => request('/auth/reset-password', 'POST', { token, newPass }),
   
+  // Public contact
+  submitContactForm: (data: { name: string; email: string; message: string }) => request('/contact', 'POST', data),
+
   // File upload methods
   uploadVehiclePhotos: (files: File[]) => {
     const formData = new FormData();

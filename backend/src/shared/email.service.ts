@@ -125,5 +125,19 @@ export const templates = {
         <p style="color: #1e40af; font-size: 12px; margin: 0; font-weight: bold;">Este reporte automático es parte de su plan Enterprise.</p>
       </div>
     </div>
+  `,
+  contactNotification: (name: string, email: string, message: string) => `
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+      ${LOGO_HTML}
+      <h2 style="color: #1e293b; text-align: center; font-size: 24px; margin-bottom: 24px;">Nuevo Mensaje de Contacto</h2>
+      <p style="font-size: 16px; line-height: 1.6;">Has recibido un nuevo mensaje desde el landing page de <strong>FleetMaster Hub</strong>.</p>
+      <div style="background: #f8fafc; padding: 24px; border-radius: 16px; margin: 32px 0; border: 1px solid #e2e8f0;">
+        <p><strong>Nombre:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Mensaje:</strong></p>
+        <p style="font-style: italic; color: #475569;">"${message}"</p>
+      </div>
+      <p style="font-size: 12px; color: #94a3b8; text-align: center;">Este es un mensaje automático generado por FleetMaster Hub.</p>
+    </div>
   `
 };
