@@ -10,11 +10,14 @@ const Landing: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
+  const WHATSAPP_NUMBER = '573046387118';
+  const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola,%20estoy%20interesado%20en%20FleetMaster%20Hub`;
+
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
-    
+
     try {
       await db.submitContactForm(contactForm);
       setIsSubmitting(false);
@@ -30,6 +33,20 @@ const Landing: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-600 scroll-smooth">
+      {/* Floating WhatsApp Button */}
+      <a
+        href={WHATSAPP_LINK}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-8 right-8 z-[60] bg-emerald-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-2xl hover:bg-emerald-600 hover:scale-110 transition-all active:scale-95 group animate-bounce"
+        title="Chatea con nosotros"
+      >
+        <i className="fa-brands fa-whatsapp"></i>
+        <span className="absolute right-full mr-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+          ¿Dudas? Chatea aquí
+        </span>
+      </a>
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -58,7 +75,7 @@ const Landing: React.FC = () => {
            <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-100 rounded-full blur-[100px]"></div>
            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-100 rounded-full blur-[100px]"></div>
         </div>
-        
+
         <div className="max-w-5xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-4 py-1.5 rounded-full text-indigo-600 text-[10px] font-black uppercase tracking-[0.2em] mb-8 animate-bounce">
             <i className="fa-solid fa-sparkles"></i> Gestión de Flotas 2.0
@@ -88,34 +105,34 @@ const Landing: React.FC = () => {
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-4">Potencia tu Negocio</h2>
             <p className="text-slate-500 font-medium">Diseñado específicamente para las necesidades de los propietarios de vehículos.</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard 
-              icon="fa-money-bill-transfer" 
-              title="Moras Automatizadas" 
+            <FeatureCard
+              icon="fa-money-bill-transfer"
+              title="Moras Automatizadas"
               desc="El sistema detecta pagos incompletos y genera saldos de mora automáticamente vinculados a cada conductor."
             />
-            <FeatureCard 
-              icon="fa-camera-retro" 
-              title="Inspección Fotográfica" 
+            <FeatureCard
+              icon="fa-camera-retro"
+              title="Inspección Fotográfica"
               desc="Guarda hasta 5 fotos de alta resolución por vehículo para un control estricto de daños y estado de entrega."
             />
-            <FeatureCard 
-              icon="fa-id-card" 
-              title="Documentación Digital" 
+            <FeatureCard
+              icon="fa-id-card"
+              title="Documentación Digital"
               desc="Almacena licencias y cédulas de conductores. Recibe alertas visuales cuando el SOAT o la Tecnomecánica van a vencer."
             />
-            <FeatureCard 
-              icon="fa-chart-mixed" 
-              title="Rendimiento por Vehículo" 
+            <FeatureCard
+              icon="fa-chart-mixed"
+              title="Rendimiento por Vehículo"
               desc="Explora ingresos y gastos de forma individual para saber qué vehículo es realmente rentable."
             />
-            <FeatureCard 
-              icon="fa-file-excel" 
-              title="Reportes Profesionales" 
+            <FeatureCard
+              icon="fa-file-excel"
+              title="Reportes Profesionales"
               desc="Exporta toda tu operación a Excel en segundos para auditorías o contabilidad externa (Planes Pro/Ent)."
             />
-            <FeatureCard 
+            <FeatureCard
               icon="fa-envelope-open-text" 
               title="Recibos Automáticos" 
               desc="Envía comprobantes de pago detallados por correo electrónico con el saldo de mora actualizado al instante."
@@ -192,7 +209,7 @@ const Landing: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Email de Soporte</p>
-                  <p className="font-bold">contacto@fleetmasterhub.com</p>
+                  <p className="font-bold">soporte@fleetmaster.pro</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -201,7 +218,16 @@ const Landing: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Oficina Central</p>
-                  <p className="font-bold">Medellín, Colombia</p>
+                  <p className="font-bold">Bogotá, Colombia</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 group cursor-pointer" onClick={() => window.open(WHATSAPP_LINK, '_blank')}>
+                <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                  <i className="fa-brands fa-whatsapp"></i>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">WhatsApp Empresa</p>
+                  <p className="font-bold text-emerald-400 group-hover:underline">+57 304 638 7118</p>
                 </div>
               </div>
             </div>
