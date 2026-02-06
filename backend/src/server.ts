@@ -9,7 +9,7 @@ console.log('SMTP CHECK →', {
 const port = process.env.PORT || 3001;
 
 app.listen(port, () => {
-  console.log(`🚀 FLEETMASTER PRO ONLINE - Puerto: ${port}`);
+  console.log(`🚀 FLEETMASTER HUB ONLINE - Puerto: ${port}`);
 
   // Generar reportes semanales cada Lunes a las 8:00 AM
   // Usar node-cron en producción

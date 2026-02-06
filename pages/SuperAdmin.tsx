@@ -31,7 +31,7 @@ const SuperAdmin: React.FC = () => {
       <header className="flex justify-between items-center bg-slate-900 p-8 rounded-[32px] text-white shadow-2xl">
         <div>
           <h1 className="text-3xl font-black">Panel SuperAdmin</h1>
-          <p className="text-indigo-300 font-bold uppercase tracking-widest text-xs mt-1">Control Global de FleetMaster Pro</p>
+          <p className="text-indigo-300 font-bold uppercase tracking-widest text-xs mt-1">Control Global de FleetMaster Hub</p>
         </div>
         <div className="bg-white/10 px-6 py-3 rounded-2xl border border-white/10 backdrop-blur-md">
           <p className="text-[10px] text-white/60 font-black uppercase">Ingresos SaaS Totales</p>

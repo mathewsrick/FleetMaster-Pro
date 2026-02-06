@@ -38,13 +38,13 @@ const LOGO_HTML = `
     <div style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 14px; border-radius: 16px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
        <img
           src="${ENV.APP_URL}/public/assets/truck-fast-solid-full.png"
-          alt="FleetMaster Pro"
+          alt="FleetMaster Hub"
           width="32"
           height="32"
           style="display:block"
        />
     </div>
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 900; color: #1e293b; font-size: 22px; margin-top: 12px; letter-spacing: -0.025em;">FleetMaster <span style="color: #4f46e5;">Pro</span></div>
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 900; color: #1e293b; font-size: 22px; margin-top: 12px; letter-spacing: -0.025em;">FleetMaster <span style="color: #4f46e5;">Hub</span></div>
   </div>
 `;
 
@@ -53,7 +53,7 @@ export const templates = {
     <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
       ${LOGO_HTML}
       <h2 style="color: #1e293b; text-align: center; font-size: 24px; margin-bottom: 24px;">¡Bienvenido a bordo, ${username}!</h2>
-      <p style="font-size: 16px; line-height: 1.6; text-align: center;">Gracias por confiar en <strong>FleetMaster Pro</strong> para la gestión de tu flota.</p>
+      <p style="font-size: 16px; line-height: 1.6;">Gracias por confiar en <strong>FleetMaster Hub</strong> para la gestión de tu flota.</p>
       <div style="text-align: center; margin: 40px 0;">
         <a href="${ENV.APP_URL}/#/confirm/${token}" style="background-color: #4f46e5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);">Confirmar mi cuenta</a>
       </div>

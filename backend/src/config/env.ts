@@ -7,6 +7,6 @@ export const ENV = {
   SMTP_PORT: Number(process.env.SMTP_PORT) || 587,
   SMTP_USER: process.env.SMTP_USER || '',
   SMTP_PASS: process.env.SMTP_PASS || '',
-  SMTP_FROM: process.env.SMTP_FROM || '"FleetMaster Pro" <noreply@fleetmaster.pro>',
+  SMTP_FROM: process.env.SMTP_FROM || '"FleetMaster Hub" <noreply@fleetmaster.pro>',
   APP_URL: process.env.APP_URL || 'http://localhost:5173'
 };

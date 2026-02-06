@@ -82,7 +82,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
             <i className="fa-solid fa-truck-fast"></i>
           </div>
-          <h1 className="text-2xl font-black">FleetMaster Pro</h1>
+          <h1 className="text-2xl font-black">FleetMaster Hub</h1>
           <p className="text-indigo-100 mt-2 font-bold uppercase tracking-widest text-[10px]">
             {view === 'login' && 'Acceso Usuarios'}
             {view === 'register' && 'Nuevo Registro'}

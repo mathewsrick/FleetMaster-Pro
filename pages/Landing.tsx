@@ -30,7 +30,7 @@ const Landing: React.FC = () => {
               <i className="fa-solid fa-truck-fast text-xl"></i>
             </div>
             <span className="text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
-              FleetMaster Pro
+              FleetMaster Hub
             </span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500">
@@ -60,7 +60,7 @@ const Landing: React.FC = () => {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 italic">en un solo lugar.</span>
           </h1>
           <p className="text-slate-500 text-lg max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
-            La plataforma definitiva para administrar tu flota de vehículos. Gestiona conductores, automatiza cobros de mora, guarda registros fotográficos y visualiza tu rentabilidad en tiempo real.
+            La plataforma definitiva para rentadores de vehículos. Gestiona conductores, automatiza cobros de mora, guarda registros fotográficos y visualiza tu rentabilidad en tiempo real.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/login" className="w-full sm:w-auto bg-indigo-600 text-white px-10 py-5 rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95">
@@ -184,7 +184,7 @@ const Landing: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Email de Soporte</p>
-                  <p className="font-bold">soporte@fleetmaster.pro</p>
+                  <p className="font-bold">soporte@fleetmaster.hub</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -266,14 +266,14 @@ const Landing: React.FC = () => {
             <div className="bg-indigo-600 p-2 rounded-xl text-white">
               <i className="fa-solid fa-truck-fast text-xl"></i>
             </div>
-            <span className="text-xl font-black tracking-tighter">FleetMaster Pro</span>
+            <span className="text-xl font-black tracking-tighter">FleetMaster Hub</span>
           </div>
           <div className="flex gap-8 text-sm font-bold text-slate-400">
             <button onClick={() => setShowPrivacy(true)} className="hover:text-indigo-600 transition-colors">Privacidad</button>
             <button onClick={() => setShowTerms(true)} className="hover:text-indigo-600 transition-colors">Términos</button>
             <a href="#contact" className="hover:text-indigo-600 transition-colors">Contacto</a>
           </div>
-          <p className="text-slate-400 text-xs font-medium">© 2025 FleetMaster Pro. Todos los derechos reservados.</p>
+          <p className="text-slate-400 text-xs font-medium">© 2025 FleetMaster Hub. Todos los derechos reservados.</p>
         </div>
       </footer>
 
@@ -284,7 +284,7 @@ const Landing: React.FC = () => {
         title="Política de Privacidad"
         content={`
           <h3>1. Recolección de Datos</h3>
-          <p>FleetMaster Pro recolecta información necesaria para la gestión operativa de flotas, incluyendo nombres de conductores, placas de vehículos, registros fotográficos de inspección y comprobantes de pago.</p>
+          <p>FleetMaster Hub recolecta información necesaria para la gestión operativa de flotas, incluyendo nombres de conductores, placas de vehículos, registros fotográficos de inspección y comprobantes de pago.</p>
           <h3>2. Uso de la Información</h3>
           <p>Los datos se utilizan exclusivamente para proveer el servicio de gestión de flota solicitado por el usuario administrador. No vendemos ni compartimos datos con terceros con fines publicitarios.</p>
           <h3>3. Seguridad de los Datos</h3>
@@ -300,11 +300,11 @@ const Landing: React.FC = () => {
         title="Términos y Condiciones"
         content={`
           <h3>1. Naturaleza del Servicio</h3>
-          <p>FleetMaster Pro es una plataforma SaaS diseñada para la administración logística. El usuario es el único responsable de la veracidad de la información cargada al sistema.</p>
+          <p>FleetMaster Hub es una plataforma SaaS diseñada para la administración logística. El usuario es el único responsable de la veracidad de la información cargada al sistema.</p>
           <h3>2. Planes y Pagos</h3>
           <p>El acceso a funcionalidades avanzadas está sujeto al pago de la suscripción correspondiente. Las moras en el pago de la suscripción pueden resultar en el bloqueo temporal del acceso a la plataforma.</p>
           <h3>3. Limitación de Responsabilidad</h3>
-          <p>FleetMaster Pro no se hace responsable por multas de tránsito, vencimientos legales de documentos (SOAT/Técnica) o daños mecánicos no detectados en las inspecciones fotográficas.</p>
+          <p>FleetMaster Hub no se hace responsable por multas de tránsito, vencimientos legales de documentos (SOAT/Técnica) o daños mecánicos no detectados en las inspecciones fotográficas.</p>
           <h3>4. Uso Aceptable</h3>
           <p>Queda prohibido el uso del sistema para actividades ilegales o para sobrecargar la infraestructura mediante el uso abusivo de la API personalizada.</p>
         `}

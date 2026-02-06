@@ -58,7 +58,7 @@ export const generateAndSendWeeklyReports = async () => {
       // 3. Enviar email
       await emailService.sendEmail({
         to: user.email,
-        subject: `Reporte Semanal FleetMaster Pro - ${dateRange}`,
+        subject: `📊 Reporte Semanal FleetMaster Hub - ${dateRange}`,
         html: emailService.templates.weeklyEnterpriseReport(stats)
       });
 
