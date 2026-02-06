@@ -81,6 +81,7 @@ export const db = {
   },
   
   savePayment: (p: Payment) => request('/payments', 'POST', p),
+  deletePayment: (id: string) => request(`/payments/${id}`, 'DELETE'),
   payArrear: (arrearId: string, data: { amount: number; date: string }) => request(`/arrears/${arrearId}/pay`, 'POST', data),
   getPaymentsByDriver: (driverId: string) => request<Payment[]>(`/payments/driver/${driverId}`),
   
@@ -90,6 +91,7 @@ export const db = {
   },
   
   saveExpense: (e: Expense) => request('/expenses', 'POST', e),
+  deleteExpense: (id: string) => request(`/expenses/${id}`, 'DELETE'),
   getArrears: () => request<Arrear[]>('/arrears'),
   getArrearsByDriver: (driverId: string) => request<Arrear[]>(`/arrears/driver/${driverId}`),
   assignDriver: (driverId: string, vehicleId: string | null) => request('/assign', 'POST', { driverId, vehicleId })

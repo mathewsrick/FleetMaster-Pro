@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db, formatDateDisplay } from '../services/db';
 import { Expense, Vehicle } from '../types';
+import Swal from 'sweetalert2';
 
 const Expenses: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -13,11 +14,11 @@ const Expenses: React.FC = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
 
-  const [formData, setFormData] = useState<Partial<Expense>>({ 
-    description: '', 
-    amount: 0, 
-    date: new Date().toISOString().split('T')[0], 
-    vehicleId: '' 
+  const [formData, setFormData] = useState<Partial<Expense>>({
+    description: '',
+    amount: 0,
+    date: new Date().toISOString().split('T')[0],
+    vehicleId: ''
   });
 
   useEffect(() => { loadData(); }, [page, limit, search]);
@@ -34,6 +35,29 @@ const Expenses: React.FC = () => {
       setVehicles(vRes.data);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const res = await Swal.fire({
+      title: '¿Eliminar gasto?',
+      text: "Esta acción no se puede deshacer.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#94a3b8',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+    
+    if (res.isConfirmed) {
+      try {
+        await db.deleteExpense(id);
+        Swal.fire('Eliminado', 'El registro de gasto ha sido removido.', 'success');
+        loadData();
+      } catch (err: any) {
+        Swal.fire('Error', 'No se pudo eliminar el registro.', 'error');
+      }
     }
   };
 
@@ -88,23 +112,32 @@ const Expenses: React.FC = () => {
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Vehículo</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Descripción</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Monto</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading && expenses.length === 0 ? (
-                <tr><td colSpan={4} className="p-12 text-center text-rose-600"><i className="fa-solid fa-circle-notch fa-spin text-2xl"></i></td></tr>
+                <tr><td colSpan={5} className="p-12 text-center text-rose-600"><i className="fa-solid fa-circle-notch fa-spin text-2xl"></i></td></tr>
               ) : expenses.length === 0 ? (
-                <tr><td colSpan={4} className="p-12 text-center text-slate-400 font-bold italic">Sin registros coincidentes.</td></tr>
+                <tr><td colSpan={5} className="p-12 text-center text-slate-400 font-bold italic">Sin registros coincidentes.</td></tr>
               ) : expenses.map(e => {
                 const vehicle = vehicles.find(v => v.id === e.vehicleId);
                 return (
-                  <tr key={e.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={e.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-6 py-4 text-xs text-slate-600 font-mono">{formatDateDisplay(e.date)}</td>
                     <td className="px-6 py-4">
                       <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-100 uppercase tracking-widest">{vehicle?.licensePlate || 'General'}</span>
                     </td>
                     <td className="px-6 py-4 text-sm font-bold text-slate-900">{e.description}</td>
                     <td className="px-6 py-4 font-black text-rose-600">-${e.amount.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => handleDelete(e.id)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all mx-auto mr-0"
+                      >
+                        <i className="fa-solid fa-trash-can text-sm text-rose-400"></i>
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
