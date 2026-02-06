@@ -6,7 +6,8 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
 
   const data = dbHelpers
     .prepare(`
-      SELECT v.*, d.firstName || ' ' || d.lastName as driverName
+      SELECT v.*, 
+             (COALESCE(d.firstName, '') || ' ' || COALESCE(d.lastName, '')) as driverName
       FROM vehicles v
       LEFT JOIN drivers d ON v.driverId = d.id
       WHERE v.userId = ? 
@@ -18,6 +19,7 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
   // Transform photos from JSON string to array
   const transformed = data.map((v: any) => ({
     ...v,
+    driverName: v.driverName?.trim() || null,
     photos: v.photos ? JSON.parse(v.photos) : []
   }));
 
@@ -30,7 +32,7 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
 
 export const findById = async (id: string) => {
   const v = await dbHelpers
-    .prepare('SELECT id FROM vehicles WHERE id = ?')
+    .prepare('SELECT * FROM vehicles WHERE id = ?')
     .get([id]);
   return v;
 };

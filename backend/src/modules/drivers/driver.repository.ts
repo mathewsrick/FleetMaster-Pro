@@ -4,7 +4,6 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
   const { page, limit } = options;
   const offset = (page - 1) * limit;
 
-  // Query compleja para traer conductor, su deuda actual y la placa del vehiculo asignado
   const query = `
     SELECT d.*, 
            v.licensePlate as vehiclePlate,
@@ -65,4 +64,4 @@ export const unassignVehicles = async (userId: string, driverId: string) =>
 export const remove = async (userId: string, id: string) =>
   dbHelpers.prepare(
     'DELETE FROM drivers WHERE id = ? AND userId = ?'
-  ).run([id, userId]);
+  ).run([id, userId]);1
