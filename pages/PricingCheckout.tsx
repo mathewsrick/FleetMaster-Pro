@@ -1,53 +1,68 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
 const PricingCheckout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-slate-50 p-8 md:p-24 font-sans">
+    <div className="min-h-screen bg-slate-50 p-8 md:p-24 font-sans selection:bg-indigo-100">
       <div className="max-w-6xl mx-auto">
         <header className="text-center mb-16">
-          <Link to="/" className="inline-flex items-center gap-2 text-indigo-600 font-black mb-8">
-            <i className="fa-solid fa-arrow-left"></i> Volver
+          <Link to="/" className="inline-flex items-center gap-2 text-indigo-600 font-black mb-8 hover:gap-3 transition-all">
+            <i className="fa-solid fa-arrow-left"></i> Volver al Landing
           </Link>
-          <h1 className="text-4xl font-black text-slate-900 mb-4">Elige tu Plan de Crecimiento</h1>
-          <p className="text-slate-500 font-medium">Sube de nivel tu flota. Recuerda: Solo permitimos upgrades para proteger tu operación.</p>
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">Elige tu Plan de Crecimiento</h1>
+          <p className="text-slate-500 font-medium max-w-xl mx-auto">Sube de nivel tu operación. Todos los planes incluyen gestión de moras automatizada y recibos por correo electrónico.</p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <PlanOption
-            name="Básico"
-            price="60,000"
+          <PlanOption 
+            name="Básico" 
+            price="29" 
             limits="3 Vehículos | 5 Conductores"
-            color="indigo"
+            desc="Soporte por email y visualización de historial de 30 días."
+            color="slate"
           />
-          <PlanOption
-            name="Pro"
-            price="90,000"
-            recommended
+          <PlanOption 
+            name="Pro" 
+            price="59" 
+            recommended 
             limits="6 Vehículos | 10 Conductores"
+            desc="Reportes de Excel, soporte prioritario y búsqueda de 90 días."
             color="indigo"
           />
-          <PlanOption
-            name="Enterprise"
-            price="145,000"
+          <PlanOption 
+            name="Enterprise" 
+            price="149" 
             limits="Vehículos Ilimitados"
-            color="indigo"
+            desc="Reportes semanales automáticos y acceso a API personalizada."
+            color="violet"
           />
+        </div>
+        
+        <div className="mt-20 p-10 bg-indigo-900 rounded-[40px] text-white flex flex-col md:flex-row items-center justify-between gap-8">
+          <div>
+            <h3 className="text-2xl font-black mb-2">¿Necesitas algo a medida?</h3>
+            <p className="text-indigo-200 font-medium italic opacity-80">Si tienes más de 100 vehículos, contáctanos para un descuento corporativo.</p>
+          </div>
+          <button className="bg-white text-indigo-900 px-8 py-4 rounded-2xl font-black shadow-xl hover:bg-slate-100 transition-all active:scale-95">
+            Contactar Ventas
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-const PlanOption = ({ name, price, limits, recommended }: any) => (
-  <div className={`p-10 rounded-[40px] bg-white border-2 transition-all ${recommended ? 'border-indigo-600 shadow-2xl' : 'border-white'}`}>
-    {recommended && <span className="inline-block bg-indigo-600 text-white text-[10px] font-black px-4 py-1 rounded-full mb-6 uppercase tracking-widest">Recomendado</span>}
+const PlanOption = ({ name, price, limits, recommended, desc }: any) => (
+  <div className={`p-10 rounded-[40px] bg-white border-2 transition-all flex flex-col ${recommended ? 'border-indigo-600 shadow-2xl scale-105' : 'border-slate-100 shadow-sm'}`}>
+    {recommended && <span className="inline-block bg-indigo-600 text-white text-[10px] font-black px-4 py-1.5 rounded-full mb-6 uppercase tracking-[0.2em] shadow-lg shadow-indigo-100">Más Recomendado</span>}
     <h3 className="text-2xl font-black text-slate-900 mb-2">{name}</h3>
-    <p className="text-slate-400 font-bold text-xs uppercase mb-8">{limits}</p>
-    <div className="text-4xl font-black text-slate-900 mb-8">${price}<span className="text-sm font-medium opacity-40">/mes</span></div>
-    <button className="w-full bg-slate-900 text-white font-black py-4 rounded-2xl hover:bg-indigo-600 transition-all active:scale-95 shadow-lg">
-      Activar Plan
+    <p className="text-indigo-600 font-black text-[10px] uppercase tracking-widest mb-4">{limits}</p>
+    <p className="text-slate-400 text-sm font-medium mb-8 leading-relaxed">{desc}</p>
+    <div className="text-5xl font-black text-slate-900 mb-10 mt-auto">
+      ${price}<span className="text-sm font-bold text-slate-300 ml-1">/mes</span>
+    </div>
+    <button className={`w-full font-black py-5 rounded-2xl transition-all active:scale-95 shadow-xl uppercase text-[10px] tracking-widest ${recommended ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200' : 'bg-slate-900 text-white hover:bg-slate-800'}`}>
+      Activar Plan {name}
     </button>
   </div>
 );
