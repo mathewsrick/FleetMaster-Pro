@@ -53,6 +53,9 @@ export const db = {
   requestReset: (identifier: string) => request('/auth/request-reset', 'POST', { identifier }),
   resetPassword: (token: string, newPass: string) => request('/auth/reset-password', 'POST', { token, newPass }),
   
+  // Subscription
+  purchasePlan: (plan: string, duration: 'monthly' | 'yearly') => request<any>('/subscription/purchase', 'POST', { plan, duration }),
+
   // Public contact
   submitContactForm: (data: { name: string; email: string; message: string }) => request('/contact', 'POST', data),
 

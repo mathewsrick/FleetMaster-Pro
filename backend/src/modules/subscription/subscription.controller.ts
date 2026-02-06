@@ -16,9 +16,21 @@ export const activate = async (req: any, res: any) => {
   }
 };
 
+export const purchase = async (req: any, res: any) => {
+  try {
+    const { plan, duration } = req.body;
+    if (!plan || !duration) {
+      return res.status(400).json({ error: 'Plan y duración son requeridos.' });
+    }
+    const result = await service.purchasePlan(req.user.userId, plan, duration);
+    res.json({ success: true, ...result });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+};
+
 export const generateKey = async (req: any, res: any) => {
   try {
-    // Fixed: Passing both plan and price as required by the service to match its signature
     const key = await service.generateKey(req.body.plan, req.body.price);
     res.status(201).json(key);
   } catch (e: any) {

@@ -7,6 +7,15 @@ export const findKeyById = async (keyId: string): Promise<Subscription | null> =
     WHERE id = ? AND status = 'active'
   `).get([keyId]);
 
+// findActiveSubscriptionByUserId: Busca la suscripción activa más reciente para un usuario
+export const findActiveSubscriptionByUserId = async (userId: string): Promise<Subscription | null> =>
+  dbHelpers.prepare(`
+    SELECT * FROM subscription_keys
+    WHERE userId = ? AND status = 'active'
+    ORDER BY dueDate DESC
+    LIMIT 1
+  `).get([userId]);
+
 export const bindKeyToUser = async (userId: string, keyId: string) =>
   dbHelpers.prepare(`
     UPDATE subscription_keys
@@ -24,8 +33,8 @@ export const deactivateUserKeys = async (userId: string) =>
 export const createKey = async (k: Subscription) =>
   dbHelpers.prepare(`
     INSERT INTO subscription_keys (
-      id, userId, plan, startDate, dueDate, status
-    ) VALUES (?, ?, ?, ?, ?, ?)
+      id, userId, plan, price, startDate, dueDate, status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
   `).run([
     k.id,
     k.userId ?? null,
