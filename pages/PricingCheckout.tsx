@@ -12,6 +12,17 @@ const PricingCheckout: React.FC = () => {
 
   const auth = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
   const currentPlan = auth.accountStatus?.plan || 'free_trial';
+  const daysRemaining = auth.accountStatus?.daysRemaining || 0;
+  
+  // Un plan se considera activo si le quedan días y la razón no es TRIAL_EXPIRED
+  const isPlanActive = daysRemaining > 0 && auth.accountStatus?.reason === 'ACTIVE_SUBSCRIPTION';
+
+  const PLAN_WEIGHTS: Record<string, number> = {
+    'free_trial': 0,
+    'basico': 1,
+    'pro': 2,
+    'enterprise': 3
+  };
 
   const handlePurchase = async (planKey: string) => {
     setLoading(planKey);
@@ -23,7 +34,9 @@ const PricingCheckout: React.FC = () => {
         accountStatus: { 
           ...auth.accountStatus, 
           plan: result.plan, 
-          accessLevel: result.accessLevel 
+          accessLevel: result.accessLevel,
+          daysRemaining: duration === 'yearly' ? 365 : (duration === 'semiannual' ? 180 : 30),
+          reason: 'ACTIVE_SUBSCRIPTION'
         } 
       };
       localStorage.setItem('fmp_auth', JSON.stringify(newAuth));
@@ -35,7 +48,9 @@ const PricingCheckout: React.FC = () => {
         confirmButtonColor: '#4f46e5'
       });
 
-      navigate('/dashboard');
+      // Forzar recarga completa para que App.tsx lea el nuevo estado del banner
+      window.location.href = '#/dashboard';
+      window.location.reload();
     } catch (err: any) {
       Swal.fire({
         icon: 'error',
@@ -54,6 +69,10 @@ const PricingCheckout: React.FC = () => {
     return base * 10; // 2 meses gratis (paga 10)
   };
 
+  const currentWeight = PLAN_WEIGHTS[currentPlan] || 0;
+  // Si ya es Pro o Enterprise, no puede bajar a Básico
+  const cannotChooseBasico = currentWeight > 1;
+
   return (
     <div className="min-h-screen bg-slate-50 p-8 md:p-24 font-sans selection:bg-indigo-100">
       <div className="max-w-6xl mx-auto">
@@ -61,30 +80,38 @@ const PricingCheckout: React.FC = () => {
           <Link to="/" className="inline-flex items-center gap-2 text-indigo-600 font-black mb-8 hover:gap-3 transition-all">
             <i className="fa-solid fa-arrow-left"></i> Volver al Inicio
           </Link>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">Elige tu Plan de Crecimiento</h1>
-          <p className="text-slate-500 font-medium max-w-xl mx-auto mb-10">Optimiza tu rentabilidad eligiendo planes de mayor duración.</p>
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">Elige tu Plan de Crecimiento</h1>
+          <p className="text-slate-500 font-medium max-w-xl mx-auto mb-10 leading-relaxed">Sube el nivel de tu operación logística con herramientas avanzadas.</p>
           
+          {isPlanActive && (
+            <div className="mb-10 p-6 bg-amber-50 border-2 border-amber-200 rounded-3xl max-w-2xl mx-auto text-amber-700 font-bold text-sm shadow-xl shadow-amber-100/20">
+               <i className="fa-solid fa-lock text-xl mb-2 block"></i>
+               Tienes una suscripción vigente de <strong>{currentPlan.toUpperCase()}</strong> con {daysRemaining} días restantes. 
+               Podrás renovar o cambiar de plan una vez que el actual expire.
+            </div>
+          )}
+
           {/* Frequency Selector */}
-          <div className="inline-flex p-1 bg-slate-200 rounded-2xl gap-1">
+          <div className="inline-flex p-1 bg-slate-200 rounded-2xl gap-1 shadow-inner">
             <button 
               onClick={() => setDuration('monthly')}
-              className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${duration === 'monthly' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${duration === 'monthly' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
             >
               Mensual
             </button>
             <button 
               onClick={() => setDuration('semiannual')}
-              className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${duration === 'semiannual' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all relative ${duration === 'semiannual' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
             >
               6 Meses
-              <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[7px] px-1.5 py-0.5 rounded-full">1 mes GRATIS</span>
+              <span className="absolute -top-3 -right-2 bg-emerald-500 text-white text-[7px] px-2 py-0.5 rounded-full shadow-lg border-2 border-white">1 mes GRATIS</span>
             </button>
             <button 
               onClick={() => setDuration('yearly')}
-              className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${duration === 'yearly' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all relative ${duration === 'yearly' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
             >
               Anual
-              <span className="absolute -top-2 -right-2 bg-indigo-600 text-white text-[7px] px-1.5 py-0.5 rounded-full">2 meses GRATIS</span>
+              <span className="absolute -top-3 -right-2 bg-indigo-600 text-white text-[7px] px-2 py-0.5 rounded-full shadow-lg border-2 border-white">2 meses GRATIS</span>
             </button>
           </div>
         </header>
@@ -99,6 +126,8 @@ const PricingCheckout: React.FC = () => {
             onSelect={() => handlePurchase('basico')}
             loading={loading === 'basico'}
             isCurrent={currentPlan === 'basico'}
+            isDisabled={isPlanActive || cannotChooseBasico}
+            restrictionMsg={cannotChooseBasico ? "Tu nivel de cuenta no permite bajar a este plan" : (isPlanActive ? "Tienes un plan vigente" : "")}
           />
           <PlanOption 
             name="Pro" 
@@ -110,6 +139,8 @@ const PricingCheckout: React.FC = () => {
             onSelect={() => handlePurchase('pro')}
             loading={loading === 'pro'}
             isCurrent={currentPlan === 'pro'}
+            isDisabled={isPlanActive}
+            restrictionMsg={isPlanActive ? "Tienes un plan vigente" : ""}
           />
           <PlanOption 
             name="Enterprise" 
@@ -120,16 +151,18 @@ const PricingCheckout: React.FC = () => {
             onSelect={() => handlePurchase('enterprise')}
             loading={loading === 'enterprise'}
             isCurrent={currentPlan === 'enterprise'}
+            isDisabled={isPlanActive}
+            restrictionMsg={isPlanActive ? "Tienes un plan vigente" : ""}
           />
         </div>
         
-        <div className="mt-20 p-10 bg-indigo-900 rounded-[40px] text-white flex flex-col md:flex-row items-center justify-between gap-8">
-          <div>
-            <h3 className="text-2xl font-black mb-2">¿Necesitas algo a medida?</h3>
-            <p className="text-indigo-200 font-medium italic opacity-80">Si tienes más de 100 vehículos, contáctanos para un descuento corporativo.</p>
+        <div className="mt-20 p-12 bg-indigo-900 rounded-[48px] text-white flex flex-col lg:flex-row items-center justify-between gap-10 shadow-3xl shadow-indigo-200">
+          <div className="text-center lg:text-left">
+            <h3 className="text-3xl font-black mb-3 tracking-tight">¿Operas una flota corporativa?</h3>
+            <p className="text-indigo-200 font-medium italic opacity-80 text-lg">Si manejas más de 100 vehículos, diseñamos una infraestructura dedicada y precios por volumen para ti.</p>
           </div>
-          <button className="bg-white text-indigo-900 px-8 py-4 rounded-2xl font-black shadow-xl hover:bg-slate-100 transition-all active:scale-95">
-            Contactar Ventas
+          <button className="bg-white text-indigo-900 px-10 py-5 rounded-2xl font-black shadow-xl hover:bg-slate-100 transition-all active:scale-95 uppercase text-xs tracking-[0.2em] whitespace-nowrap">
+            Hablar con un Experto
           </button>
         </div>
       </div>
@@ -137,7 +170,7 @@ const PricingCheckout: React.FC = () => {
   );
 };
 
-const PlanOption = ({ name, price, limits, recommended, desc, duration, onSelect, loading, isCurrent }: any) => {
+const PlanOption = ({ name, price, limits, recommended, desc, duration, onSelect, loading, isCurrent, isDisabled, restrictionMsg }: any) => {
   const durationLabel = {
     monthly: 'mes',
     semiannual: 'semestre',
@@ -145,29 +178,36 @@ const PlanOption = ({ name, price, limits, recommended, desc, duration, onSelect
   };
 
   return (
-    <div className={`p-10 rounded-[40px] bg-white border-2 transition-all flex flex-col relative ${recommended ? 'border-indigo-600 shadow-2xl scale-105' : 'border-slate-100 shadow-sm'}`}>
-      {recommended && <span className="inline-block bg-indigo-600 text-center text-white text-[10px] font-black px-4 py-1.5 rounded-full mb-6 uppercase tracking-[0.2em] shadow-lg shadow-indigo-100">Más Recomendado</span>}
-      {isCurrent && <span className="absolute top-6 right-6 text-indigo-600 text-[8px] font-black uppercase bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">Plan Actual</span>}
+    <div className={`p-10 rounded-[40px] bg-white border-2 transition-all flex flex-col relative ${
+      recommended ? 'border-indigo-600 shadow-2xl scale-105 z-10' : 'border-slate-100 shadow-sm'
+    } ${isDisabled && !isCurrent ? 'opacity-40 grayscale-[0.5]' : ''}`}>
+      {recommended && <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] font-black px-6 py-2 rounded-full uppercase tracking-[0.2em] shadow-xl">Más Recomendado</span>}
+      {isCurrent && <span className="absolute top-6 right-6 text-indigo-600 text-[8px] font-black uppercase bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100 shadow-sm">Plan Actual</span>}
       
-      <h3 className="text-2xl font-black text-slate-900 mb-2">{name}</h3>
-      <p className="text-indigo-600 font-black text-[10px] uppercase tracking-widest mb-4">{limits}</p>
-      <p className="text-slate-400 text-sm font-medium mb-8 leading-relaxed">{desc}</p>
+      <h3 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">{name}</h3>
+      <p className="text-indigo-600 font-black text-[10px] uppercase tracking-widest mb-4 flex items-center gap-2">
+         <i className="fa-solid fa-check-double text-[8px]"></i> {limits}
+      </p>
+      <p className="text-slate-400 text-sm font-medium mb-10 leading-relaxed">{desc}</p>
       
-      <div className="text-5xl font-black text-slate-900 mb-10 mt-auto">
-        ${price.toLocaleString()}<span className="text-sm font-bold text-slate-300 ml-1">/{durationLabel[duration as keyof typeof durationLabel]}</span>
+      <div className="text-5xl font-black text-slate-900 mb-10 mt-auto flex items-baseline gap-1">
+        <span className="text-2xl opacity-40">$</span>{price.toLocaleString()}
+        <span className="text-xs font-bold text-slate-300">/{durationLabel[duration as keyof typeof durationLabel]}</span>
       </div>
 
       <button 
-        disabled={loading || (isCurrent && duration === 'monthly')}
+        disabled={loading || isDisabled || isCurrent}
         onClick={onSelect}
         className={`w-full font-black py-5 rounded-2xl transition-all active:scale-95 shadow-xl uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 ${
-          isCurrent && duration === 'monthly' ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-dashed border-2' :
+          isCurrent ? 'bg-slate-50 text-slate-400 border-dashed border-2 cursor-default' :
+          isDisabled ? 'bg-slate-200 text-slate-400 cursor-not-allowed' :
           recommended ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200' : 'bg-slate-900 text-white hover:bg-slate-800'
         }`}
       >
         {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : null}
-        {isCurrent && duration === 'monthly' ? 'Tu plan actual' : `Activar Plan ${name}`}
+        {isCurrent ? 'Vigente' : isDisabled ? 'No disponible' : `Activar Plan ${name}`}
       </button>
+      {restrictionMsg && <p className="text-[9px] text-rose-500 font-bold mt-3 text-center uppercase tracking-tighter italic">{restrictionMsg}</p>}
     </div>
   );
 };

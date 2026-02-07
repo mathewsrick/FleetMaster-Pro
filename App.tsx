@@ -14,12 +14,18 @@ import ConfirmAccount from './pages/ConfirmAccount';
 import { AuthState, AccountStatus } from './types';
 
 const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) => {
-  if (!status || status.reason !== 'TRIAL') return null;
+  if (!status) return null;
+  
+  // Mostrar banner solo si quedan 5 días o menos (en Trial o Suscripción Activa)
+  const isExpiringSoon = status.daysRemaining <= 5 && (status.reason === 'TRIAL' || status.reason === 'ACTIVE_SUBSCRIPTION');
+  
+  if (!isExpiringSoon) return null;
+
   return (
-    <div className="bg-amber-500 text-white px-4 py-2 text-center text-sm font-bold flex items-center justify-center gap-4">
-      <i className="fa-solid fa-clock"></i>
-      Periodo de prueba activo: {status.daysRemaining} días restantes. 
-      <Link to="/pricing-checkout" className="underline hover:text-amber-100">Activar plan profesional</Link>
+    <div className="bg-amber-500 text-white px-4 py-2 text-center text-sm font-bold flex items-center justify-center gap-4 animate-in slide-in-from-top duration-500">
+      <i className="fa-solid fa-triangle-exclamation"></i>
+      {status.reason === 'TRIAL' ? 'Tu periodo de prueba' : 'Tu plan actual'} expira en {status.daysRemaining} {status.daysRemaining === 1 ? 'día' : 'días'}. 
+      <Link to="/pricing-checkout" className="underline hover:text-amber-100 ml-2">Renovar o subir de plan ahora</Link>
     </div>
   );
 };
@@ -40,7 +46,7 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <TrialBanner status={status} />
       <div className="flex flex-1">
         <aside className="w-64 bg-slate-900 text-white hidden lg:flex flex-col">
@@ -48,7 +54,7 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
             <div className="bg-indigo-600 p-2 rounded-lg">
               <i className="fa-solid fa-truck-fast"></i>
             </div>
-            <span className="font-black text-lg tracking-tight">FleetMaster Hub</span>
+            <span className="font-black text-xl tracking-tight">FleetMaster Hub</span>
           </div>
           <nav className="flex-1 px-4 space-y-2">
             {navItems.map(item => (
@@ -75,9 +81,11 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
             <div className="flex items-center gap-4 ml-auto">
               <div className="text-right">
                 <p className="text-sm font-black text-slate-900">{username}</p>
-                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{role === 'SUPERADMIN' ? 'Control Maestro' : (status?.plan || 'Free Trial')}</p>
+                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
+                  {role === 'SUPERADMIN' ? 'Control Maestro' : (status?.plan.replace('_', ' ') || 'Free Trial')}
+                </p>
               </div>
-              <div className="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-black border border-slate-200">
+              <div className="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-black border border-slate-200 uppercase">
                 {username[0]}
               </div>
             </div>
@@ -115,7 +123,7 @@ const App: React.FC = () => {
         <Route path="/" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Landing />} />
         <Route path="/login" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLogin={login} />} />
         <Route path="/confirm/:token" element={<ConfirmAccount />} />
-        <Route path="/pricing-checkout" element={<PricingCheckout />} />
+        <Route path="/pricing-checkout" element={auth.isAuthenticated ? <PricingCheckout /> : <Navigate to="/login" />} />
         
         <Route path="/dashboard" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Dashboard /></Layout> : <Navigate to="/" />} />
         <Route path="/superadmin" element={auth.isAuthenticated && auth.user?.role === 'SUPERADMIN' ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><SuperAdmin /></Layout> : <Navigate to="/" />} />

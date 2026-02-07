@@ -16,6 +16,7 @@ export const activate = async (userId: string, keyId: string) => {
   if (currentSub) {
     const currentWeight = PLAN_WEIGHTS[currentSub.plan] || 0;
     const newWeight = PLAN_WEIGHTS[key.plan] || 0;
+    
     if (newWeight < currentWeight) {
       throw new Error('No puedes adquirir un plan inferior al que ya tienes activo.');
     }
@@ -35,11 +36,24 @@ export const activate = async (userId: string, keyId: string) => {
 export const purchasePlan = async (userId: string, plan: string, duration: 'monthly' | 'semiannual' | 'yearly') => {
   const currentSub = await repo.findActiveSubscriptionByUserId(userId);
   
-  const currentWeight = currentSub ? (PLAN_WEIGHTS[currentSub.plan] || 0) : 0;
-  const newWeight = PLAN_WEIGHTS[plan] || 0;
+  const now = new Date();
+  
+  // 1. Si el plan actual NO ha expirado (dueDate > now), bloquear nueva compra
+  // Solo se permite si quedan menos de 24 horas o ya expiró
+  if (currentSub && currentSub.dueDate && new Date(currentSub.dueDate) > now) {
+    const diff = new Date(currentSub.dueDate).getTime() - now.getTime();
+    const diffDays = diff / (1000 * 3600 * 24);
+    if (diffDays > 0.1) { // Margen de error pequeño
+       throw new Error('Ya tienes un plan vigente. Podrás renovar o cambiar de plan cuando el actual expire.');
+    }
+  }
 
-  if (newWeight < currentWeight) {
-    throw new Error(`Tu plan actual (${currentSub?.plan.toUpperCase()}) no permite bajar a ${plan.toUpperCase()}.`);
+  // 2. Lógica de jerarquía: Si el último plan era > Básico (Pro o Ent), no se puede bajar al Básico
+  const lastPlanWeight = currentSub ? (PLAN_WEIGHTS[currentSub.plan] || 0) : 0;
+  const newPlanWeight = PLAN_WEIGHTS[plan] || 0;
+
+  if (lastPlanWeight > 1 && newPlanWeight === 1) {
+    throw new Error('Tu cuenta tiene un historial superior. No puedes volver al Plan Básico, elige Pro o Enterprise.');
   }
 
   const startDate = new Date();
@@ -53,7 +67,7 @@ export const purchasePlan = async (userId: string, plan: string, duration: 'mont
     dueDate.setMonth(dueDate.getMonth() + 1);
   }
 
-  // Desactivar planes anteriores
+  // Desactivar planes anteriores (marcar como expirados)
   await repo.deactivateUserKeys(userId);
 
   // Crear nueva suscripción directamente (Simulando pago exitoso)
@@ -61,7 +75,7 @@ export const purchasePlan = async (userId: string, plan: string, duration: 'mont
     id: uuid(),
     userId,
     plan,
-    price: 0, // En producción vendría de la pasarela de pago
+    price: 0, 
     startDate: startDate.toISOString(),
     dueDate: dueDate.toISOString(),
     status: 'active' as const

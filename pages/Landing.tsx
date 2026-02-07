@@ -209,7 +209,7 @@ const Landing: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Email de Soporte</p>
-                  <p className="font-bold">soporte@fleetmaster.pro</p>
+                  <p className="font-bold">contacto@fleetmasterhub.com</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -217,8 +217,8 @@ const Landing: React.FC = () => {
                   <i className="fa-solid fa-location-dot"></i>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Oficina Central</p>
-                  <p className="font-bold">Bogotá, Colombia</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Ubicación</p>
+                  <p className="font-bold">Medellín, Colombia</p>
                 </div>
               </div>
               <div className="flex items-center gap-4 group cursor-pointer" onClick={() => window.open(WHATSAPP_LINK, '_blank')}>
