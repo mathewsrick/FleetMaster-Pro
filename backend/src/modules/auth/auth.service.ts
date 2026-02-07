@@ -35,7 +35,7 @@ export const register = async (email: string, username: string, password: string
 
   await emailService.sendEmail({
     to: email,
-    subject: "Bienvenido a FleetMaster Pro - Confirma tu cuenta",
+    subject: "Bienvenido a FleetMaster Hub - Confirma tu cuenta",
     html: emailService.templates.welcome(username, confirmationToken)
   });
 };
@@ -57,7 +57,7 @@ export const requestPasswordReset = async (identifier: string) => {
   await repo.setResetToken(user.id, resetToken);
   await emailService.sendEmail({
     to: user.email,
-    subject: "Recuperación de Contraseña - FleetMaster Pro",
+    subject: "Recuperación de Contraseña - FleetMaster Hub",
     html: emailService.templates.passwordReset(resetToken)
   });
 };
