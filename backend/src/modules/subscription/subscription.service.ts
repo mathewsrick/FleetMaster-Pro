@@ -1,5 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import * as repo from './subscription.repository';
+import { PLAN_LIMITS } from '../auth/auth.service';
+import { PlanType } from '../../../../types';
 
 const PLAN_WEIGHTS: Record<string, number> = {
   'free_trial': 0,
@@ -39,16 +41,15 @@ export const purchasePlan = async (userId: string, plan: string, duration: 'mont
   const now = new Date();
   
   // 1. Si el plan actual NO ha expirado (dueDate > now), bloquear nueva compra
-  // Solo se permite si quedan menos de 24 horas o ya expiró
   if (currentSub && currentSub.dueDate && new Date(currentSub.dueDate) > now) {
     const diff = new Date(currentSub.dueDate).getTime() - now.getTime();
     const diffDays = diff / (1000 * 3600 * 24);
-    if (diffDays > 0.1) { // Margen de error pequeño
+    if (diffDays > 0.1) {
        throw new Error('Ya tienes un plan vigente. Podrás renovar o cambiar de plan cuando el actual expire.');
     }
   }
 
-  // 2. Lógica de jerarquía: Si el último plan era > Básico (Pro o Ent), no se puede bajar al Básico
+  // 2. Lógica de jerarquía
   const lastPlanWeight = currentSub ? (PLAN_WEIGHTS[currentSub.plan] || 0) : 0;
   const newPlanWeight = PLAN_WEIGHTS[plan] || 0;
 
@@ -59,18 +60,20 @@ export const purchasePlan = async (userId: string, plan: string, duration: 'mont
   const startDate = new Date();
   const dueDate = new Date();
   
+  let daysAdded = 30;
   if (duration === 'yearly') {
     dueDate.setFullYear(dueDate.getFullYear() + 1);
+    daysAdded = 365;
   } else if (duration === 'semiannual') {
     dueDate.setMonth(dueDate.getMonth() + 6);
+    daysAdded = 180;
   } else {
     dueDate.setMonth(dueDate.getMonth() + 1);
+    daysAdded = 30;
   }
 
-  // Desactivar planes anteriores (marcar como expirados)
   await repo.deactivateUserKeys(userId);
 
-  // Crear nueva suscripción directamente (Simulando pago exitoso)
   const newSub = {
     id: uuid(),
     userId,
@@ -86,7 +89,9 @@ export const purchasePlan = async (userId: string, plan: string, duration: 'mont
   return { 
     plan, 
     dueDate: newSub.dueDate, 
-    accessLevel: 'FULL' 
+    accessLevel: 'FULL',
+    limits: PLAN_LIMITS[plan as PlanType],
+    daysRemaining: daysAdded
   };
 };
 

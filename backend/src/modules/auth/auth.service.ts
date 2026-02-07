@@ -6,7 +6,7 @@ import { ENV } from '../../config/env';
 import { PlanLimits, PlanType } from '../../../../types';
 import * as emailService from '../../shared/email.service';
 
-const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
+export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   free_trial: { maxVehicles: 1, maxDrivers: 1, hasExcelReports: false, hasCustomApi: false, maxHistoryDays: 30, maxRangeDays: null },
   basico: { maxVehicles: 3, maxDrivers: 5, hasExcelReports: false, hasCustomApi: false, maxHistoryDays: 30, maxRangeDays: null },
   pro: { maxVehicles: 6, maxDrivers: 10, hasExcelReports: true, hasCustomApi: false, maxHistoryDays: null, maxRangeDays: 90 },
@@ -16,7 +16,7 @@ const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
 export const register = async (email: string, username: string, password: string) => {
   const existingEmail = await repo.findUserByEmail(email);
   if (existingEmail) throw new Error('El correo electrónico ya está registrado.');
-
+  
   const existingUsername = await repo.findUserByUsername(username);
   if (existingUsername) throw new Error('El nombre de usuario ya está en uso.');
 
@@ -111,9 +111,9 @@ export const login = async (identifier: string, password: string) => {
 
   const token = jwt.sign({ userId: user.id, accessLevel, role: user.role, plan }, ENV.JWT_SECRET, { expiresIn: '7d' });
 
-  return {
-    token,
+  return { 
+    token, 
     user: { id: user.id, username: user.username, email: user.email, role: user.role, isConfirmed: !!user.isConfirmed }, 
-    accountStatus
+    accountStatus 
   };
 };

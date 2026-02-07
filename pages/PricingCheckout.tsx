@@ -14,7 +14,7 @@ const PricingCheckout: React.FC = () => {
   const currentPlan = auth.accountStatus?.plan || 'free_trial';
   const daysRemaining = auth.accountStatus?.daysRemaining || 0;
   
-  // Un plan se considera activo si le quedan días y la razón no es TRIAL_EXPIRED
+  // Un plan se considera activo si le quedan días y la razón es suscripción activa
   const isPlanActive = daysRemaining > 0 && auth.accountStatus?.reason === 'ACTIVE_SUBSCRIPTION';
 
   const PLAN_WEIGHTS: Record<string, number> = {
@@ -29,17 +29,20 @@ const PricingCheckout: React.FC = () => {
     try {
       const result = await db.purchasePlan(planKey.toLowerCase() as any, duration);
       
-      const newAuth = { 
+      // Actualizamos el objeto de autenticación completo preservando token y usuario
+      const updatedAuth = { 
         ...auth, 
         accountStatus: { 
-          ...auth.accountStatus, 
-          plan: result.plan, 
           accessLevel: result.accessLevel,
-          daysRemaining: duration === 'yearly' ? 365 : (duration === 'semiannual' ? 180 : 30),
-          reason: 'ACTIVE_SUBSCRIPTION'
+          reason: 'ACTIVE_SUBSCRIPTION',
+          plan: result.plan, 
+          daysRemaining: result.daysRemaining,
+          limits: result.limits, // Esto actualiza hasExcelReports, maxVehicles, etc.
+          warning: null
         } 
       };
-      localStorage.setItem('fmp_auth', JSON.stringify(newAuth));
+      
+      localStorage.setItem('fmp_auth', JSON.stringify(updatedAuth));
 
       await Swal.fire({
         icon: 'success',
@@ -48,7 +51,7 @@ const PricingCheckout: React.FC = () => {
         confirmButtonColor: '#4f46e5'
       });
 
-      // Forzar recarga completa para que App.tsx lea el nuevo estado del banner
+      // Redirección forzada al dashboard para refrescar el estado global de la App
       window.location.href = '#/dashboard';
       window.location.reload();
     } catch (err: any) {
@@ -65,12 +68,11 @@ const PricingCheckout: React.FC = () => {
 
   const getPrice = (base: number) => {
     if (duration === 'monthly') return base;
-    if (duration === 'semiannual') return base * 5; // 1 mes gratis (paga 5)
-    return base * 10; // 2 meses gratis (paga 10)
+    if (duration === 'semiannual') return base * 5; 
+    return base * 10; 
   };
 
   const currentWeight = PLAN_WEIGHTS[currentPlan] || 0;
-  // Si ya es Pro o Enterprise, no puede bajar a Básico
   const cannotChooseBasico = currentWeight > 1;
 
   return (
@@ -91,7 +93,6 @@ const PricingCheckout: React.FC = () => {
             </div>
           )}
 
-          {/* Frequency Selector */}
           <div className="inline-flex p-1 bg-slate-200 rounded-2xl gap-1 shadow-inner">
             <button 
               onClick={() => setDuration('monthly')}
@@ -154,16 +155,6 @@ const PricingCheckout: React.FC = () => {
             isDisabled={isPlanActive}
             restrictionMsg={isPlanActive ? "Tienes un plan vigente" : ""}
           />
-        </div>
-        
-        <div className="mt-20 p-12 bg-indigo-900 rounded-[48px] text-white flex flex-col lg:flex-row items-center justify-between gap-10 shadow-3xl shadow-indigo-200">
-          <div className="text-center lg:text-left">
-            <h3 className="text-3xl font-black mb-3 tracking-tight">¿Operas una flota corporativa?</h3>
-            <p className="text-indigo-200 font-medium italic opacity-80 text-lg">Si manejas más de 100 vehículos, diseñamos una infraestructura dedicada y precios por volumen para ti.</p>
-          </div>
-          <button className="bg-white text-indigo-900 px-10 py-5 rounded-2xl font-black shadow-xl hover:bg-slate-100 transition-all active:scale-95 uppercase text-xs tracking-[0.2em] whitespace-nowrap">
-            Hablar con un Experto
-          </button>
         </div>
       </div>
     </div>

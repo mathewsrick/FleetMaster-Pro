@@ -14,11 +14,15 @@ const Reports: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'general' | 'expenses' | 'income' | 'consolidated'>('general');
 
-  const authData = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
+  // Cargamos los datos de autenticación cada vez que el componente se monta
+  const authData = useMemo(() => JSON.parse(localStorage.getItem('fmp_auth') || '{}'), []);
   const plan = authData.accountStatus?.plan;
   const limits = authData.accountStatus?.limits;
 
-  // Los planes Free y Básico tienen acceso restringido
+  // Verificamos si el usuario tiene habilitado el reporte Excel específicamente por sus límites
+  const canExportExcel = limits?.hasExcelReports === true;
+
+  // Los planes Free y Básico tienen acceso restringido a ciertas pestañas de datos crudos
   const isRestricted = plan === 'free_trial' || plan === 'basico';
 
   useEffect(() => {
@@ -41,7 +45,7 @@ const Reports: React.FC = () => {
   }, []);
 
   const exportToExcel = (tableId: string, fileName: string) => {
-    if (!limits?.hasExcelReports) return;
+    if (!canExportExcel) return;
     const table = document.getElementById(tableId);
     if (!table) return;
     const wb = XLSX.utils.table_to_book(table);
@@ -80,12 +84,13 @@ const Reports: React.FC = () => {
           <p className="text-slate-500 text-sm">Análisis consolidado — Plan {plan?.toUpperCase()}</p>
         </div>
         
-        {limits?.hasExcelReports && (
+        {/* El botón de Excel ahora depende directamente de canExportExcel */}
+        {canExportExcel && (
           <button 
             onClick={() => exportToExcel('report-table', `reporte_${activeTab}`)} 
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg active:scale-95 transition-all"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-black flex items-center gap-2 shadow-lg shadow-emerald-100 active:scale-95 transition-all text-xs uppercase tracking-widest"
           >
-            <i className="fa-solid fa-file-excel"></i> Exportar Excel
+            <i className="fa-solid fa-file-excel"></i> Exportar a Excel
           </button>
         )}
       </div>
