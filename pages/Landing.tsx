@@ -17,7 +17,7 @@ const Landing: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
-
+    
     try {
       await db.submitContactForm(contactForm);
       setIsSubmitting(false);
@@ -34,7 +34,7 @@ const Landing: React.FC = () => {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-600 scroll-smooth">
       {/* Floating WhatsApp Button */}
-      <a
+      <a 
         href={WHATSAPP_LINK}
         target="_blank"
         rel="noopener noreferrer"
@@ -75,7 +75,7 @@ const Landing: React.FC = () => {
            <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-100 rounded-full blur-[100px]"></div>
            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-100 rounded-full blur-[100px]"></div>
         </div>
-
+        
         <div className="max-w-5xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-4 py-1.5 rounded-full text-indigo-600 text-[10px] font-black uppercase tracking-[0.2em] mb-8 animate-bounce">
             <i className="fa-solid fa-sparkles"></i> Gestión de Flotas 2.0
@@ -91,8 +91,8 @@ const Landing: React.FC = () => {
             <Link to="/login" className="w-full sm:w-auto bg-indigo-600 text-white px-10 py-5 rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95">
               Prueba Gratis (5 días)
             </Link>
-            <a href="#features" className="w-full sm:w-auto bg-white text-slate-600 border border-slate-200 px-10 py-5 rounded-2xl font-black text-lg hover:bg-slate-50 transition-all">
-              Ver Funciones
+            <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto bg-emerald-500 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-emerald-600 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-100">
+              <i className="fa-brands fa-whatsapp"></i> Hablar por WhatsApp
             </a>
           </div>
         </div>
@@ -105,34 +105,34 @@ const Landing: React.FC = () => {
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-4">Potencia tu Negocio</h2>
             <p className="text-slate-500 font-medium">Diseñado específicamente para las necesidades de los propietarios de vehículos.</p>
           </div>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard
-              icon="fa-money-bill-transfer"
-              title="Moras Automatizadas"
+            <FeatureCard 
+              icon="fa-money-bill-transfer" 
+              title="Moras Automatizadas" 
               desc="El sistema detecta pagos incompletos y genera saldos de mora automáticamente vinculados a cada conductor."
             />
-            <FeatureCard
-              icon="fa-camera-retro"
-              title="Inspección Fotográfica"
+            <FeatureCard 
+              icon="fa-camera-retro" 
+              title="Inspección Fotográfica" 
               desc="Guarda hasta 5 fotos de alta resolución por vehículo para un control estricto de daños y estado de entrega."
             />
-            <FeatureCard
-              icon="fa-id-card"
-              title="Documentación Digital"
+            <FeatureCard 
+              icon="fa-id-card" 
+              title="Documentación Digital" 
               desc="Almacena licencias y cédulas de conductores. Recibe alertas visuales cuando el SOAT o la Tecnomecánica van a vencer."
             />
-            <FeatureCard
-              icon="fa-chart-mixed"
-              title="Rendimiento por Vehículo"
+            <FeatureCard 
+              icon="fa-chart-mixed" 
+              title="Rendimiento por Vehículo" 
               desc="Explora ingresos y gastos de forma individual para saber qué vehículo es realmente rentable."
             />
-            <FeatureCard
-              icon="fa-file-excel"
-              title="Reportes Profesionales"
+            <FeatureCard 
+              icon="fa-file-excel" 
+              title="Reportes Profesionales" 
               desc="Exporta toda tu operación a Excel en segundos para auditorías o contabilidad externa (Planes Pro/Ent)."
             />
-            <FeatureCard
+            <FeatureCard 
               icon="fa-envelope-open-text" 
               title="Recibos Automáticos" 
               desc="Envía comprobantes de pago detallados por correo electrónico con el saldo de mora actualizado al instante."
@@ -152,7 +152,7 @@ const Landing: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <PriceCard 
               plan="Básico" 
-              price="29" 
+              price="59.900" 
               desc="Para dueños que inician su flota."
               features={[
                 'Hasta 3 Vehículos', 
@@ -164,7 +164,7 @@ const Landing: React.FC = () => {
             />
             <PriceCard 
               plan="Pro" 
-              price="59" 
+              price="95.900" 
               featured 
               desc="El estándar para flotas activas."
               features={[
@@ -178,7 +178,7 @@ const Landing: React.FC = () => {
             />
             <PriceCard 
               plan="Enterprise" 
-              price="149" 
+              price="145.900" 
               desc="Potencia máxima sin límites."
               features={[
                 'Vehículos Ilimitados', 
@@ -388,7 +388,7 @@ const PriceCard = ({ plan, price, features, featured, desc }: any) => (
 const LegalModal = ({ isOpen, onClose, title, content }: any) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md overflow-y-auto" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
       <div 
         className="bg-white rounded-[40px] w-full max-w-2xl p-8 md:p-12 shadow-2xl relative my-8 animate-in fade-in zoom-in duration-300"
         onClick={e => e.stopPropagation()}

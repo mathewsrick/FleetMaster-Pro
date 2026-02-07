@@ -48,7 +48,7 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
             <div className="bg-indigo-600 p-2 rounded-lg">
               <i className="fa-solid fa-truck-fast"></i>
             </div>
-            <span className="font-black text-xl tracking-tight">FleetMaster Hub</span>
+            <span className="font-black text-lg tracking-tight">FleetMaster Hub</span>
           </div>
           <nav className="flex-1 px-4 space-y-2">
             {navItems.map(item => (

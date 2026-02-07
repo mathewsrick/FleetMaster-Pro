@@ -3,7 +3,7 @@ import { db, formatDateDisplay } from '../services/db';
 import { Driver, Vehicle, Payment, Arrear } from '../types';
 import Swal from 'sweetalert2';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
 
 const Drivers: React.FC = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);

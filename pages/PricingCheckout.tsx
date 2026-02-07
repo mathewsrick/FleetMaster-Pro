@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { db } from '../services/db';
 import Swal from 'sweetalert2';
 
+type Duration = 'monthly' | 'semiannual' | 'yearly';
+
 const PricingCheckout: React.FC = () => {
-  const [duration, setDuration] = useState<'monthly' | 'yearly'>('monthly');
+  const [duration, setDuration] = useState<Duration>('monthly');
   const [loading, setLoading] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -14,9 +16,8 @@ const PricingCheckout: React.FC = () => {
   const handlePurchase = async (planKey: string) => {
     setLoading(planKey);
     try {
-      const result = await db.purchasePlan(planKey.toLowerCase(), duration);
-
-      // Actualizar localStorage con el nuevo estatus
+      const result = await db.purchasePlan(planKey.toLowerCase() as any, duration);
+      
       const newAuth = { 
         ...auth, 
         accountStatus: { 
@@ -47,6 +48,12 @@ const PricingCheckout: React.FC = () => {
     }
   };
 
+  const getPrice = (base: number) => {
+    if (duration === 'monthly') return base;
+    if (duration === 'semiannual') return base * 5; // 1 mes gratis (paga 5)
+    return base * 10; // 2 meses gratis (paga 10)
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 p-8 md:p-24 font-sans selection:bg-indigo-100">
       <div className="max-w-6xl mx-auto">
@@ -55,27 +62,37 @@ const PricingCheckout: React.FC = () => {
             <i className="fa-solid fa-arrow-left"></i> Volver al Inicio
           </Link>
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">Elige tu Plan de Crecimiento</h1>
-          <p className="text-slate-500 font-medium max-w-xl mx-auto mb-10">Sube de nivel tu operación. Al elegir el plan anual obtienes 2 meses de regalo.</p>
+          <p className="text-slate-500 font-medium max-w-xl mx-auto mb-10">Optimiza tu rentabilidad eligiendo planes de mayor duración.</p>
           
-          {/* Duration Toggle */}
-          <div className="flex items-center justify-center gap-4">
-            <span className={`text-sm font-bold ${duration === 'monthly' ? 'text-indigo-600' : 'text-slate-400'}`}>Mensual</span>
+          {/* Frequency Selector */}
+          <div className="inline-flex p-1 bg-slate-200 rounded-2xl gap-1">
             <button 
-              onClick={() => setDuration(duration === 'monthly' ? 'yearly' : 'monthly')}
-              className="w-16 h-8 bg-slate-200 rounded-full relative p-1 transition-all"
+              onClick={() => setDuration('monthly')}
+              className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${duration === 'monthly' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
             >
-              <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all absolute top-1 ${duration === 'yearly' ? 'left-9' : 'left-1'}`}></div>
+              Mensual
             </button>
-            <span className={`text-sm font-bold ${duration === 'yearly' ? 'text-indigo-600' : 'text-slate-400'}`}>
-              Anual <span className="text-[10px] bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full ml-1">Ahorra 17%</span>
-            </span>
+            <button 
+              onClick={() => setDuration('semiannual')}
+              className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${duration === 'semiannual' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              6 Meses
+              <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[7px] px-1.5 py-0.5 rounded-full">1 mes GRATIS</span>
+            </button>
+            <button 
+              onClick={() => setDuration('yearly')}
+              className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${duration === 'yearly' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              Anual
+              <span className="absolute -top-2 -right-2 bg-indigo-600 text-white text-[7px] px-1.5 py-0.5 rounded-full">2 meses GRATIS</span>
+            </button>
           </div>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <PlanOption 
             name="Básico" 
-            price={duration === 'monthly' ? 29 : 290} 
+            price={getPrice(59900)} 
             duration={duration}
             limits="3 Vehículos | 5 Conductores"
             desc="Soporte por email y visualización de historial de 30 días."
@@ -85,7 +102,7 @@ const PricingCheckout: React.FC = () => {
           />
           <PlanOption 
             name="Pro" 
-            price={duration === 'monthly' ? 59 : 590} 
+            price={getPrice(95900)} 
             duration={duration}
             recommended 
             limits="6 Vehículos | 10 Conductores"
@@ -96,7 +113,7 @@ const PricingCheckout: React.FC = () => {
           />
           <PlanOption 
             name="Enterprise" 
-            price={duration === 'monthly' ? 149 : 1490} 
+            price={getPrice(145900)} 
             duration={duration}
             limits="Vehículos Ilimitados"
             desc="Reportes semanales automáticos y acceso a API personalizada."
@@ -120,31 +137,39 @@ const PricingCheckout: React.FC = () => {
   );
 };
 
-const PlanOption = ({ name, price, limits, recommended, desc, duration, onSelect, loading, isCurrent }: any) => (
-  <div className={`p-10 rounded-[40px] bg-white border-2 transition-all flex flex-col relative ${recommended ? 'border-indigo-600 shadow-2xl scale-105' : 'border-slate-100 shadow-sm'}`}>
-    {recommended && <span className="inline-block bg-indigo-600 text-white text-[10px] font-black px-4 py-1.5 rounded-full mb-6 uppercase tracking-[0.2em] shadow-lg shadow-indigo-100">Más Recomendado</span>}
-    {isCurrent && <span className="absolute top-6 right-6 text-indigo-600 text-[8px] font-black uppercase bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">Plan Actual</span>}
-    
-    <h3 className="text-2xl font-black text-slate-900 mb-2">{name}</h3>
-    <p className="text-indigo-600 font-black text-[10px] uppercase tracking-widest mb-4">{limits}</p>
-    <p className="text-slate-400 text-sm font-medium mb-8 leading-relaxed">{desc}</p>
-    
-    <div className="text-5xl font-black text-slate-900 mb-10 mt-auto">
-      ${price}<span className="text-sm font-bold text-slate-300 ml-1">/{duration === 'monthly' ? 'mes' : 'año'}</span>
-    </div>
+const PlanOption = ({ name, price, limits, recommended, desc, duration, onSelect, loading, isCurrent }: any) => {
+  const durationLabel = {
+    monthly: 'mes',
+    semiannual: 'semestre',
+    yearly: 'año'
+  };
 
-    <button 
-      disabled={loading || isCurrent}
-      onClick={onSelect}
-      className={`w-full font-black py-5 rounded-2xl transition-all active:scale-95 shadow-xl uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 ${
-        isCurrent ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-dashed border-2' :
-        recommended ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200' : 'bg-slate-900 text-white hover:bg-slate-800'
-      }`}
-    >
-      {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : null}
-      {isCurrent ? 'Tu plan actual' : `Activar Plan ${name}`}
-    </button>
-  </div>
-);
+  return (
+    <div className={`p-10 rounded-[40px] bg-white border-2 transition-all flex flex-col relative ${recommended ? 'border-indigo-600 shadow-2xl scale-105' : 'border-slate-100 shadow-sm'}`}>
+      {recommended && <span className="inline-block bg-indigo-600 text-center text-white text-[10px] font-black px-4 py-1.5 rounded-full mb-6 uppercase tracking-[0.2em] shadow-lg shadow-indigo-100">Más Recomendado</span>}
+      {isCurrent && <span className="absolute top-6 right-6 text-indigo-600 text-[8px] font-black uppercase bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">Plan Actual</span>}
+      
+      <h3 className="text-2xl font-black text-slate-900 mb-2">{name}</h3>
+      <p className="text-indigo-600 font-black text-[10px] uppercase tracking-widest mb-4">{limits}</p>
+      <p className="text-slate-400 text-sm font-medium mb-8 leading-relaxed">{desc}</p>
+      
+      <div className="text-5xl font-black text-slate-900 mb-10 mt-auto">
+        ${price.toLocaleString()}<span className="text-sm font-bold text-slate-300 ml-1">/{durationLabel[duration as keyof typeof durationLabel]}</span>
+      </div>
+
+      <button 
+        disabled={loading || (isCurrent && duration === 'monthly')}
+        onClick={onSelect}
+        className={`w-full font-black py-5 rounded-2xl transition-all active:scale-95 shadow-xl uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 ${
+          isCurrent && duration === 'monthly' ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-dashed border-2' :
+          recommended ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200' : 'bg-slate-900 text-white hover:bg-slate-800'
+        }`}
+      >
+        {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : null}
+        {isCurrent && duration === 'monthly' ? 'Tu plan actual' : `Activar Plan ${name}`}
+      </button>
+    </div>
+  );
+};
 
 export default PricingCheckout;

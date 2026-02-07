@@ -3,7 +3,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { db } from '../services/db';
 import { Vehicle, Driver, Payment, Expense } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Fix: Cast import.meta to any to avoid TypeScript error on 'env'
+const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
 
 const Dashboard: React.FC = () => {
   const [data, setData] = useState({

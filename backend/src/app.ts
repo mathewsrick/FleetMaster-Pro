@@ -25,7 +25,7 @@ const app = express();
 app.use(cors() as any);
 app.use(express.json() as any);
 
-const publicPath = path.join(process.cwd(), 'backend/public');
+const publicPath = path.join((process as any).cwd(), 'backend/public');
 
 // asegurar uploads
 ['uploads/vehicles', 'uploads/drivers'].forEach(dir => {

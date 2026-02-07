@@ -32,7 +32,7 @@ export const activate = async (userId: string, keyId: string) => {
   return { startDate, dueDate, plan: key.plan };
 };
 
-export const purchasePlan = async (userId: string, plan: string, duration: 'monthly' | 'yearly') => {
+export const purchasePlan = async (userId: string, plan: string, duration: 'monthly' | 'semiannual' | 'yearly') => {
   const currentSub = await repo.findActiveSubscriptionByUserId(userId);
   
   const currentWeight = currentSub ? (PLAN_WEIGHTS[currentSub.plan] || 0) : 0;
@@ -47,6 +47,8 @@ export const purchasePlan = async (userId: string, plan: string, duration: 'mont
   
   if (duration === 'yearly') {
     dueDate.setFullYear(dueDate.getFullYear() + 1);
+  } else if (duration === 'semiannual') {
+    dueDate.setMonth(dueDate.getMonth() + 6);
   } else {
     dueDate.setMonth(dueDate.getMonth() + 1);
   }
