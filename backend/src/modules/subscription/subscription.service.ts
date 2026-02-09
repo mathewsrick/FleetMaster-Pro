@@ -10,6 +10,12 @@ const PLAN_WEIGHTS: Record<string, number> = {
   'enterprise': 3
 };
 
+const BASE_PRICES: Record<string, number> = {
+  'basico': 59900,
+  'pro': 95900,
+  'enterprise': 145900
+};
+
 export const activate = async (userId: string, keyId: string) => {
   const key = await repo.findKeyById(keyId);
   if (!key) throw new Error('Llave inválida o ya utilizada');
@@ -61,15 +67,24 @@ export const purchasePlan = async (userId: string, plan: string, duration: 'mont
   const dueDate = new Date();
   
   let daysAdded = 30;
+  let monthsCount = 1;
+  let totalPrice = BASE_PRICES[plan] || 0;
+
   if (duration === 'yearly') {
     dueDate.setFullYear(dueDate.getFullYear() + 1);
     daysAdded = 365;
+    monthsCount = 12;
+    totalPrice = (BASE_PRICES[plan] || 0) * 10; // 2 meses gratis
   } else if (duration === 'semiannual') {
     dueDate.setMonth(dueDate.getMonth() + 6);
     daysAdded = 180;
+    monthsCount = 6;
+    totalPrice = (BASE_PRICES[plan] || 0) * 5; // 1 mes gratis
   } else {
     dueDate.setMonth(dueDate.getMonth() + 1);
     daysAdded = 30;
+    monthsCount = 1;
+    totalPrice = BASE_PRICES[plan] || 0;
   }
 
   await repo.deactivateUserKeys(userId);
@@ -78,7 +93,8 @@ export const purchasePlan = async (userId: string, plan: string, duration: 'mont
     id: uuid(),
     userId,
     plan,
-    price: 0, 
+    price: totalPrice, 
+    months: monthsCount,
     startDate: startDate.toISOString(),
     dueDate: dueDate.toISOString(),
     status: 'active' as const
@@ -101,6 +117,7 @@ export const generateKey = async (plan: string, price: number) => {
     userId: null,
     plan,
     price,
+    months: 1, // Por defecto 1 para llaves generadas manualmente
     startDate: null,
     dueDate: null,
     status: 'active' as const

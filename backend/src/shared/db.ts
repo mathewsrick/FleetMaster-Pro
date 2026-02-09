@@ -80,6 +80,7 @@ dbHelpers.exec(`
     userId TEXT,
     plan TEXT,
     price REAL,
+    months INTEGER DEFAULT 1,
     startDate TEXT,
     dueDate TEXT,
     status TEXT DEFAULT 'active'
