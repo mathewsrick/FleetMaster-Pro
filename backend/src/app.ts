@@ -3,6 +3,11 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+// Nota: En un entorno real, instalarías helmet y express-rate-limit.
+// Aquí se implementan lógicas equivalentes o se asume su disponibilidad vía esm.sh.
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+
 import driverRoutes from './modules/drivers/driver.routes';
 import vehicleRoutes from './modules/vehicles/vehicle.routes';
 import expenseRoutes from './modules/expenses/expense.routes';
@@ -22,8 +27,19 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Configuración de Seguridad Global
+app.use(helmet() as any); // Protege contra vulnerabilidades web conocidas
 app.use(cors() as any);
-app.use(express.json() as any);
+app.use(express.json({ limit: '10kb' }) as any); // Limita el tamaño del body para prevenir ataques DoS
+
+// Limitador de peticiones para rutas sensibles (Login/Register)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 10, // Máximo 10 intentos por ventana para Login/Registro
+  message: { error: 'Demasiados intentos. Por favor intenta más tarde.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const publicPath = path.join((process as any).cwd(), 'backend/public');
 
@@ -33,10 +49,11 @@ const publicPath = path.join((process as any).cwd(), 'backend/public');
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 });
 
-// Exponer la carpeta public bajo /api/public para compatibilidad con el frontend
 app.use('/api/public', express.static(publicPath) as any);
 
-app.use('/api/auth', authRoutes as any);
+// Aplicar limitador a rutas de autenticación
+app.use('/api/auth', authLimiter as any, authRoutes as any);
+
 app.use('/api/contact', contactRoutes as any);
 app.use('/api/uploads', authenticate as any, uploadRoutes as any);
 app.use('/api/subscription', authenticate as any, subscriptionRoutes as any);

@@ -13,7 +13,22 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   enterprise: { maxVehicles: 99999, maxDrivers: 99999, hasExcelReports: true, hasCustomApi: true, maxHistoryDays: null, maxRangeDays: null },
 };
 
+// Nueva función de validación de seguridad
+const isPasswordSecure = (password: string): boolean => {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  
+  return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
+};
+
 export const register = async (email: string, username: string, password: string) => {
+  if (!isPasswordSecure(password)) {
+    throw new Error('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.');
+  }
+
   const existingEmail = await repo.findUserByEmail(email);
   if (existingEmail) throw new Error('El correo electrónico ya está registrado.');
   
@@ -25,7 +40,7 @@ export const register = async (email: string, username: string, password: string
     id: uuid(),
     email,
     username,
-    password: await bcrypt.hash(password, 10),
+    password: await bcrypt.hash(password, 12), // Aumentamos rondas de sal para mayor seguridad
     role: 'USER',
     isConfirmed: 0,
     confirmationToken,
@@ -35,7 +50,7 @@ export const register = async (email: string, username: string, password: string
 
   await emailService.sendEmail({
     to: email,
-    subject: "Bienvenido a FleetMaster Hub - Confirma tu cuenta",
+    subject: "Bienvenido a FleetMaster Pro - Confirma tu cuenta",
     html: emailService.templates.welcome(username, confirmationToken)
   });
 };
@@ -57,15 +72,19 @@ export const requestPasswordReset = async (identifier: string) => {
   await repo.setResetToken(user.id, resetToken);
   await emailService.sendEmail({
     to: user.email,
-    subject: "Recuperación de Contraseña - FleetMaster Hub",
+    subject: "Recuperación de Contraseña - FleetMaster Pro",
     html: emailService.templates.passwordReset(resetToken)
   });
 };
 
 export const resetPassword = async (token: string, newPass: string) => {
+  if (!isPasswordSecure(newPass)) {
+    throw new Error('La nueva contraseña no cumple los requisitos de seguridad.');
+  }
+  
   const user = await repo.findUserByResetToken(token);
   if (!user) throw new Error('Token de recuperación inválido o expirado');
-  const hashedPassword = await bcrypt.hash(newPass, 10);
+  const hashedPassword = await bcrypt.hash(newPass, 12);
   await repo.updatePassword(user.id, hashedPassword);
   await repo.setResetToken(user.id, null); 
 };

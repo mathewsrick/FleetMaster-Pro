@@ -51,7 +51,7 @@ const LOGO_HTML = `
 
 export const templates = {
   welcome: (username: string, token: string) => `
-    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155; text-align: center;">
       ${LOGO_HTML}
       <h2 style="color: #1e293b; text-align: center; font-size: 24px; margin-bottom: 24px;">¡Bienvenido a bordo, ${username}!</h2>
       <p style="font-size: 16px; line-height: 1.6;">Gracias por confiar en <strong>FleetMaster Hub</strong> para la gestión de tu flota.</p>
