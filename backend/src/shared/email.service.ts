@@ -73,11 +73,59 @@ export const templates = {
       ${LOGO_HTML}
       <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 32px;">
         <h2 style="color: #15803d; margin: 0; font-size: 20px;">Comprobante de Pago Exitoso</h2>
+        <p style="color: #166534; font-size: 14px; margin: 8px 0 0 0;">Tu pago ha sido procesado y registrado correctamente.</p>
       </div>
+
+      <h3 style="color: #1e293b; font-size: 16px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 16px;">Detalle de la Transacción</h3>
       <table style="width: 100%; border-collapse: collapse;">
-        <tr><td style="padding: 12px 0; color: #64748b;">Monto:</td><td style="text-align: right; font-weight: 800;">$${amount.toLocaleString()}</td></tr>
-        <tr><td style="padding: 12px 0; color: #64748b;">Fecha:</td><td style="text-align: right;">${date}</td></tr>
+        <tr>
+          <td style="padding: 12px 0; color: #64748b; font-size: 14px;">Monto Recibido:</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b; font-weight: 800; font-size: 18px;">$${amount.toLocaleString()}</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px 0; color: #64748b; font-size: 14px;">Concepto:</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b; font-weight: 600;">${type === 'canon' ? 'Canon Semanal' : 'Abono a Mora'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px 0; color: #64748b; font-size: 14px;">Fecha de Registro:</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b;">${date}</td>
+        </tr>
+        ${createdArrear > 0 ? `
+        <tr>
+          <td style="padding: 12px 0; color: #e11d48; font-size: 14px; font-weight: bold;">Nueva Mora Generada:</td>
+          <td style="padding: 12px 0; text-align: right; color: #e11d48; font-weight: 800;">$${createdArrear.toLocaleString()}</td>
+        </tr>
+        ` : ''}
       </table>
+
+      ${totalDebt > 0 ? `
+      <div style="margin-top: 40px; padding: 24px; background-color: #fff1f2; border-radius: 20px; border: 1px solid #fecdd3;">
+        <h3 style="color: #be123c; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px 0; display: flex; align-items: center;">
+          Resumen de Deuda Pendiente
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          ${pendingArrears.map(a => `
+            <tr>
+              <td style="padding: 6px 0; color: #9f1239;">Mora del ${a.dueDate}</td>
+              <td style="padding: 6px 0; text-align: right; color: #be123c; font-weight: bold;">$${a.amountOwed.toLocaleString()}</td>
+            </tr>
+          `).join('')}
+          <tr style="border-top: 1px solid #fda4af;">
+            <td style="padding: 12px 0 0 0; font-weight: 800; color: #9f1239; font-size: 15px;">TOTAL ACUMULADO:</td>
+            <td style="padding: 12px 0 0 0; text-align: right; font-weight: 900; color: #e11d48; font-size: 18px;">$${totalDebt.toLocaleString()}</td>
+          </tr>
+        </table>
+      </div>
+      ` : `
+      <div style="margin-top: 40px; padding: 16px; background-color: #f0fdf4; border-radius: 12px; text-align: center; border: 1px solid #dcfce7;">
+        <p style="color: #15803d; font-size: 13px; font-weight: bold; margin: 0;">¡Tu cuenta está al día! No tienes moras pendientes.</p>
+      </div>
+      `}
+
+      <div style="margin-top: 48px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 24px;">
+        <p style="font-size: 12px; color: #94a3b8; margin: 0;">Este es un comprobante automático generado por FleetMaster Pro.</p>
+        <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">© 2025 FleetMaster Pro System.</p>
+      </div>
     </div>
   `,
   weeklyEnterpriseReport: (stats: any) => `
