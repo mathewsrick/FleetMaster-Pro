@@ -23,6 +23,10 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
   return { data, total };
 };
 
+export const findById = async (userId: string, id: string): Promise<Payment | null> => {
+  return dbHelpers.prepare('SELECT * FROM payments WHERE id = ? AND userId = ?').get([id, userId]) as Payment;
+};
+
 export const findByDriver = async (userId: string, driverId: string) =>
   dbHelpers.prepare(`
     SELECT * FROM payments
@@ -48,10 +52,6 @@ export const create = async (p: any) =>
   ]);
 
 export const remove = async (userId: string, id: string) => {
-    dbHelpers.prepare(
-        'DELETE FROM arrears WHERE originPaymentId = ? AND userId = ?'
-    ).run([id, userId]);
-
     return dbHelpers.prepare(
         'DELETE FROM payments WHERE id = ? AND userId = ?'
     ).run([id, userId]);

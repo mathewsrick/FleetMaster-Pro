@@ -224,7 +224,7 @@ const Vehicles: React.FC = () => {
                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estatus Legal y Seguro</h4>
                        <div className="flex justify-between text-sm"><span className="font-bold text-slate-500">Vencimiento SOAT:</span><span className={`font-black ${new Date(selectedVehicle.soatExpiration) < new Date() ? 'text-rose-500' : 'text-emerald-500'}`}>{selectedVehicle.soatExpiration || 'N/A'}</span></div>
                        <div className="flex justify-between text-sm"><span className="font-bold text-slate-500">Vencimiento Técnico:</span><span className="font-black text-indigo-500">{selectedVehicle.techExpiration || 'N/A'}</span></div>
-                       <div className="flex justify-between text-sm pt-2 border-t"><span className="font-bold text-slate-500">Canon Mensual:</span><span className="font-black text-slate-900">${selectedVehicle.canonValue.toLocaleString()}</span></div>
+                       <div className="flex justify-between text-sm pt-2 border-t"><span className="font-bold text-slate-500">Valor de renta:</span><span className="font-black text-slate-900">${selectedVehicle.canonValue.toLocaleString()}</span></div>
                     </div>
                  </div>
 
@@ -270,7 +270,7 @@ const Vehicles: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Modelo</label>
-                  <input required value={formData.model || ''} onChange={e => setFormData({...formData, model: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold focus:ring-2 focus:ring-indigo-500" />
+                  <input required placeholder='Ej: Nissan March' value={formData.model || ''} onChange={e => setFormData({...formData, model: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold focus:ring-2 focus:ring-indigo-500" />
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Placa</label>
@@ -280,7 +280,7 @@ const Vehicles: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-[10px) font-black text-slate-400 uppercase tracking-widest mb-1 block">Vencimiento SOAT</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Vencimiento SOAT</label>
                   <input type="date" required value={formData.soatExpiration || ''} onChange={e => setFormData({...formData, soatExpiration: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />
                 </div>
                 <div>
@@ -299,7 +299,7 @@ const Vehicles: React.FC = () => {
                   <input required value={formData.color || ''} onChange={e => setFormData({...formData, color: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" placeholder="Ej: Blanco" />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Canon Mensual ($)</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Valor de renta ($)</label>
                   <input type="number" required value={formData.canonValue || ''} onChange={e => setFormData({...formData, canonValue: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none" placeholder="0.00" />
                 </div>
               </div>

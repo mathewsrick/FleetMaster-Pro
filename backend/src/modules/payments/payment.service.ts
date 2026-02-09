@@ -25,7 +25,7 @@ export const getAll = async (userId: string, query: any, plan: string) => {
     const minDate = new Date();
     minDate.setDate(minDate.getDate() - restriction.maxHistoryDays);
     const minDateStr = minDate.toISOString().split('T')[0];
-    
+
     if (!startDate || startDate < minDateStr) {
       startDate = minDateStr;
     }
@@ -36,7 +36,7 @@ export const getAll = async (userId: string, query: any, plan: string) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
-    
+
     if (diffDays > restriction.maxRangeDays) {
       throw new Error(`Su plan Pro permite un rango máximo de ${restriction.maxRangeDays} días de búsqueda.`);
     }
@@ -92,8 +92,8 @@ export const create = async (userId: string, data: any) => {
             to: user.email,
             subject: `Recibo de Pago - $${payment.amount.toLocaleString()} - ${payment.date}`,
             html: emailService.templates.paymentConfirmation(
-                payment.amount, 
-                payment.date, 
+                payment.amount,
+                payment.date,
                 payment.type,
                 createdArrearAmount,
                 totalAccumulatedDebt,
@@ -104,5 +104,25 @@ export const create = async (userId: string, data: any) => {
 };
 
 export const remove = async (userId: string, id: string) => {
-        await paymentRepo.remove(userId, id);
+    const payment = await paymentRepo.findById(userId, id);
+    if (!payment) return;
+
+    // Si el pago es un abono a una mora (arrear_payment)
+    // Fix: payment.type is now compatible with 'arrear_payment' after updating PaymentType definition in payment.entity.ts
+    if (payment.type === 'arrear_payment' && payment.arrearId) {
+        // Restaurar el monto en la mora original
+        dbHelpers.prepare(`
+            UPDATE arrears
+            SET amountOwed = amountOwed + ?, status = 'pending'
+            WHERE id = ? AND userId = ?
+        `).run([payment.amount, payment.arrearId, userId]);
+    }
+
+    // Si el pago es un canon (canon)
+    if (!payment.type || payment.type === 'canon') {
+        // Eliminar cualquier mora que haya sido generada por este pago específico
+        await arrearRepo.removeByOriginPayment(id);
+    }
+
+    await paymentRepo.remove(userId, id);
 };

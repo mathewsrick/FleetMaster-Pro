@@ -346,7 +346,7 @@ const Drivers: React.FC = () => {
                 <div>
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Asignar a Vehículo</label>
                    <select value={formData.vehicleId || ''} onChange={e => setFormData({ ...formData, vehicleId: e.target.value || null })} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none appearance-none cursor-pointer shadow-inner">
-                      <option value="">Permanecer sin vehículo...</option>
+                      <option value="">Sin vehículo asignado</option>
                       {vehicles.filter(v => !v.driverId || v.driverId === editingId).map(v => (
                         <option key={v.id} value={v.id}>{v.licensePlate} — {v.model}</option>
                       ))}
