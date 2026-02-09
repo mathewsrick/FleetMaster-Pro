@@ -1,5 +1,5 @@
-export type PlanType = 'free_trial' | 'basico' | 'pro' | 'enterprise';
-export type UserRole = 'USER' | 'SUPERADMIN';
+export type PlanType = 'free_trial' | 'basico' | 'pro' | 'enterprise' | 'custom';
+export type UserRole = 'SUPERADMIN' | 'SUPPORT' | 'ADMIN_FLOTA';
 
 export interface PlanLimits {
   maxVehicles: number;
@@ -10,6 +10,45 @@ export interface PlanLimits {
   maxRangeDays: number | null;
 }
 
+export interface SystemFeature {
+  key: string;
+  name: string;
+  description: string;
+  category: string;
+}
+
+export interface SystemPlan {
+  id: string;
+  name: string;
+  key: PlanType;
+  priceMonthly: number;
+  priceYearly: number;
+  trialDays: number;
+  isActive: boolean;
+  limits: PlanLimits;
+  features: string[]; // Keys of enabled features
+}
+
+export interface GlobalBanner {
+  id: string;
+  message: string;
+  type: 'info' | 'warning' | 'error' | 'success';
+  isActive: boolean;
+  startDate: string;
+  endDate: string;
+}
+
+export interface AuditLog {
+  id: string;
+  userId: string;
+  username: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  details: string;
+  createdAt: string;
+}
+
 export interface User {
   id: string;
   username: string;
@@ -17,11 +56,13 @@ export interface User {
   role: UserRole;
   isConfirmed: boolean;
   lastActivity?: string;
+  createdAt?: string;
+  isBlocked?: boolean;
 }
 
 export interface AccountStatus {
   accessLevel: 'FULL' | 'LIMITED' | 'BLOCKED';
-  reason: 'ACTIVE_SUBSCRIPTION' | 'TRIAL' | 'TRIAL_EXPIRED' | 'UNCONFIRMED';
+  reason: 'ACTIVE_SUBSCRIPTION' | 'TRIAL' | 'TRIAL_EXPIRED' | 'UNCONFIRMED' | 'ADMIN_BLOCKED';
   plan: PlanType;
   daysRemaining: number;
   limits: PlanLimits;

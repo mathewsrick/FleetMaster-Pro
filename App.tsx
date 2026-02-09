@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Vehicles from './pages/Vehicles';
@@ -11,21 +11,49 @@ import Landing from './pages/Landing';
 import PricingCheckout from './pages/PricingCheckout';
 import SuperAdmin from './pages/SuperAdmin';
 import ConfirmAccount from './pages/ConfirmAccount';
-import { AuthState, AccountStatus } from './types';
+import { AuthState, AccountStatus, GlobalBanner } from './types';
+import { db } from './services/db';
 
 const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) => {
   if (!status) return null;
-  
-  // Mostrar banner solo si quedan 5 días o menos (en Trial o Suscripción Activa)
   const isExpiringSoon = status.daysRemaining <= 5 && (status.reason === 'TRIAL' || status.reason === 'ACTIVE_SUBSCRIPTION');
-  
   if (!isExpiringSoon) return null;
 
   return (
-    <div className="bg-amber-500 text-white px-4 py-2 text-center text-sm font-bold flex items-center justify-center gap-4 animate-in slide-in-from-top duration-500">
+    <div className="bg-amber-500 text-white px-4 py-2 text-center text-sm font-bold flex items-center justify-center gap-4 animate-in slide-in-from-top duration-500 border-b border-amber-600 shadow-lg relative z-[70]">
       <i className="fa-solid fa-triangle-exclamation"></i>
       {status.reason === 'TRIAL' ? 'Tu periodo de prueba' : 'Tu plan actual'} expira en {status.daysRemaining} {status.daysRemaining === 1 ? 'día' : 'días'}. 
       <Link to="/pricing-checkout" className="underline hover:text-amber-100 ml-2">Renovar o subir de plan ahora</Link>
+    </div>
+  );
+};
+
+const GlobalNotices: React.FC = () => {
+  const [banners, setBanners] = useState<GlobalBanner[]>([]);
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const res = await db.request<GlobalBanner[]>('/superadmin/dashboard');
+        // Aquí simplificamos, idealmente habría un endpoint /banners/active
+        if ((res as any).activeBanners) setBanners((res as any).activeBanners);
+      } catch (e) {}
+    };
+    fetchBanners();
+  }, []);
+
+  if (banners.length === 0) return null;
+
+  return (
+    <div className="relative z-[60]">
+      {banners.map(b => (
+        <div key={b.id} className={`px-4 py-2 text-center text-xs font-black uppercase tracking-widest text-white flex items-center justify-center gap-3 border-b ${
+          b.type === 'error' ? 'bg-rose-600 border-rose-700' :
+          b.type === 'warning' ? 'bg-amber-600 border-amber-700' : 'bg-indigo-600 border-indigo-700'
+        }`}>
+          <i className="fa-solid fa-circle-info"></i>
+          {b.message}
+        </div>
+      ))}
     </div>
   );
 };
@@ -41,27 +69,28 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
     { path: '/reports', label: 'Reportes', icon: 'fa-file-lines' },
   ];
 
-  if (role === 'SUPERADMIN') {
+  if (role === 'SUPERADMIN' || role === 'SUPPORT') {
     navItems.unshift({ path: '/superadmin', label: 'Admin SaaS', icon: 'fa-shield-halved' });
   }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+      <GlobalNotices />
       <TrialBanner status={status} />
       <div className="flex flex-1">
-        <aside className="w-64 bg-slate-900 text-white hidden lg:flex flex-col">
+        <aside className="w-64 bg-slate-900 text-white hidden lg:flex flex-col border-r border-white/5">
           <div className="p-8 flex items-center gap-3">
-            <div className="bg-indigo-600 p-2 rounded-lg">
+            <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
               <i className="fa-solid fa-truck-fast"></i>
             </div>
-            <span className="font-black text-lg tracking-tight">FleetMaster Hub</span>
+            <span className="font-black text-xl tracking-tight">FleetMaster Hub</span>
           </div>
           <nav className="flex-1 px-4 space-y-2">
             {navItems.map(item => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${location.pathname === item.path ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold ${location.pathname === item.path ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
               >
                 <i className={`fa-solid ${item.icon} w-5`}></i>
                 {item.label}
@@ -69,23 +98,23 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
             ))}
           </nav>
           <div className="p-6 border-t border-white/5">
-            <button onClick={logout} className="flex items-center gap-3 px-4 py-3 w-full text-rose-400 hover:text-rose-300 font-bold transition-colors">
-              <i className="fa-solid fa-right-from-bracket"></i>
+            <button onClick={logout} className="flex items-center gap-3 px-4 py-3 w-full text-rose-400 hover:text-rose-300 font-bold transition-colors group">
+              <i className="fa-solid fa-right-from-bracket group-hover:translate-x-1 transition-transform"></i>
               Cerrar Sesión
             </button>
           </div>
         </aside>
 
         <main className="flex-1 overflow-auto">
-          <header className="bg-white h-20 border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-40">
+          <header className="bg-white/80 backdrop-blur-md h-20 border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-40">
             <div className="flex items-center gap-4 ml-auto">
               <div className="text-right">
                 <p className="text-sm font-black text-slate-900">{username}</p>
-                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
-                  {role === 'SUPERADMIN' ? 'Control Maestro' : (status?.plan.replace('_', ' ') || 'Free Trial')}
+                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">
+                  {role === 'SUPERADMIN' ? 'Control Maestro' : role === 'SUPPORT' ? 'Soporte Staff' : (status?.plan.replace('_', ' ') || 'Free Trial')}
                 </p>
               </div>
-              <div className="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-black border border-slate-200 uppercase">
+              <div className="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-black border border-slate-200 uppercase shadow-inner">
                 {username[0]}
               </div>
             </div>
@@ -126,7 +155,7 @@ const App: React.FC = () => {
         <Route path="/pricing-checkout" element={auth.isAuthenticated ? <PricingCheckout /> : <Navigate to="/login" />} />
         
         <Route path="/dashboard" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Dashboard /></Layout> : <Navigate to="/" />} />
-        <Route path="/superadmin" element={auth.isAuthenticated && auth.user?.role === 'SUPERADMIN' ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><SuperAdmin /></Layout> : <Navigate to="/" />} />
+        <Route path="/superadmin" element={auth.isAuthenticated && (auth.user?.role === 'SUPERADMIN' || auth.user?.role === 'SUPPORT') ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><SuperAdmin /></Layout> : <Navigate to="/" />} />
         <Route path="/vehicles" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Vehicles /></Layout> : <Navigate to="/" />} />
         <Route path="/drivers" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Drivers /></Layout> : <Navigate to="/" />} />
         <Route path="/payments" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Payments /></Layout> : <Navigate to="/" />} />

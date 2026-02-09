@@ -6,11 +6,13 @@ import { ENV } from '../../config/env';
 import { PlanLimits, PlanType } from '../../../../types';
 import * as emailService from '../../shared/email.service';
 
+// Added 'custom' plan to satisfy Record<PlanType, PlanLimits> requirement
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   free_trial: { maxVehicles: 1, maxDrivers: 1, hasExcelReports: false, hasCustomApi: false, maxHistoryDays: 30, maxRangeDays: null },
   basico: { maxVehicles: 3, maxDrivers: 5, hasExcelReports: false, hasCustomApi: false, maxHistoryDays: 30, maxRangeDays: null },
   pro: { maxVehicles: 6, maxDrivers: 10, hasExcelReports: true, hasCustomApi: false, maxHistoryDays: null, maxRangeDays: 90 },
   enterprise: { maxVehicles: 99999, maxDrivers: 99999, hasExcelReports: true, hasCustomApi: true, maxHistoryDays: null, maxRangeDays: null },
+  custom: { maxVehicles: 99999, maxDrivers: 99999, hasExcelReports: true, hasCustomApi: true, maxHistoryDays: null, maxRangeDays: null },
 };
 
 // Nueva función de validación de seguridad
@@ -50,7 +52,7 @@ export const register = async (email: string, username: string, password: string
 
   await emailService.sendEmail({
     to: email,
-    subject: "Bienvenido a FleetMaster Pro - Confirma tu cuenta",
+    subject: "Bienvenido a FleetMaster Hub - Confirma tu cuenta",
     html: emailService.templates.welcome(username, confirmationToken)
   });
 };
@@ -72,7 +74,7 @@ export const requestPasswordReset = async (identifier: string) => {
   await repo.setResetToken(user.id, resetToken);
   await emailService.sendEmail({
     to: user.email,
-    subject: "Recuperación de Contraseña - FleetMaster Pro",
+    subject: "Recuperación de Contraseña - FleetMaster Hub",
     html: emailService.templates.passwordReset(resetToken)
   });
 };

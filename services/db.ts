@@ -25,6 +25,7 @@ const getAuth = () => {
   return auth ? JSON.parse(auth) : null;
 };
 
+// Internal request helper
 const request = async <T>(url: string, method: string = 'GET', body?: any): Promise<T> => {
   const auth = getAuth();
   const token = auth?.token;
@@ -48,6 +49,8 @@ const request = async <T>(url: string, method: string = 'GET', body?: any): Prom
 
 export const db = {
   init: () => {},
+  // Added request to the db object to allow direct API calls from components
+  request,
   login: (credentials: { identifier: string; password: string }) => request<any>('/auth/login', 'POST', credentials),
   register: (credentials: { email: string; username: string; password: string }) => request<any>('/auth/register', 'POST', credentials),
   confirm: (token: string) => request<any>(`/auth/confirm/${token}`, 'GET'),
