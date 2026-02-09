@@ -12,18 +12,21 @@ const Reports: React.FC = () => {
     arrears: [] as Arrear[],
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'general' | 'expenses' | 'income' | 'consolidated'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'expenses' | 'income' | 'consolidated' | 'drivers'>('general');
 
-  // Cargamos los datos de autenticación cada vez que el componente se monta
+  // Filtros y Paginación
+  const [selectedVehicleId, setSelectedVehicleId] = useState('');
+  const [selectedDriverId, setSelectedDriverId] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const authData = useMemo(() => JSON.parse(localStorage.getItem('fmp_auth') || '{}'), []);
   const plan = authData.accountStatus?.plan;
   const limits = authData.accountStatus?.limits;
 
-  // Verificamos si el usuario tiene habilitado el reporte Excel específicamente por sus límites
   const canExportExcel = limits?.hasExcelReports === true;
-
-  // Los planes Free y Básico tienen acceso restringido a ciertas pestañas de datos crudos
   const isRestricted = plan === 'free_trial' || plan === 'basico';
+  const hasAdvancedReports = plan === 'pro' || plan === 'enterprise';
 
   useEffect(() => {
     const load = async () => {
@@ -44,6 +47,11 @@ const Reports: React.FC = () => {
     load();
   }, []);
 
+  // Reset pagination when tab or filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, selectedVehicleId, selectedDriverId]);
+
   const exportToExcel = (tableId: string, fileName: string) => {
     if (!canExportExcel) return;
     const table = document.getElementById(tableId);
@@ -52,21 +60,42 @@ const Reports: React.FC = () => {
     XLSX.writeFile(wb, `${fileName}_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
+  // Lógica de filtrado y paginación local
+  const filteredData = useMemo(() => {
+    if (activeTab === 'income') {
+      let filtered = data.payments;
+      if (selectedVehicleId) filtered = filtered.filter(p => p.vehicleId === selectedVehicleId);
+      const total = filtered.length;
+      const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+      return { list: paginated, total };
+    }
+    if (activeTab === 'expenses') {
+      let filtered = data.expenses;
+      if (selectedVehicleId) filtered = filtered.filter(e => e.vehicleId === selectedVehicleId);
+      const total = filtered.length;
+      const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+      return { list: paginated, total };
+    }
+    if (activeTab === 'drivers') {
+      let filtered = data.drivers;
+      if (selectedDriverId) filtered = filtered.filter(d => d.id === selectedDriverId);
+      const total = filtered.length;
+      const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+      return { list: paginated, total };
+    }
+    return { list: [], total: 0 };
+  }, [activeTab, data, selectedVehicleId, selectedDriverId, currentPage]);
+
   const consolidatedStats = useMemo(() => {
     const totalIncome = data.payments.reduce((sum, p) => sum + p.amount, 0);
     const totalExpenses = data.expenses.reduce((sum, e) => sum + e.amount, 0);
     const totalDebt = data.arrears.filter(a => a.status === 'pending').reduce((sum, a) => sum + a.amountOwed, 0);
-    const vehicleBreakdown = data.vehicles.map(v => {
-      const vIncome = data.payments.filter(p => p.vehicleId === v.id).reduce((sum, p) => sum + p.amount, 0);
-      const vExpenses = data.expenses.filter(e => e.vehicleId === v.id).reduce((sum, e) => sum + e.amount, 0);
-      const vDebt = data.arrears.filter(a => a.vehicleId === v.id && a.status === 'pending').reduce((sum, a) => sum + a.amountOwed, 0);
-      return { ...v, income: vIncome, expenses: vExpenses, net: vIncome - vExpenses, debt: vDebt };
-    });
-    return { totalIncome, totalExpenses, totalDebt, balance: totalIncome - totalExpenses, vehicleBreakdown };
+    return { totalIncome, totalExpenses, totalDebt, balance: totalIncome - totalExpenses };
   }, [data]);
 
   const allTabs = [
     { id: 'general', label: 'Estado de Flota', icon: 'fa-car-side', restricted: false },
+    { id: 'drivers', label: 'Historial Conductores', icon: 'fa-id-card-clip', restricted: !hasAdvancedReports },
     { id: 'income', label: 'Libro de Ingresos', icon: 'fa-vault', restricted: isRestricted },
     { id: 'expenses', label: 'Libro de Gastos', icon: 'fa-file-invoice-dollar', restricted: isRestricted },
     { id: 'consolidated', label: 'Consolidado P&L', icon: 'fa-chart-line', restricted: false }
@@ -76,6 +105,8 @@ const Reports: React.FC = () => {
 
   if (loading) return <div className="text-center py-20"><i className="fa-solid fa-spinner fa-spin text-4xl text-indigo-600"></i></div>;
 
+  const totalPages = Math.ceil(filteredData.total / itemsPerPage);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -84,7 +115,6 @@ const Reports: React.FC = () => {
           <p className="text-slate-500 text-sm">Análisis consolidado — Plan {plan?.toUpperCase()}</p>
         </div>
         
-        {/* El botón de Excel ahora depende directamente de canExportExcel */}
         {canExportExcel && (
           <button 
             onClick={() => exportToExcel('report-table', `reporte_${activeTab}`)} 
@@ -110,6 +140,38 @@ const Reports: React.FC = () => {
           </button>
         ))}
       </div>
+
+      {/* Filtros dinámicos según pestaña */}
+      {(activeTab === 'income' || activeTab === 'expenses' || (activeTab === 'drivers' && hasAdvancedReports)) && (
+        <div className="bg-white px-6 py-4 border-x border-slate-200 flex flex-wrap gap-4 items-center animate-in fade-in duration-300">
+          {(activeTab === 'income' || activeTab === 'expenses') && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vehículo:</span>
+              <select 
+                value={selectedVehicleId} 
+                onChange={(e) => setSelectedVehicleId(e.target.value)}
+                className="text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">Todos</option>
+                {data.vehicles.map(v => <option key={v.id} value={v.id}>{v.licensePlate}</option>)}
+              </select>
+            </div>
+          )}
+          {activeTab === 'drivers' && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Conductor:</span>
+              <select 
+                value={selectedDriverId} 
+                onChange={(e) => setSelectedDriverId(e.target.value)}
+                className="text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">Todos</option>
+                {data.drivers.map(d => <option key={d.id} value={d.id}>{d.firstName} {d.lastName}</option>)}
+              </select>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="bg-white rounded-b-xl shadow-sm border border-slate-200 border-t-0 overflow-hidden">
         <div className="overflow-x-auto">
@@ -147,6 +209,44 @@ const Reports: React.FC = () => {
                 </tbody>
               </>
             )}
+
+            {activeTab === 'drivers' && hasAdvancedReports && (
+              <>
+                <thead className="bg-slate-50 border-b">
+                  <tr>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Conductor</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Vehículo Actual</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Pagado</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Mora Pendiente</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredData.list.map((d: any) => {
+                    const vehicle = data.vehicles.find(v => v.driverId === d.id);
+                    const dPayments = data.payments.filter(p => p.driverId === d.id).reduce((sum, p) => sum + p.amount, 0);
+                    const dDebt = data.arrears.filter(a => a.driverId === d.id && a.status === 'pending').reduce((sum, a) => sum + a.amountOwed, 0);
+                    return (
+                      <tr key={d.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 font-bold text-slate-800 text-sm">{d.firstName} {d.lastName}</td>
+                        <td className="px-6 py-4">
+                          {vehicle ? <span className="text-[10px] font-black bg-indigo-50 text-indigo-600 px-2 py-1 rounded-lg border border-indigo-100">{vehicle.licensePlate}</span> : <span className="text-[10px] text-slate-300 italic">Ninguno</span>}
+                        </td>
+                        <td className="px-6 py-4 text-right text-emerald-600 font-bold text-sm">${dPayments.toLocaleString()}</td>
+                        <td className="px-6 py-4 text-right text-rose-600 font-bold text-sm">${dDebt.toLocaleString()}</td>
+                        <td className="px-6 py-4 text-center">
+                          {dDebt > 0 ? (
+                            <span className="text-[8px] font-black bg-rose-50 text-rose-600 px-2 py-1 rounded-full border border-rose-100">MOROSO</span>
+                          ) : (
+                            <span className="text-[8px] font-black bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full border border-emerald-100">AL DÍA</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </>
+            )}
             
             {activeTab === 'income' && !isRestricted && (
               <>
@@ -159,7 +259,7 @@ const Reports: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {data.payments.map(p => (
+                  {filteredData.list.map((p: any) => (
                     <tr key={p.id} className="hover:bg-slate-50">
                       <td className="px-6 py-4 text-sm font-mono">{formatDateDisplay(p.date)}</td>
                       <td className="px-6 py-4 text-sm font-bold text-indigo-600">
@@ -180,14 +280,18 @@ const Reports: React.FC = () => {
                 <thead className="bg-slate-50 border-b">
                   <tr>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Fecha</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Vehículo</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Descripción</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-right">Monto</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {data.expenses.map(e => (
+                  {filteredData.list.map((e: any) => (
                     <tr key={e.id} className="hover:bg-slate-50">
                       <td className="px-6 py-4 text-sm font-mono">{formatDateDisplay(e.date)}</td>
+                      <td className="px-6 py-4 text-sm font-bold text-indigo-600">
+                        {data.vehicles.find(v => v.id === e.vehicleId)?.licensePlate || 'General'}
+                      </td>
                       <td className="px-6 py-4 text-sm font-bold">{e.description}</td>
                       <td className="px-6 py-4 text-right font-black text-rose-600 text-sm">-${e.amount.toLocaleString()}</td>
                     </tr>
@@ -225,10 +329,36 @@ const Reports: React.FC = () => {
             )}
           </table>
         </div>
+
+        {/* Paginación */}
+        {(activeTab === 'income' || activeTab === 'expenses' || (activeTab === 'drivers' && hasAdvancedReports)) && (
+          <div className="px-6 py-4 bg-slate-50 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs font-bold text-slate-400 tracking-tight">
+              Mostrando página <span className="text-slate-900">{currentPage}</span> de <span className="text-slate-900">{totalPages || 1}</span> 
+              <span className="mx-2 opacity-30">•</span> {filteredData.total} registros encontrados
+            </div>
+            <div className="flex gap-2">
+              <button 
+                disabled={currentPage === 1} 
+                onClick={() => setCurrentPage(p => p - 1)} 
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all shadow-sm"
+              >
+                <i className="fa-solid fa-chevron-left text-xs"></i>
+              </button>
+              <button 
+                disabled={currentPage === totalPages || filteredData.total === 0} 
+                onClick={() => setCurrentPage(p => p + 1)} 
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all shadow-sm"
+              >
+                <i className="fa-solid fa-chevron-right text-xs"></i>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-      
+
       {isRestricted && (
-        <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex items-center gap-4">
+        <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex items-center gap-4 animate-in slide-in-from-bottom duration-500">
           <div className="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
             <i className="fa-solid fa-lock text-sm"></i>
           </div>
