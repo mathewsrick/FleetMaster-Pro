@@ -57,13 +57,13 @@ export const create = async (userId: string, data: any) => {
 
     let createdArrearAmount = 0;
 
-    if ((!payment.type || payment.type === 'canon') && payment.generateArrear !== false) {
+    if ((!payment.type || payment.type === 'renta') && payment.generateArrear !== false) {
         const vehicle: any = dbHelpers
-            .prepare('SELECT canonValue FROM vehicles WHERE id = ?')
+            .prepare('SELECT rentaValue FROM vehicles WHERE id = ?')
             .get([payment.vehicleId]);
 
-        if (vehicle && payment.amount < vehicle.canonValue) {
-            createdArrearAmount = vehicle.canonValue - payment.amount;
+        if (vehicle && payment.amount < vehicle.rentaValue) {
+            createdArrearAmount = vehicle.rentaValue - payment.amount;
             await arrearRepo.create({
                 id: uuid(),
                 userId,
@@ -77,12 +77,10 @@ export const create = async (userId: string, data: any) => {
         }
     }
 
-    // Obtener deudas actualizadas
     const allPendingArrears = await arrearRepo.findByDriver(userId, payment.driverId);
     const pendingArrears = allPendingArrears.filter((a: any) => a.status === 'pending');
     const totalAccumulatedDebt = pendingArrears.reduce((sum: number, a: any) => sum + a.amountOwed, 0);
 
-    // Alerta automática: Recibo para el CONDUCTOR
     const driver: any = await driverRepo.findById(userId, payment.driverId);
     if (driver && driver.email) {
         await emailService.sendEmail({
@@ -99,7 +97,6 @@ export const create = async (userId: string, data: any) => {
         });
     }
 
-    // Notificación opcional para el administrador
     const user = await authRepo.findUserById(userId);
     if (user && user.email) {
         await emailService.sendEmail({
@@ -129,7 +126,7 @@ export const remove = async (userId: string, id: string) => {
         `).run([payment.amount, payment.arrearId, userId]);
     }
 
-    if (!payment.type || payment.type === 'canon') {
+    if (!payment.type || payment.type === 'renta') {
         await arrearRepo.removeByOriginPayment(id);
     }
 

@@ -1,4 +1,4 @@
-export type PaymentType = 'canon' | 'arrear_payment' | 'other';
+export type PaymentType = 'renta' | 'arrear_payment' | 'other';
 
 export interface Payment {
     id: string;

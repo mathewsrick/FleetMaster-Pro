@@ -49,15 +49,15 @@ const Dashboard: React.FC = () => {
     const totalPayments = data.payments.reduce((sum, p) => sum + p.amount, 0);
     const totalExpenses = data.expenses.reduce((sum, e) => sum + e.amount, 0);
     const activeVehicles = data.vehicles.filter(v => v.driverId).length;
-    const totalPotentialCanon = data.vehicles.reduce((sum, v) => sum + (v.driverId ? v.canonValue : 0), 0);
-    
+    const totalPotentialRenta = data.vehicles.reduce((sum, v) => sum + (v.driverId ? v.rentaValue : 0), 0);
+
     return {
       totalPayments,
       totalExpenses,
       activeVehicles,
       totalVehicles: data.vehicles.length,
       netBalance: totalPayments - totalExpenses,
-      potentialRevenue: totalPotentialCanon,
+      potentialRevenue: totalPotentialRenta,
     };
   }, [data]);
 

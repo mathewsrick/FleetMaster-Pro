@@ -113,13 +113,13 @@ dbHelpers.exec(`
     insuranceNumber TEXT, 
     soatExpiration TEXT, 
     techExpiration TEXT, 
-    canonValue REAL, 
+    rentaValue REAL, 
     driverId TEXT,
     photos TEXT
   )
 `);
 
-dbHelpers.exec(`CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY, userId TEXT, amount REAL, date TEXT, driverId TEXT, vehicleId TEXT, type TEXT DEFAULT 'canon', arrearId TEXT)`);
+dbHelpers.exec(`CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY, userId TEXT, amount REAL, date TEXT, driverId TEXT, vehicleId TEXT, type TEXT DEFAULT 'renta', arrearId TEXT)`);
 dbHelpers.exec(`CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, userId TEXT, description TEXT, amount REAL, date TEXT, vehicleId TEXT)`);
 dbHelpers.exec(`CREATE TABLE IF NOT EXISTS arrears (id TEXT PRIMARY KEY, userId TEXT, amountOwed REAL, status TEXT DEFAULT 'pending', driverId TEXT, vehicleId TEXT, dueDate TEXT, originPaymentId TEXT)`);
 

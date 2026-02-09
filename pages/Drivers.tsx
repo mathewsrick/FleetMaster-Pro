@@ -304,7 +304,7 @@ const Drivers: React.FC = () => {
                          {driverHistory.payments.length > 0 ? driverHistory.payments.map(p => (
                             <div key={p.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                <div>
-                                  <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{p.type === 'canon' ? 'Pago Canon Semanal' : 'Abono a Mora'}</p>
+                                  <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{p.type === 'renta' ? 'Pago de Renta' : 'Abono a Mora'}</p>
                                   <p className="text-[10px] font-bold text-slate-400"><i className="fa-solid fa-calendar-day mr-1"></i> {formatDateDisplay(p.date)}</p>
                                </div>
                                <div className="text-right">

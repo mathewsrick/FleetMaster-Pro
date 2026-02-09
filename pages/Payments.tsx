@@ -26,7 +26,7 @@ const Payments: React.FC = () => {
     date: new Date().toISOString().split('T')[0],
     driverId: '',
     vehicleId: '',
-    type: 'canon',
+    type: 'renta',
     arrearId: null,
   });
 
@@ -61,7 +61,7 @@ const Payments: React.FC = () => {
       ...formData,
       driverId,
       vehicleId: vehicle?.id || '',
-      amount: formData.type === 'canon' ? vehicle?.canonValue || 0 : 0,
+      amount: formData.type === 'renta' ? vehicle?.rentaValue || 0 : 0,
       arrearId: null,
     });
   };
@@ -113,7 +113,7 @@ const Payments: React.FC = () => {
         date: new Date().toISOString().split('T')[0],
         driverId: '',
         vehicleId: '',
-        type: 'canon',
+        type: 'renta',
         arrearId: null,
       });
       setIsModalOpen(false);
@@ -203,7 +203,7 @@ const Payments: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`text-[10px] font-black px-2 py-1 rounded-lg border uppercase tracking-widest ${p.type === 'arrear_payment' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
-                          {p.type === 'arrear_payment' ? 'ABONO MORA' : 'CANON SEMANAL'}
+                          {p.type === 'arrear_payment' ? 'ABONO MORA' : 'RENTA'}
                         </span>
                       </td>
                       <td className="px-6 py-4 font-black text-slate-900">${p.amount.toLocaleString()}</td>
@@ -328,14 +328,14 @@ const Payments: React.FC = () => {
                   <button
                     type="button"
                     disabled={saving}
-                    onClick={() => setFormData({ ...formData, type: 'canon', arrearId: null })}
+                    onClick={() => setFormData({ ...formData, type: 'renta', arrearId: null })}
                     className={`py-4 px-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
-                      formData.type === 'canon'
+                      formData.type === 'renta'
                         ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-100'
                         : 'bg-slate-50 text-slate-400 border-transparent hover:border-slate-200 hover:text-slate-600'
                     }`}
                   >
-                    Canon Semanal
+                    Renta
                   </button>
                   <button
                     type="button"

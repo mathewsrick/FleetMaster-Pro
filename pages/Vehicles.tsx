@@ -30,7 +30,7 @@ const Vehicles: React.FC = () => {
     year: new Date().getFullYear(), licensePlate: '', model: '', color: '',
     purchaseDate: new Date().toISOString().split('T')[0],
     insurance: '', insuranceNumber: '', soatExpiration: '', techExpiration: '',
-    canonValue: 0, driverId: null, photos: []
+    rentaValue: 0, driverId: null, photos: []
   };
 
   const [formData, setFormData] = useState<Partial<Vehicle>>(initialForm);
@@ -224,7 +224,7 @@ const Vehicles: React.FC = () => {
                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estatus Legal y Seguro</h4>
                        <div className="flex justify-between text-sm"><span className="font-bold text-slate-500">Vencimiento SOAT:</span><span className={`font-black ${new Date(selectedVehicle.soatExpiration) < new Date() ? 'text-rose-500' : 'text-emerald-500'}`}>{selectedVehicle.soatExpiration || 'N/A'}</span></div>
                        <div className="flex justify-between text-sm"><span className="font-bold text-slate-500">Vencimiento Técnico:</span><span className="font-black text-indigo-500">{selectedVehicle.techExpiration || 'N/A'}</span></div>
-                       <div className="flex justify-between text-sm pt-2 border-t"><span className="font-bold text-slate-500">Valor de renta:</span><span className="font-black text-slate-900">${selectedVehicle.canonValue.toLocaleString()}</span></div>
+                       <div className="flex justify-between text-sm pt-2 border-t"><span className="font-bold text-slate-500">Valor de renta:</span><span className="font-black text-slate-900">${selectedVehicle.rentaValue.toLocaleString()}</span></div>
                     </div>
                  </div>
 
@@ -300,7 +300,7 @@ const Vehicles: React.FC = () => {
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Valor de renta ($)</label>
-                  <input type="number" required value={formData.canonValue || ''} onChange={e => setFormData({...formData, canonValue: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none" placeholder="0.00" />
+                  <input type="number" required value={formData.rentaValue || ''} onChange={e => setFormData({...formData, rentaValue: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none" placeholder="0.00" />
                 </div>
               </div>
 

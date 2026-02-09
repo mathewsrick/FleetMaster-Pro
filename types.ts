@@ -54,9 +54,9 @@ export interface Vehicle {
   insuranceNumber: string;
   soatExpiration: string;
   techExpiration: string;
-  canonValue: number;
+  rentaValue: number;
   driverId: string | null;
-  driverName?: string; // Para visualización en listas
+  driverName?: string; 
   photos?: string[];
 }
 
@@ -69,10 +69,10 @@ export interface Driver {
   phone: string;
   idNumber: string;
   vehicleId: string | null;
-  vehiclePlate?: string; // Para visualización
+  vehiclePlate?: string; 
   licensePhoto?: string; 
   idPhoto?: string;
-  totalDebt?: number; // Calculado en backend
+  totalDebt?: number; 
 }
 
 export interface Payment {
@@ -82,7 +82,7 @@ export interface Payment {
   date: string;
   driverId: string;
   vehicleId: string;
-  type: 'canon' | 'arrear_payment';
+  type: 'renta' | 'arrear_payment';
   arrearId?: string | null;
   isPartial?: boolean;
 }

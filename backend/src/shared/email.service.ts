@@ -69,7 +69,7 @@ export const templates = {
         <h3 style="font-size: 14px; color: #4f46e5; margin-top: 0;">Términos y Condiciones Básicos:</h3>
         <ul style="font-size: 13px; color: #64748b; padding-left: 18px;">
           <li>El vehículo debe mantenerse en óptimas condiciones de limpieza.</li>
-          <li>Los pagos de canon semanal deben realizarse antes del vencimiento para evitar moras.</li>
+          <li>Los pagos de renta deben realizarse antes del vencimiento para evitar moras.</li>
           <li>Cualquier daño o siniestro debe reportarse inmediatamente al administrador.</li>
         </ul>
       </div>
@@ -113,7 +113,7 @@ export const templates = {
         </tr>
         <tr>
           <td style="padding: 12px 0; color: #64748b; font-size: 14px;">Concepto:</td>
-          <td style="padding: 12px 0; text-align: right; color: #1e293b; font-weight: 600;">${type === 'canon' ? 'Canon Semanal' : 'Abono a Mora'}</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b; font-weight: 600;">${type === 'renta' ? 'Renta' : 'Abono a Mora'}</td>
         </tr>
         <tr>
           <td style="padding: 12px 0; color: #64748b; font-size: 14px;">Fecha de Registro:</td>

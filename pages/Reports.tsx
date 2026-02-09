@@ -121,7 +121,7 @@ const Reports: React.FC = () => {
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Placa</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Modelo</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Conductor</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Canon Sem.</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Renta</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Recaudado</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Mora</th>
                   </tr>
@@ -138,7 +138,7 @@ const Reports: React.FC = () => {
                         <td className="px-6 py-4 text-sm">
                           {driver ? `${driver.firstName} ${driver.lastName}` : <span className="text-slate-300 italic">No asignado</span>}
                         </td>
-                        <td className="px-6 py-4 text-right font-medium text-sm">${v.canonValue.toLocaleString()}</td>
+                        <td className="px-6 py-4 text-right font-medium text-sm">${v.rentaValue.toLocaleString()}</td>
                         <td className="px-6 py-4 text-right text-emerald-600 font-bold text-sm">${vPayments.toLocaleString()}</td>
                         <td className="px-6 py-4 text-right text-rose-600 font-bold text-sm">${vDebt.toLocaleString()}</td>
                       </tr>
@@ -166,7 +166,7 @@ const Reports: React.FC = () => {
                         {data.vehicles.find(v => v.id === p.vehicleId)?.licensePlate}
                       </td>
                       <td className="px-6 py-4 text-[10px] font-black uppercase">
-                        {p.type === 'canon' ? 'Canon' : 'Mora'}
+                        {p.type === 'renta' ? 'Renta' : 'Mora'}
                       </td>
                       <td className="px-6 py-4 text-right font-black text-emerald-600 text-sm">${p.amount.toLocaleString()}</td>
                     </tr>

@@ -16,7 +16,6 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
     `)
     .all([userId, limit, offset]);
 
-  // Transform photos from JSON string to array
   const transformed = data.map((v: any) => ({
     ...v,
     driverName: v.driverName?.trim() || null,
@@ -31,10 +30,9 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
 };
 
 export const findById = async (id: string) => {
-  const v = await dbHelpers
+  return await dbHelpers
     .prepare('SELECT * FROM vehicles WHERE id = ?')
     .get([id]);
-  return v;
 };
 
 export const create = async (v: any) =>
@@ -42,7 +40,7 @@ export const create = async (v: any) =>
     INSERT INTO vehicles (
       id, userId, year, licensePlate, model, color,
       purchaseDate, insurance, insuranceNumber,
-      soatExpiration, techExpiration, canonValue, driverId, photos
+      soatExpiration, techExpiration, rentaValue, driverId, photos
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run([
     v.id,
@@ -56,7 +54,7 @@ export const create = async (v: any) =>
     v.insuranceNumber,
     v.soatExpiration,
     v.techExpiration,
-    v.canonValue,
+    v.rentaValue,
     v.driverId,
     JSON.stringify(v.photos || [])
   ]);
@@ -66,7 +64,7 @@ export const update = async (userId: string, v: any) =>
     UPDATE vehicles SET
       year=?, licensePlate=?, model=?, color=?, purchaseDate=?,
       insurance=?, insuranceNumber=?, soatExpiration=?, techExpiration=?,
-      canonValue=?, driverId=?, photos=?
+      rentaValue=?, driverId=?, photos=?
     WHERE id=? AND userId=?
   `).run([
     v.year,
@@ -78,7 +76,7 @@ export const update = async (userId: string, v: any) =>
     v.insuranceNumber,
     v.soatExpiration,
     v.techExpiration,
-    v.canonValue,
+    v.rentaValue,
     v.driverId,
     JSON.stringify(v.photos || []),
     v.id,
