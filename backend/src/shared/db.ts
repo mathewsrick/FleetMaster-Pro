@@ -92,6 +92,7 @@ dbHelpers.exec(`
     userId TEXT, 
     firstName TEXT NOT NULL, 
     lastName TEXT NOT NULL, 
+    email TEXT,
     phone TEXT, 
     idNumber TEXT,
     licensePhoto TEXT,

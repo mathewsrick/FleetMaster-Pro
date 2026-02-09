@@ -25,15 +25,19 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
   return { data, total };
 };
 
+export const findById = async (userId: string, id: string) =>
+  dbHelpers.prepare('SELECT * FROM drivers WHERE id = ? AND userId = ?').get([id, userId]);
+
 export const create = async (d: any) =>
   dbHelpers.prepare(`
-    INSERT INTO drivers (id, userId, firstName, lastName, phone, idNumber, licensePhoto, idPhoto)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO drivers (id, userId, firstName, lastName, email, phone, idNumber, licensePhoto, idPhoto)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run([
     d.id,
     d.userId,
     d.firstName,
     d.lastName,
+    d.email || null,
     d.phone,
     d.idNumber,
     d.licensePhoto || null,
@@ -43,11 +47,12 @@ export const create = async (d: any) =>
 export const update = async (userId: string, id: string, d: any) =>
   dbHelpers.prepare(`
     UPDATE drivers
-    SET firstName=?, lastName=?, phone=?, idNumber=?, licensePhoto=?, idPhoto=?
+    SET firstName=?, lastName=?, email=?, phone=?, idNumber=?, licensePhoto=?, idPhoto=?
     WHERE id=? AND userId=?
   `).run([
     d.firstName,
     d.lastName,
+    d.email || null,
     d.phone,
     d.idNumber,
     d.licensePhoto,
@@ -64,4 +69,4 @@ export const unassignVehicles = async (userId: string, driverId: string) =>
 export const remove = async (userId: string, id: string) =>
   dbHelpers.prepare(
     'DELETE FROM drivers WHERE id = ? AND userId = ?'
-  ).run([id, userId]);1
+  ).run([id, userId]);

@@ -18,6 +18,7 @@ interface EmailOptions {
 }
 
 export const sendEmail = async ({ to, subject, html }: EmailOptions) => {
+  if (!to) return false;
   try {
     const info = await transporter.sendMail({
       from: ENV.SMTP_FROM,
@@ -37,7 +38,7 @@ const LOGO_HTML = `
   <div style="text-align: center; margin-bottom: 24px;">
     <div style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 14px; border-radius: 16px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
        <img
-          src="${ENV.APP_URL}/public/assets/truck-fast-solid-full.png"
+          src="https://img.icons8.com/ios-filled/50/ffffff/truck.png"
           alt="FleetMaster Hub"
           width="32"
           height="32"
@@ -57,6 +58,34 @@ export const templates = {
       <div style="text-align: center; margin: 40px 0;">
         <a href="${ENV.APP_URL}/#/confirm/${token}" style="background-color: #4f46e5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);">Confirmar mi cuenta</a>
       </div>
+    </div>
+  `,
+  driverWelcome: (name: string) => `
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+      ${LOGO_HTML}
+      <h2 style="color: #1e293b; text-align: center; font-size: 24px; margin-bottom: 24px;">¡Bienvenido al Equipo, ${name}!</h2>
+      <p style="font-size: 16px; line-height: 1.6;">Has sido registrado exitosamente como conductor en FleetMaster Hub.</p>
+      <div style="background: #f8fafc; padding: 24px; border-radius: 16px; margin: 24px 0; border: 1px solid #e2e8f0;">
+        <h3 style="font-size: 14px; color: #4f46e5; margin-top: 0;">Términos y Condiciones Básicos:</h3>
+        <ul style="font-size: 13px; color: #64748b; padding-left: 18px;">
+          <li>El vehículo debe mantenerse en óptimas condiciones de limpieza.</li>
+          <li>Los pagos de canon semanal deben realizarse antes del vencimiento para evitar moras.</li>
+          <li>Cualquier daño o siniestro debe reportarse inmediatamente al administrador.</li>
+        </ul>
+      </div>
+    </div>
+  `,
+  vehicleAssignment: (name: string, vehicle: any) => `
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+      ${LOGO_HTML}
+      <h2 style="color: #1e293b; text-align: center; font-size: 24px; margin-bottom: 24px;">Nuevo Vehículo Asignado</h2>
+      <p style="font-size: 16px; line-height: 1.6;">Hola ${name}, se te ha asignado un nuevo vehículo para tu operación.</p>
+      <div style="background: #f1f5f9; padding: 32px; border-radius: 20px; text-align: center; margin: 32px 0;">
+        <div style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Placa del Vehículo</div>
+        <div style="font-size: 32px; font-weight: 900; color: #4f46e5; font-family: monospace;">${vehicle.licensePlate}</div>
+        <div style="font-size: 14px; font-weight: bold; color: #1e293b; margin-top: 8px;">${vehicle.model} (${vehicle.year})</div>
+      </div>
+      <p style="font-size: 13px; text-align: center; color: #64748b;">Recuerda realizar la inspección inicial y reportar cualquier novedad.</p>
     </div>
   `,
   passwordReset: (token: string) => `

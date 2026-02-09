@@ -65,6 +65,7 @@ export interface Driver {
   userId: string;
   firstName: string;
   lastName: string;
+  email: string;
   phone: string;
   idNumber: string;
   vehicleId: string | null;

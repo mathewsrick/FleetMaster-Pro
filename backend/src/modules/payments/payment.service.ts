@@ -2,6 +2,7 @@ import { v4 as uuid } from 'uuid';
 import * as paymentRepo from './payment.repository';
 import * as arrearRepo from '../arrears/arrear.repository';
 import * as authRepo from '../auth/auth.repository';
+import * as driverRepo from '../drivers/driver.repository';
 import * as emailService from '../../shared/email.service';
 import { dbHelpers } from '../../shared/db';
 
@@ -20,23 +21,17 @@ export const getAll = async (userId: string, query: any, plan: string) => {
 
   const restriction = PLAN_RESTRICTIONS[plan] || PLAN_RESTRICTIONS.free_trial;
 
-  // Aplicar Restricción de Historial (Free/Básico)
   if (restriction.maxHistoryDays) {
     const minDate = new Date();
     minDate.setDate(minDate.getDate() - restriction.maxHistoryDays);
     const minDateStr = minDate.toISOString().split('T')[0];
-
-    if (!startDate || startDate < minDateStr) {
-      startDate = minDateStr;
-    }
+    if (!startDate || startDate < minDateStr) startDate = minDateStr;
   }
 
-  // Aplicar Restricción de Rango (Pro)
   if (restriction.maxRangeDays && startDate && endDate) {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
-
     if (diffDays > restriction.maxRangeDays) {
       throw new Error(`Su plan Pro permite un rango máximo de ${restriction.maxRangeDays} días de búsqueda.`);
     }
@@ -82,18 +77,37 @@ export const create = async (userId: string, data: any) => {
         }
     }
 
+    // Obtener deudas actualizadas
     const allPendingArrears = await arrearRepo.findByDriver(userId, payment.driverId);
     const pendingArrears = allPendingArrears.filter((a: any) => a.status === 'pending');
     const totalAccumulatedDebt = pendingArrears.reduce((sum: number, a: any) => sum + a.amountOwed, 0);
 
+    // Alerta automática: Recibo para el CONDUCTOR
+    const driver: any = await driverRepo.findById(userId, payment.driverId);
+    if (driver && driver.email) {
+        await emailService.sendEmail({
+            to: driver.email,
+            subject: `Recibo de Pago - FleetMaster Hub - $${payment.amount.toLocaleString()}`,
+            html: emailService.templates.paymentConfirmation(
+                payment.amount, 
+                payment.date, 
+                payment.type,
+                createdArrearAmount,
+                totalAccumulatedDebt,
+                pendingArrears
+            )
+        });
+    }
+
+    // Notificación opcional para el administrador
     const user = await authRepo.findUserById(userId);
     if (user && user.email) {
         await emailService.sendEmail({
             to: user.email,
-            subject: `Recibo de Pago - $${payment.amount.toLocaleString()} - ${payment.date}`,
+            subject: `[ADMIN] Nuevo Recaudo - ${driver?.firstName || 'Conductor'} - $${payment.amount.toLocaleString()}`,
             html: emailService.templates.paymentConfirmation(
-                payment.amount,
-                payment.date,
+                payment.amount, 
+                payment.date, 
                 payment.type,
                 createdArrearAmount,
                 totalAccumulatedDebt,
@@ -107,20 +121,15 @@ export const remove = async (userId: string, id: string) => {
     const payment = await paymentRepo.findById(userId, id);
     if (!payment) return;
 
-    // Si el pago es un abono a una mora (arrear_payment)
-    // Fix: payment.type is now compatible with 'arrear_payment' after updating PaymentType definition in payment.entity.ts
     if (payment.type === 'arrear_payment' && payment.arrearId) {
-        // Restaurar el monto en la mora original
         dbHelpers.prepare(`
-            UPDATE arrears
-            SET amountOwed = amountOwed + ?, status = 'pending'
+            UPDATE arrears 
+            SET amountOwed = amountOwed + ?, status = 'pending' 
             WHERE id = ? AND userId = ?
         `).run([payment.amount, payment.arrearId, userId]);
     }
 
-    // Si el pago es un canon (canon)
     if (!payment.type || payment.type === 'canon') {
-        // Eliminar cualquier mora que haya sido generada por este pago específico
         await arrearRepo.removeByOriginPayment(id);
     }
 

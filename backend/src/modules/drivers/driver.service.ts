@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import * as repo from './driver.repository';
 import * as authRepo from '../auth/auth.repository';
+import * as emailService from '../../shared/email.service';
 
 const PLAN_MAX_DRIVERS: Record<string, number> = {
   'free_trial': 1,
@@ -30,6 +31,16 @@ export const create = async (userId: string, data: any) => {
 
   const driver = { id: uuid(), userId, ...data };
   await repo.create(driver);
+
+  // Alerta automática: Bienvenida al conductor
+  if (driver.email) {
+    await emailService.sendEmail({
+      to: driver.email,
+      subject: `¡Bienvenido a bordo! - Términos y Condiciones FleetMaster Hub`,
+      html: emailService.templates.driverWelcome(`${driver.firstName} ${driver.lastName}`)
+    });
+  }
+
   return driver;
 };
 
