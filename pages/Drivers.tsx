@@ -29,7 +29,7 @@ const Drivers: React.FC = () => {
   const limits = authData.accountStatus?.limits;
   const reachedLimit = limits ? total >= limits.maxDrivers : false;
 
-  const initialForm: Partial<Driver> = { firstName: '', lastName: '', phone: '', idNumber: '', vehicleId: null, licensePhoto: '', idPhoto: '' };
+  const initialForm: Partial<Driver> = { firstName: '', lastName: '', email: '', phone: '', idNumber: '', vehicleId: null, licensePhoto: '', idPhoto: '' };
   const [formData, setFormData] = useState<Partial<Driver>>(initialForm);
 
   useEffect(() => { loadData(); }, [page, limit]);
@@ -178,7 +178,7 @@ const Drivers: React.FC = () => {
                 <tr key={d.id} className="hover:bg-slate-50 transition-colors group">
                   <td className="px-6 py-4">
                     <p className="font-bold text-slate-900">{d.firstName} {d.lastName}</p>
-                    <p className="text-[10px] font-mono text-slate-400 uppercase tracking-tighter">ID: {d.idNumber}</p>
+                    <p className="text-[10px] font-mono text-slate-400 uppercase tracking-tighter">ID: {d.idNumber} | {d.email || 'Sin email'}</p>
                   </td>
                   <td className="px-6 py-4">
                     {d.vehiclePlate ? (
@@ -335,6 +335,17 @@ const Drivers: React.FC = () => {
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Apellidos</label>
                   <input required placeholder="Ej: Pérez" value={formData.lastName || ''} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Correo Electrónico</label>
+                  <input type="email" required placeholder="conductor@correo.com" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Número de Teléfono</label>
+                  <input required placeholder="Ej: 3001234567" value={formData.phone || ''} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
                 </div>
               </div>
 

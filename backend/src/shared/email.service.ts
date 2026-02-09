@@ -38,7 +38,7 @@ const LOGO_HTML = `
   <div style="text-align: center; margin-bottom: 24px;">
     <div style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 14px; border-radius: 16px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
        <img
-          src="https://img.icons8.com/ios-filled/50/ffffff/truck.png"
+          src="${ENV.APP_URL}/public/assets/truck-fast-solid-full.png"
           alt="FleetMaster Hub"
           width="32"
           height="32"
