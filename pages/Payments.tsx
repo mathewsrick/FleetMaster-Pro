@@ -56,7 +56,9 @@ const Payments: React.FC = () => {
   };
 
   const handleDriverChange = (driverId: string) => {
-    const vehicle = vehicles.find(v => v.driverId === driverId);
+    const driver = drivers.find(d => d.id === driverId);
+    const vehicle = vehicles.find(v => v.id === driver?.vehicleId);
+
     setFormData({
       ...formData,
       driverId,
@@ -130,7 +132,7 @@ const Payments: React.FC = () => {
     a => a.driverId === formData.driverId && a.status === 'pending'
   );
 
-  const totalOwed = driverPendingArrears.reduce((sum, a) => sum + a.amountOwed, 0);
+  const totalOwed = driverPendingArrears.reduce((sum, a) => sum + Number(a.amountOwed), 0);
 
   const totalPages = Math.ceil(total / limit);
 

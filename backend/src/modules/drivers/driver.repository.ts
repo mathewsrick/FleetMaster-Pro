@@ -1,72 +1,50 @@
-import { dbHelpers } from '../../shared/db';
+import { prisma } from '../../shared/db';
 
 export const findAll = async (userId: string, options: { page: number, limit: number }) => {
   const { page, limit } = options;
-  const offset = (page - 1) * limit;
+  const skip = (page - 1) * limit;
 
-  const query = `
-    SELECT d.*, 
-           v.licensePlate as vehiclePlate,
-           v.id as vehicleId,
-           (SELECT IFNULL(SUM(amountOwed), 0) FROM arrears WHERE driverId = d.id AND status = 'pending') as totalDebt
-    FROM drivers d
-    LEFT JOIN vehicles v ON v.driverId = d.id
-    WHERE d.userId = ? 
-    ORDER BY d.lastName ASC 
-    LIMIT ? OFFSET ?
-  `;
+  const [data, total] = await Promise.all([
+    prisma.driver.findMany({
+      where: { userId },
+      include: {
+        vehicle: { select: {id: true, licensePlate: true, rentaValue: true} },
+        arrears: { where: {status: 'pending'} }
+      },
+      orderBy: { lastName: 'asc' },
+      skip,
+      take: limit
+    }),
+    prisma.driver.count({ where: { userId } })
+  ]);
 
-  const data = dbHelpers.prepare(query).all([userId, limit, offset]);
+  const transformed = data.map(d => ({
+    ...d,
+    vehiclePlate: d.vehicle?.licensePlate || null,
+    vehicleId: d.vehicle?.id || null,
+    totalDebt: d.arrears.reduce((acc, curr) => acc + curr.amountOwed, 0)
+  }));
 
-  const total = dbHelpers.prepare(
-    'SELECT COUNT(*) as count FROM drivers WHERE userId = ?'
-  ).get([userId]).count;
-
-  return { data, total };
+  return { data: transformed, total };
 };
 
 export const findById = async (userId: string, id: string) =>
-  dbHelpers.prepare('SELECT * FROM drivers WHERE id = ? AND userId = ?').get([id, userId]);
+  prisma.driver.findUnique({ where: { id } });
 
-export const create = async (d: any) =>
-  dbHelpers.prepare(`
-    INSERT INTO drivers (id, userId, firstName, lastName, email, phone, idNumber, licensePhoto, idPhoto)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run([
-    d.id,
-    d.userId,
-    d.firstName,
-    d.lastName,
-    d.email || null,
-    d.phone,
-    d.idNumber,
-    d.licensePhoto || null,
-    d.idPhoto || null
-  ]);
+export const create = async (data: any) =>
+  prisma.driver.create({ data });
 
-export const update = async (userId: string, id: string, d: any) =>
-  dbHelpers.prepare(`
-    UPDATE drivers
-    SET firstName=?, lastName=?, email=?, phone=?, idNumber=?, licensePhoto=?, idPhoto=?
-    WHERE id=? AND userId=?
-  `).run([
-    d.firstName,
-    d.lastName,
-    d.email || null,
-    d.phone,
-    d.idNumber,
-    d.licensePhoto,
-    d.idPhoto,
-    id,
-    userId,
-  ]);
+export const update = async (userId: string, id: string, data: any) =>
+  prisma.driver.update({
+    where: { id },
+    data
+  });
 
 export const unassignVehicles = async (userId: string, driverId: string) =>
-  dbHelpers.prepare(
-    'UPDATE vehicles SET driverId = NULL WHERE driverId = ? AND userId = ?'
-  ).run([driverId, userId]);
+  prisma.vehicle.updateMany({
+    where: { driverId, userId },
+    data: { driverId: null }
+  });
 
 export const remove = async (userId: string, id: string) =>
-  dbHelpers.prepare(
-    'DELETE FROM drivers WHERE id = ? AND userId = ?'
-  ).run([id, userId]);
+  prisma.driver.delete({ where: { id } });

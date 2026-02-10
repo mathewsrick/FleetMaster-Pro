@@ -1,134 +1,35 @@
-import fs from 'fs';
-import initSqlJs from 'sql.js';
-import { ENV } from '../config/env';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import * as PrismaModule from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const { PrismaClient } = PrismaModule as any;
 
-const dbPath = path.resolve(__dirname, '../../storage', ENV.DATABASE_PATH);
-fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+export const prisma = new PrismaClient();
 
-const SQL = await initSqlJs();
-let db: any;
+export const runSeeders = async () => {
+  console.log('--- STARTING DATABASE SEEDERS ---');
 
-if (fs.existsSync(dbPath)) {
-  const filebuffer = fs.readFileSync(dbPath);
-  db = new SQL.Database(filebuffer);
-} else {
-  db = new SQL.Database();
-}
+  try {
+    const adminIdentifier = 'rmatheus';
+    const existingAdmin = await prisma.user.findUnique({ where: { username: adminIdentifier } });
 
-const saveDb = () => {
-  const data = db.export();
-  fs.writeFileSync(dbPath, data);
-};
+    if (!existingAdmin) {
+      const hashedPassword = bcrypt.hashSync('Rmath327', 12);
+      await prisma.user.create({
+        data: {
+          id: 'system-admin-001',
+          username: adminIdentifier,
+          email: 'admin@fleetmaster.pro',
+          password: hashedPassword,
+          role: 'SUPERADMIN',
+          isConfirmed: true,
+          createdAt: new Date()
+        }
+      });
+      console.log(`✓ SuperAdmin created: ${adminIdentifier}`);
+    }
 
-export const dbHelpers = {
-  exec: (sql: string) => {
-    db.run(sql);
-    saveDb();
-  },
-  prepare: (sql: string) => {
-    const stmt = db.prepare(sql);
-    return {
-      all: (params: any[] = []) => {
-        const safeParams = params.map(p => p === undefined ? null : p);
-        stmt.bind(safeParams);
-        const rows = [];
-        while (stmt.step()) rows.push(stmt.getAsObject());
-        stmt.free();
-        return rows;
-      },
-      get: (params: any[] = []) => {
-        const safeParams = params.map(p => p === undefined ? null : p);
-        stmt.bind(safeParams);
-        const row = stmt.step() ? stmt.getAsObject() : undefined;
-        stmt.free();
-        return row;
-      },
-      run: (params: any[] = []) => {
-        const safeParams = params.map(p => p === undefined ? null : p);
-        db.run(sql, safeParams);
-        saveDb();
-      }
-    };
+    console.log('--- SEEDERS COMPLETED SUCCESSFULLY ---');
+  } catch (error) {
+    console.error('❌ Error during seeding:', error);
   }
 };
-
-// ---- SCHEMA ----
-dbHelpers.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    username TEXT UNIQUE,
-    email TEXT UNIQUE,
-    password TEXT,
-    role TEXT DEFAULT 'USER',
-    isConfirmed INTEGER DEFAULT 0,
-    confirmationToken TEXT,
-    resetToken TEXT,
-    lastActivity TEXT,
-    createdAt TEXT
-  )
-`);
-
-dbHelpers.exec(`
-  CREATE TABLE IF NOT EXISTS subscription_keys (
-    id TEXT PRIMARY KEY,
-    userId TEXT,
-    plan TEXT,
-    price REAL,
-    months INTEGER DEFAULT 1,
-    startDate TEXT,
-    dueDate TEXT,
-    status TEXT DEFAULT 'active'
-  )
-`);
-
-dbHelpers.exec(`
-  CREATE TABLE IF NOT EXISTS drivers (
-    id TEXT PRIMARY KEY, 
-    userId TEXT, 
-    firstName TEXT NOT NULL, 
-    lastName TEXT NOT NULL, 
-    email TEXT,
-    phone TEXT, 
-    idNumber TEXT,
-    licensePhoto TEXT,
-    idPhoto TEXT
-  )
-`);
-
-dbHelpers.exec(`
-  CREATE TABLE IF NOT EXISTS vehicles (
-    id TEXT PRIMARY KEY, 
-    userId TEXT, 
-    year INTEGER, 
-    licensePlate TEXT, 
-    model TEXT, 
-    color TEXT, 
-    purchaseDate TEXT, 
-    insurance TEXT, 
-    insuranceNumber TEXT, 
-    soatExpiration TEXT, 
-    techExpiration TEXT, 
-    rentaValue REAL, 
-    driverId TEXT,
-    photos TEXT
-  )
-`);
-
-dbHelpers.exec(`CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY, userId TEXT, amount REAL, date TEXT, driverId TEXT, vehicleId TEXT, type TEXT DEFAULT 'renta', arrearId TEXT)`);
-dbHelpers.exec(`CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, userId TEXT, description TEXT, amount REAL, date TEXT, vehicleId TEXT)`);
-dbHelpers.exec(`CREATE TABLE IF NOT EXISTS arrears (id TEXT PRIMARY KEY, userId TEXT, amountOwed REAL, status TEXT DEFAULT 'pending', driverId TEXT, vehicleId TEXT, dueDate TEXT, originPaymentId TEXT)`);
-
-const adminExists = dbHelpers.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(['rmatheus', 'admin@fleetmaster.pro']);
-if (!adminExists) {
-  const hashedPassword = bcrypt.hashSync('4994818', 10);
-  dbHelpers.prepare(`
-    INSERT INTO users (id, username, email, password, role, isConfirmed, createdAt)
-    VALUES (?, ?, ?, ?, 'SUPERADMIN', 1, ?)
-  `).run(['admin-uuid-001', 'rmatheus', 'admin@fleetmaster.pro', hashedPassword, new Date().toISOString()]);
-}

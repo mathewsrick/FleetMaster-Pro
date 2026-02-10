@@ -1,89 +1,51 @@
-import { dbHelpers } from '../../shared/db';
+import { prisma } from '../../shared/db';
 
 export const findAll = async (userId: string, options: { page: number, limit: number }) => {
   const { page, limit } = options;
-  const offset = (page - 1) * limit;
+  const skip = (page - 1) * limit;
 
-  const data = dbHelpers
-    .prepare(`
-      SELECT v.*, 
-             (COALESCE(d.firstName, '') || ' ' || COALESCE(d.lastName, '')) as driverName
-      FROM vehicles v
-      LEFT JOIN drivers d ON v.driverId = d.id
-      WHERE v.userId = ? 
-      ORDER BY v.licensePlate ASC 
-      LIMIT ? OFFSET ?
-    `)
-    .all([userId, limit, offset]);
+  const [data, total] = await Promise.all([
+    prisma.vehicle.findMany({
+      where: { userId },
+      include: { driver: true },
+      orderBy: { licensePlate: 'asc' },
+      skip,
+      take: limit
+    }),
+    prisma.vehicle.count({ where: { userId } })
+  ]);
 
-  const transformed = data.map((v: any) => ({
+  const transformed = data.map(v => ({
     ...v,
-    driverName: v.driverName?.trim() || null,
-    photos: v.photos ? JSON.parse(v.photos) : []
+    driverName: v.driver ? `${v.driver.firstName} ${v.driver.lastName}` : null
   }));
-
-  const total = dbHelpers
-    .prepare('SELECT COUNT(*) as count FROM vehicles WHERE userId = ?')
-    .get([userId]).count;
 
   return { data: transformed, total };
 };
 
-export const findById = async (id: string) => {
-  return await dbHelpers
-    .prepare('SELECT * FROM vehicles WHERE id = ?')
-    .get([id]);
-};
+export const findById = async (id: string) =>
+  prisma.vehicle.findUnique({ where: { id } });
 
-export const create = async (v: any) =>
-  dbHelpers.prepare(`
-    INSERT INTO vehicles (
-      id, userId, year, licensePlate, model, color,
-      purchaseDate, insurance, insuranceNumber,
-      soatExpiration, techExpiration, rentaValue, driverId, photos
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run([
-    v.id,
-    v.userId,
-    v.year,
-    v.licensePlate,
-    v.model,
-    v.color,
-    v.purchaseDate,
-    v.insurance,
-    v.insuranceNumber,
-    v.soatExpiration,
-    v.techExpiration,
-    v.rentaValue,
-    v.driverId,
-    JSON.stringify(v.photos || [])
-  ]);
+export const create = async (data: any) =>
+  prisma.vehicle.create({
+    data: {
+      ...data,
+      purchaseDate: data.purchaseDate ? new Date(data.purchaseDate) : null,
+      soatExpiration: data.soatExpiration ? new Date(data.soatExpiration) : null,
+      techExpiration: data.techExpiration ? new Date(data.techExpiration) : null,
+    }
+  });
 
-export const update = async (userId: string, v: any) =>
-  dbHelpers.prepare(`
-    UPDATE vehicles SET
-      year=?, licensePlate=?, model=?, color=?, purchaseDate=?,
-      insurance=?, insuranceNumber=?, soatExpiration=?, techExpiration=?,
-      rentaValue=?, driverId=?, photos=?
-    WHERE id=? AND userId=?
-  `).run([
-    v.year,
-    v.licensePlate,
-    v.model,
-    v.color,
-    v.purchaseDate,
-    v.insurance,
-    v.insuranceNumber,
-    v.soatExpiration,
-    v.techExpiration,
-    v.rentaValue,
-    v.driverId,
-    JSON.stringify(v.photos || []),
-    v.id,
-    userId
-  ]);
+export const update = async (userId: string, data: any) =>
+  prisma.vehicle.update({
+    where: { id: data.id },
+    data: {
+      ...data,
+      purchaseDate: data.purchaseDate ? new Date(data.purchaseDate) : null,
+      soatExpiration: data.soatExpiration ? new Date(data.soatExpiration) : null,
+      techExpiration: data.techExpiration ? new Date(data.techExpiration) : null,
+    }
+  });
 
 export const remove = async (userId: string, id: string) =>
-  dbHelpers
-    .prepare('DELETE FROM vehicles WHERE id = ? AND userId = ?')
-    .run([id, userId]);
+  prisma.vehicle.delete({ where: { id } });

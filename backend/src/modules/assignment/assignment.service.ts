@@ -1,38 +1,55 @@
-
-import { dbHelpers } from '../../shared/db';
+import { prisma } from '../../shared/db';
 import * as emailService from '../../shared/email.service';
 import * as driverRepo from '../drivers/driver.repository';
 
-export const assignDriverToVehicle = async (userId: string, driverId: string, vehicleId: string | null) => {
-  // 1. Obtener datos del conductor antes de cambiar nada
+export const assignDriverToVehicle = async (
+  userId: string,
+  driverId: string,
+  vehicleId: string | null
+) => {
+  // 1. Obtener datos del conductor
   const driver: any = await driverRepo.findById(userId, driverId);
+  if (!driver) {
+    throw new Error('Conductor no encontrado');
+  }
 
-  // 2. Desasignar al conductor de cualquier vehículo que tenga actualmente
-  dbHelpers.prepare(
-    'UPDATE vehicles SET driverId = NULL WHERE driverId = ? AND userId = ?'
-  ).run([driverId, userId]);
+  // 2. Desasignar cualquier vehículo actual del conductor
+  await prisma.driver.update({
+    where: { id: driverId },
+    data: { vehicleId: null }
+  });
 
-  // 3. Si se proporciona un vehicleId, asignar el conductor a ese vehículo
+  // 3. Si se envía un vehículo, asignarlo
   if (vehicleId) {
-    // Desasignar a cualquier otro conductor que esté en ese vehículo específico
-    dbHelpers.prepare(
-      'UPDATE vehicles SET driverId = NULL WHERE id = ? AND userId = ?'
-    ).run([vehicleId, userId]);
+    // 3.1 Desasignar ese vehículo de cualquier otro conductor (regla 1–1)
+    await prisma.driver.updateMany({
+      where: {
+        vehicleId,
+        userId
+      },
+      data: {
+        vehicleId: null
+      }
+    });
 
-    // Realizar la nueva asignación
-    dbHelpers.prepare(
-      'UPDATE vehicles SET driverId = ? WHERE id = ? AND userId = ?'
-    ).run([driverId, vehicleId, userId]);
+    // 3.2 Asignar el vehículo al conductor actual
+    const updatedDriver = await prisma.driver.update({
+      where: { id: driverId },
+      data: { vehicleId },
+      include: {
+        vehicle: true
+      }
+    });
 
-    // Obtener datos del vehículo para el email
-    const vehicle: any = dbHelpers.prepare('SELECT * FROM vehicles WHERE id = ?').get([vehicleId]);
-
-    // Alerta automática: Notificación de asignación al conductor
-    if (driver && driver.email) {
+    // 4. Notificación por correo
+    if (driver.email && updatedDriver.vehicle) {
       await emailService.sendEmail({
         to: driver.email,
-        subject: `¡Nuevo Vehículo Asignado! - Placa ${vehicle.licensePlate}`,
-        html: emailService.templates.vehicleAssignment(`${driver.firstName} ${driver.lastName}`, vehicle)
+        subject: `¡Nuevo Vehículo Asignado! - Placa ${updatedDriver.vehicle.licensePlate}`,
+        html: emailService.templates.vehicleAssignment(
+          `${driver.firstName} ${driver.lastName}`,
+          updatedDriver.vehicle
+        )
       });
     }
   }

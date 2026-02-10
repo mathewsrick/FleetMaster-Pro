@@ -37,14 +37,12 @@ export const register = async (email: string, username: string, password: string
 
   const confirmationToken = uuid();
   const user = {
-    id: uuid(),
     email,
     username,
     password: await bcrypt.hash(password, 12), // Aumentamos rondas de sal para mayor seguridad
     role: 'USER',
-    isConfirmed: 0,
+    isConfirmed: false,
     confirmationToken,
-    createdAt: new Date().toISOString()
   };
   await repo.createUser(user);
 
@@ -56,10 +54,9 @@ export const register = async (email: string, username: string, password: string
 };
 
 export const confirmAccount = async (token: string) => {
+  // Fix: Removed non-existent findUserByConfirmedToken call to resolve reference error
   const user = await repo.findUserByConfirmationToken(token);
   if (!user) {
-    const alreadyConfirmed = await repo.findUserByConfirmedToken(token);
-    if (alreadyConfirmed) return;
     throw new Error('Token de confirmación inválido');
   }
   await repo.confirmUser(user.id);

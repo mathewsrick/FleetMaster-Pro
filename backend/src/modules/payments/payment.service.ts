@@ -4,7 +4,7 @@ import * as arrearRepo from '../arrears/arrear.repository';
 import * as authRepo from '../auth/auth.repository';
 import * as driverRepo from '../drivers/driver.repository';
 import * as emailService from '../../shared/email.service';
-import { dbHelpers } from '../../shared/db';
+import { prisma } from '../../shared/db';
 
 const PLAN_RESTRICTIONS: any = {
   free_trial: { maxHistoryDays: 30, maxRangeDays: null },
@@ -45,11 +45,16 @@ export const getByDriver = async (userId: string, driverId: string) =>
     await paymentRepo.findByDriver(userId, driverId);
 
 export const create = async (userId: string, data: any) => {
+    const {
+        generateArrear = true,
+        ...paymentData
+    } = data;
+
     const payment = {
-            id: data.id || uuid(),
-            userId,
-            ...data,
-            generateArrear: data.generateArrear !== undefined ? data.generateArrear : true
+        id: paymentData.id || uuid(),
+        userId,
+        ...paymentData,
+        amount: Number(paymentData.amount)
     };
 
     await arrearRepo.removeByOriginPayment(payment.id);
@@ -57,13 +62,12 @@ export const create = async (userId: string, data: any) => {
 
     let createdArrearAmount = 0;
 
-    if ((!payment.type || payment.type === 'renta') && payment.generateArrear !== false) {
-        const vehicle: any = dbHelpers
-            .prepare('SELECT rentaValue FROM vehicles WHERE id = ?')
-            .get([payment.vehicleId]);
+    if ((!payment.type || payment.type === 'renta') && generateArrear) {
+        // Reemplazo de dbHelpers por prisma.vehicle.findUnique
+        const vehicle = await prisma.vehicle.findUnique({ where: { id: payment.vehicleId } });
 
-        if (vehicle && payment.amount < vehicle.rentaValue) {
-            createdArrearAmount = vehicle.rentaValue - payment.amount;
+        if (vehicle && payment.amount < Number(vehicle.rentaValue)) {
+            createdArrearAmount = Number(vehicle.rentaValue) - payment.amount;
             await arrearRepo.create({
                 id: uuid(),
                 userId,
@@ -79,7 +83,7 @@ export const create = async (userId: string, data: any) => {
 
     const allPendingArrears = await arrearRepo.findByDriver(userId, payment.driverId);
     const pendingArrears = allPendingArrears.filter((a: any) => a.status === 'pending');
-    const totalAccumulatedDebt = pendingArrears.reduce((sum: number, a: any) => sum + a.amountOwed, 0);
+    const totalAccumulatedDebt = pendingArrears.reduce((sum: number, a: any) => sum + Number(a.amountOwed), 0);
 
     const driver: any = await driverRepo.findById(userId, payment.driverId);
     if (driver && driver.email) {
@@ -119,11 +123,14 @@ export const remove = async (userId: string, id: string) => {
     if (!payment) return;
 
     if (payment.type === 'arrear_payment' && payment.arrearId) {
-        dbHelpers.prepare(`
-            UPDATE arrears 
-            SET amountOwed = amountOwed + ?, status = 'pending' 
-            WHERE id = ? AND userId = ?
-        `).run([payment.amount, payment.arrearId, userId]);
+        // Reemplazo de dbHelpers por prisma.arrear.update
+        await prisma.arrear.update({
+            where: { id: payment.arrearId },
+            data: {
+                amountOwed: { increment: payment.amount },
+                status: 'pending'
+            }
+        });
     }
 
     if (!payment.type || payment.type === 'renta') {

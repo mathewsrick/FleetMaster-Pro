@@ -1,48 +1,59 @@
-import { dbHelpers } from '../../shared/db';
+import { prisma } from '../../shared/db';
 
 export const findUserByUsername = async (username: string) =>
-  dbHelpers.prepare('SELECT * FROM users WHERE username = ?').get([username]);
+  prisma.user.findUnique({ where: { username } });
 
 export const findUserByEmail = async (email: string) =>
-  dbHelpers.prepare('SELECT * FROM users WHERE email = ?').get([email]);
+  prisma.user.findUnique({ where: { email } });
 
 export const findUserByIdentifier = async (identifier: string) =>
-  dbHelpers.prepare('SELECT * FROM users WHERE username = ? OR email = ?').get([identifier, identifier]);
+  prisma.user.findFirst({
+    where: {
+      OR: [
+        { username: identifier },
+        { email: identifier }
+      ]
+    }
+  });
 
 export const findUserById = async (id: string) =>
-  dbHelpers.prepare('SELECT * FROM users WHERE id = ?').get([id]);
+  prisma.user.findUnique({ where: { id } });
 
-export const findUserByConfirmationToken = async (token: string) =>
-  dbHelpers.prepare('SELECT * FROM users WHERE confirmationToken = ?').get([token]);
+export const findUserByConfirmationToken = async (confirmationToken: string) =>
+  prisma.user.findFirst({ where: { confirmationToken } });
 
-export const findUserByResetToken = async (token: string) =>
-  dbHelpers.prepare('SELECT * FROM users WHERE resetToken = ?').get([token]);
+export const findUserByResetToken = async (resetToken: string) =>
+  prisma.user.findFirst({ where: { resetToken } });
 
-export const findUserByConfirmedToken = async (token: string) =>
-  dbHelpers.prepare('SELECT * FROM users WHERE confirmationToken = ? AND isConfirmed = 1').get([token]);
-
-export const createUser = async (u: any) =>
-  dbHelpers.prepare(`
-    INSERT INTO users (id, username, email, password, role, isConfirmed, confirmationToken, createdAt)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).run([u.id, u.username, u.email, u.password, u.role, u.isConfirmed, u.confirmationToken, u.createdAt]);
+export const createUser = async (data: any) =>
+  prisma.user.create({ data });
 
 export const confirmUser = async (id: string) =>
-  dbHelpers.prepare('UPDATE users SET isConfirmed = 1 WHERE id = ?').run([id]);
+  prisma.user.update({
+    where: { id },
+    data: { isConfirmed: true }
+  });
 
-export const setResetToken = async (id: string, token: string | null) =>
-  dbHelpers.prepare('UPDATE users SET resetToken = ? WHERE id = ?').run([token, id]);
+export const setResetToken = async (id: string, resetToken: string | null) =>
+  prisma.user.update({
+    where: { id },
+    data: { resetToken }
+  });
 
-export const updatePassword = async (id: string, hashedPass: string) =>
-  dbHelpers.prepare('UPDATE users SET password = ? WHERE id = ?').run([hashedPass, id]);
+export const updatePassword = async (id: string, password: string) =>
+  prisma.user.update({
+    where: { id },
+    data: { password }
+  });
 
 export const updateLastActivity = async (id: string) =>
-  dbHelpers.prepare('UPDATE users SET lastActivity = ? WHERE id = ?').run([new Date().toISOString(), id]);
+  prisma.user.update({
+    where: { id },
+    data: { lastActivity: new Date() }
+  });
 
 export const getActiveSubscription = async (userId: string) =>
-  dbHelpers.prepare(`
-    SELECT * FROM subscription_keys
-    WHERE userId = ? AND status = 'active'
-    ORDER BY dueDate DESC
-    LIMIT 1
-  `).get([userId]);
+  prisma.subscriptionKey.findFirst({
+    where: { userId, status: 'active' },
+    orderBy: { dueDate: 'desc' }
+  });

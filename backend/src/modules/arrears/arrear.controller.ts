@@ -1,6 +1,6 @@
 import * as service from './arrear.service';
 import { v4 as uuid } from 'uuid';
-import { dbHelpers } from '../../shared/db';
+import { prisma } from '../../shared/db';
 
 export const all = async (req: any, res: any) => {
   res.json(await service.getAll(req.user.userId));
@@ -18,20 +18,19 @@ export const pay = async (req: any, res: any) => {
 
   const arrear = await service.pay(req.user.userId, req.params.id, amount);
 
-  dbHelpers.prepare(`
-    INSERT INTO payments (
-      id, userId, amount, date,
-      driverId, vehicleId, type, arrearId
-    ) VALUES (?, ?, ?, ?, ?, ?, 'arrear_payment', ?)
-  `).run([
-    uuid(),
-    req.user.userId,
-    amount,
-    date,
-    arrear.driverId,
-    arrear.vehicleId,
-    arrear.id
-  ]);
+  // Reemplazamos dbHelpers.prepare por prisma.payment.create
+  await prisma.payment.create({
+    data: {
+      id: uuid(),
+      userId: req.user.userId,
+      amount: amount,
+      date: new Date(date),
+      driverId: arrear.driverId,
+      vehicleId: arrear.vehicleId,
+      type: 'arrear_payment',
+      arrearId: arrear.id
+    }
+  });
 
   res.json({ success: true });
 };
