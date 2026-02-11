@@ -28,16 +28,12 @@ export const save = async (userId: string, data: any) => {
     }
   }
 
-  const vehicle = {
-    ...data,
-    userId,
-    licensePlate: data.licensePlate?.toUpperCase()
-  };
-
+  const vehicle = { ...data, userId };
   if (existing) {
     await repo.update(userId, vehicle);
   } else {
-    await repo.create(vehicle);
+    // Fix: Pass userId as the first argument to repo.create
+    await repo.create(userId, vehicle);
   }
 };
 

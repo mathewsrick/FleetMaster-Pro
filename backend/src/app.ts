@@ -3,8 +3,6 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-// Nota: En un entorno real, instalarías helmet y express-rate-limit.
-// Aquí se implementan lógicas equivalentes o se asume su disponibilidad vía esm.sh.
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
@@ -19,6 +17,7 @@ import superadminRoutes from './modules/superadmin/superadmin.routes';
 import assignmentRoutes from './modules/assignment/assignment.routes';
 import uploadRoutes from './modules/uploads/upload.routes';
 import contactRoutes from './modules/contact/contact.routes';
+import wompiRoutes from './modules/wompi/wompi.routes';
 import { authenticate } from './middlewares/auth.middleware';
 import { requireActiveSubscription } from './middlewares/subscription.middleware';
 
@@ -27,15 +26,13 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Configuración de Seguridad Global
-app.use(helmet() as any); // Protege contra vulnerabilidades web conocidas
+app.use(helmet() as any); 
 app.use(cors() as any);
-app.use(express.json({ limit: '10kb' }) as any); // Limita el tamaño del body para prevenir ataques DoS
+app.use(express.json({ limit: '10kb' }) as any);
 
-// Limitador de peticiones para rutas sensibles (Login/Register)
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 10, // Máximo 10 intentos por ventana para Login/Registro
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   message: { error: 'Demasiados intentos. Por favor intenta más tarde.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -43,7 +40,6 @@ const authLimiter = rateLimit({
 
 const publicPath = path.join((process as any).cwd(), 'backend/public');
 
-// asegurar uploads
 ['uploads/vehicles', 'uploads/drivers'].forEach(dir => {
   const p = path.join(publicPath, dir);
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
@@ -56,10 +52,9 @@ app.use((req, res, next) => {
 
 app.use('/api/public', express.static(publicPath) as any);
 
-// Aplicar limitador a rutas de autenticación
 app.use('/api/auth', authLimiter as any, authRoutes as any);
-
 app.use('/api/contact', contactRoutes as any);
+app.use('/api/wompi', wompiRoutes as any);
 app.use('/api/uploads', authenticate as any, uploadRoutes as any);
 app.use('/api/subscription', authenticate as any, subscriptionRoutes as any);
 app.use('/api/superadmin', superadminRoutes as any);

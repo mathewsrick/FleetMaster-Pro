@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { db, formatDateDisplay } from '../services/db';
 import { Vehicle, Payment, Expense } from '../types';
@@ -116,10 +117,13 @@ const Vehicles: React.FC = () => {
         soatExpiration: formData.soatExpiration,
         techExpiration: formData.techExpiration,
         rentaValue: Number(formData.rentaValue),
+        // Fix: Provide driverId to match Vehicle type expectations
+        driverId: formData.driverId || null,
         photos: finalPhotos
       };
 
-      await db.saveVehicle(cleanVehicle);
+      // Fix: Cast to any as userId is handled exclusively by the backend
+      await db.saveVehicle(cleanVehicle as any);
 
       Swal.fire({
         icon: 'success',

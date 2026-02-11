@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { db } from '../services/db';
 import Swal from 'sweetalert2';
 
 type Duration = 'monthly' | 'semiannual' | 'yearly';
 
+declare var WidgetCheckout: any;
+
 const PricingCheckout: React.FC = () => {
   const [duration, setDuration] = useState<Duration>('monthly');
   const [loading, setLoading] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   const auth = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
   const currentPlan = auth.accountStatus?.plan || 'free_trial';
   const daysRemaining = auth.accountStatus?.daysRemaining || 0;
   
-  // Un plan se considera activo si le quedan días y la razón es suscripción activa
   const isPlanActive = daysRemaining > 0 && auth.accountStatus?.reason === 'ACTIVE_SUBSCRIPTION';
 
   const PLAN_WEIGHTS: Record<string, number> = {
@@ -24,41 +24,54 @@ const PricingCheckout: React.FC = () => {
     'enterprise': 3
   };
 
+  const openWompiWidget = (data: any) => {
+    const checkout = new WidgetCheckout({
+      currency: data.currency,
+      amountInCents: data.amountInCents,
+      reference: data.reference,
+      publicKey: data.publicKey,
+      signature: { integrity: data.signature },
+      // redirectUrl: data.redirectUrl,
+    });
+
+    checkout.open((result: any) => {
+      const transaction = result.transaction;
+      if (transaction.status === 'APPROVED') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Pago Aprobado',
+          text: 'Estamos activando tu plan. Serás redirigido en breve.',
+          timer: 3000,
+          showConfirmButton: false
+        }).then(() => {
+          window.location.href = '/#/dashboard';
+        });
+      } else {
+        Swal.fire({
+          icon: 'info',
+          title: 'Estado del Pago',
+          text: `El pago se encuentra en estado: ${transaction.status}.`,
+          confirmButtonColor: '#4f46e5'
+        });
+      }
+    });
+  };
+
   const handlePurchase = async (planKey: string) => {
     setLoading(planKey);
     try {
-      const result = await db.purchasePlan(planKey.toLowerCase() as any, duration);
-      
-      // Actualizamos el objeto de autenticación completo preservando token y usuario
-      const updatedAuth = { 
-        ...auth, 
-        accountStatus: { 
-          accessLevel: result.accessLevel,
-          reason: 'ACTIVE_SUBSCRIPTION',
-          plan: result.plan, 
-          daysRemaining: result.daysRemaining,
-          limits: result.limits, // Esto actualiza hasExcelReports, maxVehicles, etc.
-          warning: null
-        } 
-      };
-      
-      localStorage.setItem('fmp_auth', JSON.stringify(updatedAuth));
+      // 1. Obtener parámetros de pago e integridad desde el backend
+      const wompiData = await db.initWompiPayment(planKey, duration);
 
-      await Swal.fire({
-        icon: 'success',
-        title: '¡Suscripción Activada!',
-        text: `Has activado con éxito el plan ${planKey}. Tu nueva fecha de vencimiento es ${new Date(result.dueDate).toLocaleDateString()}.`,
-        confirmButtonColor: '#4f46e5'
-      });
+      console.log('WIDGET DATA:', wompiData);
+      // 2. Abrir el Widget de Wompi
+      openWompiWidget(wompiData);
 
-      // Redirección forzada al dashboard para refrescar el estado global de la App
-      window.location.href = '#/dashboard';
-      window.location.reload();
     } catch (err: any) {
       Swal.fire({
         icon: 'error',
-        title: 'Operación no permitida',
-        text: err.data?.error || 'No se pudo procesar la suscripción.',
+        title: 'Error',
+        text: err.data?.error || 'No se pudo iniciar el proceso de pago.',
         confirmButtonColor: '#e11d48'
       });
     } finally {

@@ -1,5 +1,4 @@
-
-import { Vehicle, Driver, Payment, Expense, Arrear, User, PaginatedResponse, VehiclePayload } from '../types';
+import { Vehicle, Driver, Payment, Expense, Arrear, User, PaginatedResponse } from '../types';
 
 const getApiBase = () => {
   try {
@@ -54,13 +53,13 @@ export const db = {
   requestReset: (identifier: string) => request('/auth/request-reset', 'POST', { identifier }),
   resetPassword: (token: string, newPass: string) => request('/auth/reset-password', 'POST', { token, newPass }),
   
-  // Subscription
+  // Wompi Payment
+  initWompiPayment: (plan: string, duration: string) => request<any>('/wompi/initialize', 'POST', { plan, duration }),
+  
   purchasePlan: (plan: string, duration: 'monthly' | 'semiannual' | 'yearly') => request<any>('/subscription/purchase', 'POST', { plan, duration }),
 
-  // Public contact
   submitContactForm: (data: { name: string; email: string; message: string }) => request('/contact', 'POST', data),
 
-  // File upload methods
   uploadVehiclePhotos: (files: File[]) => {
     const formData = new FormData();
     files.forEach(file => formData.append('photos', file));
@@ -76,7 +75,7 @@ export const db = {
   getAdminUsers: () => request<User[]>('/superadmin/users'),
 
   getVehicles: (page = 1, limit = 100) => request<PaginatedResponse<Vehicle>>(`/vehicles?page=${page}&limit=${limit}`),
-  saveVehicle: (v: VehiclePayload) => request('/vehicles', 'POST', v),
+  saveVehicle: (v: Vehicle) => request('/vehicles', 'POST', v),
   getDrivers: (page = 1, limit = 100) => request<PaginatedResponse<Driver>>(`/drivers?page=${page}&limit=${limit}`),
   saveDriver: (d: Driver, isEdit: boolean) => isEdit ? request(`/drivers/${d.id}`, 'PUT', d) : request('/drivers', 'POST', d),
   deleteDriver: (id: string) => request(`/drivers/${id}`, 'DELETE'),

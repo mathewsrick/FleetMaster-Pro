@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import app from './app';
 import { runSeeders } from './shared/db';
 import { generateAndSendWeeklyReports } from './modules/reports/automated-reports.service';

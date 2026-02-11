@@ -16,6 +16,45 @@ const BASE_PRICES: Record<string, number> = {
   'enterprise': 145900
 };
 
+export const fulfillPurchase = async (userId: string, plan: string, duration: 'monthly' | 'semiannual' | 'yearly', transactionRef: string) => {
+  const startDate = new Date();
+  const dueDate = new Date();
+  
+  let monthsCount = 1;
+  let totalPrice = BASE_PRICES[plan.toLowerCase()] || 0;
+
+  if (duration === 'yearly') {
+    dueDate.setFullYear(dueDate.getFullYear() + 1);
+    monthsCount = 12;
+    totalPrice = (BASE_PRICES[plan.toLowerCase()] || 0) * 10;
+  } else if (duration === 'semiannual') {
+    dueDate.setMonth(dueDate.getMonth() + 6);
+    monthsCount = 6;
+    totalPrice = (BASE_PRICES[plan.toLowerCase()] || 0) * 5;
+  } else {
+    dueDate.setMonth(dueDate.getMonth() + 1);
+    monthsCount = 1;
+    totalPrice = BASE_PRICES[plan.toLowerCase()] || 0;
+  }
+
+  await repo.deactivateUserKeys(userId);
+
+  const newSub = {
+    id: uuid(),
+    userId,
+    plan: plan.toLowerCase(),
+    price: totalPrice, 
+    months: monthsCount,
+    startDate: startDate.toISOString(),
+    dueDate: dueDate.toISOString(),
+    status: 'active' as const,
+    transactionRef
+  };
+
+  await repo.createKey(newSub);
+  return newSub;
+};
+
 export const activate = async (userId: string, keyId: string) => {
   const key = await repo.findKeyById(keyId);
   if (!key) throw new Error('Llave inválida o ya utilizada');
@@ -30,7 +69,7 @@ export const activate = async (userId: string, keyId: string) => {
     }
   }
 
-  const days = key.plan === 'free_trial' ? 5 : 30; // Por defecto 30 si es key simple
+  const days = key.plan === 'free_trial' ? 5 : 30; 
   const startDate = new Date();
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + days);
@@ -43,10 +82,8 @@ export const activate = async (userId: string, keyId: string) => {
 
 export const purchasePlan = async (userId: string, plan: string, duration: 'monthly' | 'semiannual' | 'yearly') => {
   const currentSub = await repo.findActiveSubscriptionByUserId(userId);
-  
   const now = new Date();
   
-  // 1. Si el plan actual NO ha expirado (dueDate > now), bloquear nueva compra
   if (currentSub && currentSub.dueDate && new Date(currentSub.dueDate) > now) {
     const diff = new Date(currentSub.dueDate).getTime() - now.getTime();
     const diffDays = diff / (1000 * 3600 * 24);
@@ -55,7 +92,6 @@ export const purchasePlan = async (userId: string, plan: string, duration: 'mont
     }
   }
 
-  // 2. Lógica de jerarquía
   const lastPlanWeight = currentSub ? (PLAN_WEIGHTS[currentSub.plan] || 0) : 0;
   const newPlanWeight = PLAN_WEIGHTS[plan] || 0;
 
@@ -63,52 +99,9 @@ export const purchasePlan = async (userId: string, plan: string, duration: 'mont
     throw new Error('Tu cuenta tiene un historial superior. No puedes volver al Plan Básico, elige Pro o Enterprise.');
   }
 
-  const startDate = new Date();
-  const dueDate = new Date();
-  
-  let daysAdded = 30;
-  let monthsCount = 1;
-  let totalPrice = BASE_PRICES[plan] || 0;
-
-  if (duration === 'yearly') {
-    dueDate.setFullYear(dueDate.getFullYear() + 1);
-    daysAdded = 365;
-    monthsCount = 12;
-    totalPrice = (BASE_PRICES[plan] || 0) * 10; // 2 meses gratis
-  } else if (duration === 'semiannual') {
-    dueDate.setMonth(dueDate.getMonth() + 6);
-    daysAdded = 180;
-    monthsCount = 6;
-    totalPrice = (BASE_PRICES[plan] || 0) * 5; // 1 mes gratis
-  } else {
-    dueDate.setMonth(dueDate.getMonth() + 1);
-    daysAdded = 30;
-    monthsCount = 1;
-    totalPrice = BASE_PRICES[plan] || 0;
-  }
-
-  await repo.deactivateUserKeys(userId);
-
-  const newSub = {
-    id: uuid(),
-    userId,
-    plan,
-    price: totalPrice, 
-    months: monthsCount,
-    startDate: startDate.toISOString(),
-    dueDate: dueDate.toISOString(),
-    status: 'active' as const
-  };
-
-  await repo.createKey(newSub);
-
-  return { 
-    plan, 
-    dueDate: newSub.dueDate, 
-    accessLevel: 'FULL',
-    limits: PLAN_LIMITS[plan as PlanType],
-    daysRemaining: daysAdded
-  };
+  // This is now handled asynchronously via Wompi Webhook.
+  // The PricingCheckout will call backend to initialize Wompi.
+  return { status: 'PENDING_PAYMENT' };
 };
 
 export const generateKey = async (plan: string, price: number) => {
@@ -117,7 +110,7 @@ export const generateKey = async (plan: string, price: number) => {
     userId: null,
     plan,
     price,
-    months: 1, // Por defecto 1 para llaves generadas manualmente
+    months: 1,
     startDate: null,
     dueDate: null,
     status: 'active' as const

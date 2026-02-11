@@ -45,13 +45,14 @@ model User {
   lastActivity      DateTime?
   createdAt         DateTime           @default(now())
   
-  // Relaciones (Aislamiento de datos por UserID como TenantID)
+  // Relaciones
   vehicles          Vehicle[]
   drivers           Driver[]
   payments          Payment[]
   expenses          Expense[]
   arrears           Arrear[]
   subscriptions     SubscriptionKey[]
+  transactions      Transaction[]
 
   @@index([email])
   @@index([username])
@@ -67,8 +68,25 @@ model SubscriptionKey {
   startDate DateTime?
   dueDate   DateTime?
   status    SubscriptionStatus @default(active)
+  transactionRef String?
 
   @@index([userId, status])
+}
+
+model Transaction {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reference     String   @unique
+  amount        Decimal  @db.Decimal(12, 2)
+  plan          String
+  duration      String
+  status        String   @default("PENDING") // PENDING, APPROVED, DECLINED, ERROR
+  wompiId       String?
+  paymentMethod String?
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Driver {
@@ -107,7 +125,6 @@ model Vehicle {
   rentaValue       Decimal   @db.Decimal(12, 2)
   driver           Driver?
 
-  // PostgreSQL permite arreglos nativos de Strings para fotos
   photos           String[]
 
   payments         Payment[]
@@ -151,7 +168,7 @@ model Arrear {
   vehicle         Vehicle      @relation(fields: [vehicleId], references: [id])
   
   dueDate         DateTime
-  originPaymentId String?      // ID del pago que generó esta mora por saldo incompleto
+  originPaymentId String?
 
   @@index([userId, status])
   @@index([driverId])
