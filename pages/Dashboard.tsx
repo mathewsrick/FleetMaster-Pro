@@ -33,8 +33,14 @@ const Dashboard: React.FC = () => {
         setData({
           vehicles: v.data,
           drivers: d.data,
-          payments: p.data,
-          expenses: e.data,
+          payments: p.data.map((x: any) => ({
+            ...x,
+            amount: Number(x.amount)
+          })),
+          expenses: e.data.map((x: any) => ({
+            ...x,
+            amount: Number(x.amount)
+          })),
         });
       } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -46,10 +52,22 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const stats = useMemo(() => {
-    const totalPayments = data.payments.reduce((sum, p) => sum + p.amount, 0);
-    const totalExpenses = data.expenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalPayments = data.payments.reduce(
+      (sum, p) => sum + Number(p.amount),
+      0
+    );
+
+    const totalExpenses = data.expenses.reduce(
+      (sum, e) => sum + Number(e.amount),
+      0
+    );
+
     const activeVehicles = data.vehicles.filter(v => v.driverId).length;
-    const totalPotentialRenta = data.vehicles.reduce((sum, v) => sum + (v.driverId ? v.rentaValue : 0), 0);
+
+    const totalPotentialRenta = data.vehicles.reduce(
+      (sum, v) => sum + (v.driverId ? Number(v.rentaValue) : 0),
+      0
+    );
 
     return {
       totalPayments,
@@ -67,8 +85,8 @@ const Dashboard: React.FC = () => {
     if (!selectedVehicle) return null;
     const vPayments = data.payments.filter(p => p.vehicleId === selectedVehicle.id);
     const vExpenses = data.expenses.filter(e => e.vehicleId === selectedVehicle.id);
-    const totalRev = vPayments.reduce((sum, p) => sum + p.amount, 0);
-    const totalExp = vExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalRev = vPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const totalExp = vExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
     const today = new Date();
     const soat = new Date(selectedVehicle.soatExpiration);
     const daysToSoat = Math.ceil((soat.getTime() - today.getTime()) / (1000 * 3600 * 24));
@@ -82,8 +100,8 @@ const Dashboard: React.FC = () => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
       const dateStr = d.toISOString().split('T')[0];
-      const dayPayments = data.payments.filter(p => p.date === dateStr).reduce((sum, p) => sum + p.amount, 0);
-      const dayExpenses = data.expenses.filter(e => e.date === dateStr).reduce((sum, e) => sum + e.amount, 0);
+      const dayPayments = data.payments.filter(p => p.date === dateStr).reduce((sum, p) => sum + Number(p.amount), 0);
+      const dayExpenses = data.expenses.filter(e => e.date === dateStr).reduce((sum, e) => sum + Number(e.amount), 0);
       return { name: d.toLocaleDateString('es-ES', { weekday: 'short' }), payments: dayPayments, expenses: dayExpenses };
     });
   }, [data]);
@@ -245,20 +263,30 @@ const Dashboard: React.FC = () => {
               <div className="p-6 bg-slate-50 rounded-[24px] border border-slate-100 shadow-sm">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Vigilancia Legal</p>
 
-                <div className="flex items-center justify-between mb-3">
+                <div className="grid grid-cols-2 items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${vehicleStats.daysToSoat < 10 ? 'bg-rose-500 animate-pulse shadow-lg shadow-rose-200' : 'bg-emerald-500 shadow-lg shadow-emerald-200'}`} />
                     <p className="text-xs font-black uppercase">SOAT</p>
                   </div>
-                  <span className="text-xs font-mono font-bold text-slate-600">{selectedVehicle.soatExpiration}</span>
+                  <span className="text-xs text-right font-mono font-bold text-slate-600">
+                    {new Date(selectedVehicle.soatExpiration).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')}
+                  </span>
+                  <span className={`text-[10px] col-span-2 text-right font-bold ${vehicleStats.daysToSoat < 10 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                    ({vehicleStats.daysToSoat} días de vigencia)
+                  </span>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="grid items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${vehicleStats.daysToTecno < 10 ? 'bg-rose-500 animate-pulse shadow-lg shadow-rose-200' : 'bg-emerald-500 shadow-lg shadow-emerald-200'}`} />
                     <p className="text-xs font-black uppercase">TECNO</p>
                   </div>
-                  <span className="text-xs font-mono font-bold text-slate-600">{selectedVehicle.techExpiration}</span>
+                  <span className="text-xs text-right font-mono font-bold text-slate-600">
+                    {new Date(selectedVehicle.techExpiration).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')}
+                  </span>
+                    <span className={`text-[10px] col-span-2 text-right font-bold ${vehicleStats.daysToTecno < 0 ? 'text-rose-600' : vehicleStats.daysToTecno < 10 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                    {vehicleStats.daysToTecno < 0 ? 'Documento vencido' : `(${vehicleStats.daysToTecno} días de vigencia)`}
+                    </span>
                 </div>
               </div>
             </div>

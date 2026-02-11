@@ -26,26 +26,96 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
 export const findById = async (id: string) =>
   prisma.vehicle.findUnique({ where: { id } });
 
-export const create = async (data: any) =>
-  prisma.vehicle.create({
+export const create = async (userId: string, data: any) => {
+  return prisma.vehicle.create({
     data: {
-      ...data,
-      purchaseDate: data.purchaseDate ? new Date(data.purchaseDate) : null,
-      soatExpiration: data.soatExpiration ? new Date(data.soatExpiration) : null,
-      techExpiration: data.techExpiration ? new Date(data.techExpiration) : null,
+      id: data.id,
+      userId,
+
+      year: Number(data.year),
+      licensePlate: data.licensePlate,
+      model: data.model,
+      color: data.color,
+
+      purchaseDate: data.purchaseDate
+        ? new Date(data.purchaseDate)
+        : null,
+
+      insurance: data.insurance || null,
+      insuranceNumber: data.insuranceNumber || null,
+
+      soatExpiration: data.soatExpiration
+        ? new Date(data.soatExpiration)
+        : null,
+
+      techExpiration: data.techExpiration
+        ? new Date(data.techExpiration)
+        : null,
+
+      rentaValue: Number(data.rentaValue),
+
+      photos: Array.isArray(data.photos) ? data.photos : []
+    }
+  });
+};
+
+export const update = async (userId: string, payload: any) => {
+  if (!payload?.id) {
+    throw new Error('Vehicle ID is required');
+  }
+
+  const existing = await prisma.vehicle.findFirst({
+    where: {
+      id: payload.id,
+      userId
     }
   });
 
-export const update = async (userId: string, data: any) =>
-  prisma.vehicle.update({
-    where: { id: data.id },
+  if (!existing) {
+    throw new Error('Vehículo no encontrado');
+  }
+
+  return prisma.vehicle.update({
+    where: { id: payload.id },
     data: {
-      ...data,
-      purchaseDate: data.purchaseDate ? new Date(data.purchaseDate) : null,
-      soatExpiration: data.soatExpiration ? new Date(data.soatExpiration) : null,
-      techExpiration: data.techExpiration ? new Date(data.techExpiration) : null,
+      year: Number(payload.year),
+      licensePlate: payload.licensePlate,
+      model: payload.model,
+      color: payload.color,
+
+      purchaseDate: payload.purchaseDate
+        ? new Date(payload.purchaseDate)
+        : null,
+
+      insurance: payload.insurance || null,
+      insuranceNumber: payload.insuranceNumber || null,
+
+      soatExpiration: payload.soatExpiration
+        ? new Date(payload.soatExpiration)
+        : null,
+
+      techExpiration: payload.techExpiration
+        ? new Date(payload.techExpiration)
+        : null,
+
+      rentaValue: Number(payload.rentaValue),
+
+      photos: Array.isArray(payload.photos)
+        ? payload.photos
+        : []
     }
   });
+};
 
-export const remove = async (userId: string, id: string) =>
-  prisma.vehicle.delete({ where: { id } });
+export const remove = async (userId: string, id: string) => {
+  // Validar pertenencia al tenant
+  const vehicle = await prisma.vehicle.findFirst({
+    where: { id, userId }
+  });
+
+  if (!vehicle) {
+    throw new Error('Vehículo no encontrado');
+  }
+
+  return prisma.vehicle.delete({ where: { id } });
+};

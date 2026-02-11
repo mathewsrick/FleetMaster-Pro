@@ -94,21 +94,48 @@ const Vehicles: React.FC = () => {
     if (saving) return;
 
     setSaving(true);
+
     try {
       let finalPhotos = [...(formData.photos || [])];
+
       if (pendingFiles.length > 0) {
         const { urls } = await db.uploadVehiclePhotos(pendingFiles);
         finalPhotos = [...finalPhotos, ...urls];
       }
 
-      const vehicle = { ...formData, photos: finalPhotos, id: editingId || crypto.randomUUID() } as Vehicle;
-      await db.saveVehicle(vehicle);
+      // 🔐 Payload limpio
+      const cleanVehicle = {
+        id: editingId || crypto.randomUUID(),
+        year: Number(formData.year),
+        licensePlate: formData.licensePlate,
+        model: formData.model,
+        color: formData.color,
+        purchaseDate: formData.purchaseDate,
+        insurance: formData.insurance || null,
+        insuranceNumber: formData.insuranceNumber || null,
+        soatExpiration: formData.soatExpiration,
+        techExpiration: formData.techExpiration,
+        rentaValue: Number(formData.rentaValue),
+        photos: finalPhotos
+      };
 
-      Swal.fire({ icon: 'success', title: 'Vehículo guardado', showConfirmButton: false, timer: 1500 });
+      await db.saveVehicle(cleanVehicle);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Vehículo guardado',
+        showConfirmButton: false,
+        timer: 1500
+      });
+
       setIsModalOpen(false);
       loadData();
     } catch (err: any) {
-      Swal.fire({ icon: 'error', title: 'Error', text: err.data?.error || 'No se pudo guardar.' });
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err.data?.error || 'No se pudo guardar.'
+      });
     } finally {
       setSaving(false);
     }
@@ -180,11 +207,25 @@ const Vehicles: React.FC = () => {
                     <div className="flex items-center justify-end gap-2">
                        <button title="Ver Detalle Operativo" onClick={() => handleShowDetail(v)} className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all shadow-sm border border-transparent hover:border-indigo-100"><i className="fa-solid fa-eye"></i></button>
                        <button onClick={() => {
-                         setEditingId(v.id);
-                         setFormData(v);
-                         setPreviews(v.photos || []);
-                         setPendingFiles([]);
-                         setIsModalOpen(true);
+                          setEditingId(v.id);
+                          setFormData({
+                            id: v.id,
+                            year: v.year,
+                            licensePlate: v.licensePlate,
+                            model: v.model,
+                            color: v.color,
+                            purchaseDate: v.purchaseDate,
+                            insurance: v.insurance,
+                            insuranceNumber: v.insuranceNumber,
+                            soatExpiration: v.soatExpiration,
+                            techExpiration: v.techExpiration,
+                            rentaValue: v.rentaValue,
+                            driverId: v.driverId || null,
+                            photos: v.photos || []
+                          });
+                          setPreviews(v.photos || []);
+                          setPendingFiles([]);
+                          setIsModalOpen(true);
                        }} className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"><i className="fa-solid fa-pen-to-square"></i></button>
                     </div>
                   </td>
@@ -221,10 +262,22 @@ const Vehicles: React.FC = () => {
                     </div>
 
                     <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 shadow-inner">
-                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estatus Legal y Seguro</h4>
-                       <div className="flex justify-between text-sm"><span className="font-bold text-slate-500">Vencimiento SOAT:</span><span className={`font-black ${new Date(selectedVehicle.soatExpiration) < new Date() ? 'text-rose-500' : 'text-emerald-500'}`}>{selectedVehicle.soatExpiration || 'N/A'}</span></div>
-                       <div className="flex justify-between text-sm"><span className="font-bold text-slate-500">Vencimiento Técnico:</span><span className="font-black text-indigo-500">{selectedVehicle.techExpiration || 'N/A'}</span></div>
-                       <div className="flex justify-between text-sm pt-2 border-t"><span className="font-bold text-slate-500">Renta:</span><span className="font-black text-slate-900">${selectedVehicle.rentaValue.toLocaleString()}</span></div>
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estatus Legal y Seguro</h4>
+                      <div className="flex justify-between text-sm">
+                        <span className="font-bold text-slate-500">Vencimiento SOAT:</span>
+                        <span className={`font-black ${new Date(selectedVehicle.soatExpiration) < new Date() ? 'text-rose-500' : 'text-emerald-500'}`}>
+                          {selectedVehicle.soatExpiration ? formatDateDisplay(selectedVehicle.soatExpiration) : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="font-bold text-slate-500">Vencimiento Técnico:</span>
+                        <span className="font-black text-indigo-500">{selectedVehicle.techExpiration ? formatDateDisplay(selectedVehicle.techExpiration) : 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between text-sm pt-2 border-t"><span className="font-bold text-slate-500">
+                        Renta:
+                        </span>
+                        <span className="font-black text-slate-900">${Number(selectedVehicle.rentaValue).toLocaleString()}</span>
+                      </div>
                     </div>
                  </div>
 
@@ -233,11 +286,11 @@ const Vehicles: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                        <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100 text-center">
                           <p className="text-[10px] font-black text-emerald-400 uppercase mb-2">Ingresos (Pagos)</p>
-                          <p className="text-2xl font-black text-emerald-600">${vehicleHistory.payments.reduce((s,p) => s+p.amount, 0).toLocaleString()}</p>
+                          <p className="text-2xl font-black text-emerald-600">${vehicleHistory.payments.reduce((s,p) => s+Number(p.amount), 0).toLocaleString()}</p>
                        </div>
                        <div className="p-6 bg-rose-50 rounded-3xl border border-rose-100 text-center">
                           <p className="text-[10px] font-black text-rose-400 uppercase mb-2">Egresos (Gastos)</p>
-                          <p className="text-2xl font-black text-rose-600">-${vehicleHistory.expenses.reduce((s,e) => s+e.amount, 0).toLocaleString()}</p>
+                          <p className="text-2xl font-black text-rose-600">-${vehicleHistory.expenses.reduce((s,e) => s+Number(e.amount), 0).toLocaleString()}</p>
                        </div>
                     </div>
 

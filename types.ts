@@ -60,6 +60,22 @@ export interface Vehicle {
   photos?: string[];
 }
 
+export type VehiclePayload = {
+  id: string
+  year: number
+  licensePlate: string
+  model: string
+  color: string
+  purchaseDate?: string | null
+  insurance?: string | null
+  insuranceNumber?: string | null
+  soatExpiration?: string | null
+  techExpiration?: string | null
+  rentaValue: number
+  driverId?: string | null
+  photos: string[]
+}
+
 export interface Driver {
   id: string;
   userId: string;

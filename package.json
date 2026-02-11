@@ -13,7 +13,8 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "build": "vite build",
     "start": "tsx --env-file backend/.env backend/src/server.ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "hard:reset": "tsx backend/scripts/HardReset.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",

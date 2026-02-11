@@ -194,7 +194,7 @@ const Drivers: React.FC = () => {
                     {d.totalDebt && d.totalDebt > 0 ? (
                       <div className="flex items-center gap-2">
                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shadow-sm shadow-rose-200"></span>
-                         <span className="text-sm font-black text-rose-600">${d.totalDebt.toLocaleString()}</span>
+                         <span className="text-sm font-black text-rose-600">${Number(d.totalDebt).toLocaleString()}</span>
                          <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest ml-1 bg-rose-50 px-1.5 py-0.5 rounded">MORA</span>
                       </div>
                     ) : (
@@ -286,12 +286,12 @@ const Drivers: React.FC = () => {
                    <div className="grid grid-cols-2 gap-4">
                       <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm text-center">
                          <p className="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Total Recaudado</p>
-                         <p className="text-2xl font-black text-emerald-600">${driverHistory.payments.reduce((s,p) => s+p.amount, 0).toLocaleString()}</p>
+                         <p className="text-2xl font-black text-emerald-600">${driverHistory.payments.reduce((s,p) => s+Number(p.amount), 0).toLocaleString()}</p>
                          <p className="text-[9px] font-bold text-slate-400 mt-1 italic">Basado en historial de pagos</p>
                       </div>
                       <div className={`p-6 rounded-3xl border text-center shadow-sm ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'}`}>
                          <p className={`text-[10px] font-black uppercase mb-2 tracking-widest ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>Deuda Pendiente</p>
-                         <p className={`text-2xl font-black ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>${(selectedDriver.totalDebt || 0).toLocaleString()}</p>
+                         <p className={`text-2xl font-black ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>${(Number(selectedDriver.totalDebt) || 0).toLocaleString()}</p>
                          <p className={`text-[9px] font-bold mt-1 uppercase tracking-widest ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
                            {selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'En Mora' : 'Cuenta al día'}
                          </p>
@@ -308,7 +308,7 @@ const Drivers: React.FC = () => {
                                   <p className="text-[10px] font-bold text-slate-400"><i className="fa-solid fa-calendar-day mr-1"></i> {formatDateDisplay(p.date)}</p>
                                </div>
                                <div className="text-right">
-                                  <p className="font-black text-indigo-600">${p.amount.toLocaleString()}</p>
+                                  <p className="font-black text-indigo-600">${Number(p.amount).toLocaleString()}</p>
                                   <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Efectivo/Ref</span>
                                </div>
                             </div>

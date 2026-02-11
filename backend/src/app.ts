@@ -49,6 +49,11 @@ const publicPath = path.join((process as any).cwd(), 'backend/public');
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 });
 
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  next();
+});
+
 app.use('/api/public', express.static(publicPath) as any);
 
 // Aplicar limitador a rutas de autenticación
