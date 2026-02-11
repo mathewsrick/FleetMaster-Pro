@@ -124,12 +124,12 @@ const Expenses: React.FC = () => {
                 const vehicle = vehicles.find(v => v.id === e.vehicleId);
                 return (
                   <tr key={e.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-6 py-4 text-xs text-slate-600 font-mono">{formatDateDisplay(e.date)}</td>
+                    <td className="px-6 py-4 text-xs text-slate-600 font-mono">{formatDateDisplay(e.date).split(' ')[0].replace(',', '')}</td>
                     <td className="px-6 py-4">
                       <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-100 uppercase tracking-widest">{vehicle?.licensePlate || 'General'}</span>
                     </td>
                     <td className="px-6 py-4 text-sm font-bold text-slate-900">{e.description}</td>
-                    <td className="px-6 py-4 font-black text-rose-600">-${e.amount.toLocaleString()}</td>
+                    <td className="px-6 py-4 font-black text-rose-600">-${Number(e.amount).toLocaleString()}</td>
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleDelete(e.id)}

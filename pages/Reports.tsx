@@ -87,9 +87,9 @@ const Reports: React.FC = () => {
   }, [activeTab, data, selectedVehicleId, selectedDriverId, currentPage]);
 
   const consolidatedStats = useMemo(() => {
-    const totalIncome = data.payments.reduce((sum, p) => sum + p.amount, 0);
-    const totalExpenses = data.expenses.reduce((sum, e) => sum + e.amount, 0);
-    const totalDebt = data.arrears.filter(a => a.status === 'pending').reduce((sum, a) => sum + a.amountOwed, 0);
+    const totalIncome = data.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const totalExpenses = data.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+    const totalDebt = data.arrears.filter(a => a.status === 'pending').reduce((sum, a) => sum + Number(a.amountOwed), 0);
     return { totalIncome, totalExpenses, totalDebt, balance: totalIncome - totalExpenses };
   }, [data]);
 
@@ -191,8 +191,8 @@ const Reports: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {data.vehicles.map(v => {
                     const driver = data.drivers.find(d => d.id === v.driverId);
-                    const vPayments = data.payments.filter(p => p.vehicleId === v.id).reduce((sum, p) => sum + p.amount, 0);
-                    const vDebt = data.arrears.filter(a => a.vehicleId === v.id && a.status === 'pending').reduce((sum, a) => sum + a.amountOwed, 0);
+                    const vPayments = data.payments.filter(p => p.vehicleId === v.id).reduce((sum, p) => sum + Number(p.amount), 0);
+                    const vDebt = data.arrears.filter(a => a.vehicleId === v.id && a.status === 'pending').reduce((sum, a) => sum + Number(a.amountOwed), 0);
                     return (
                       <tr key={v.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 font-bold text-indigo-600 font-mono uppercase text-sm">{v.licensePlate}</td>
@@ -224,8 +224,8 @@ const Reports: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {filteredData.list.map((d: any) => {
                     const vehicle = data.vehicles.find(v => v.driverId === d.id);
-                    const dPayments = data.payments.filter(p => p.driverId === d.id).reduce((sum, p) => sum + p.amount, 0);
-                    const dDebt = data.arrears.filter(a => a.driverId === d.id && a.status === 'pending').reduce((sum, a) => sum + a.amountOwed, 0);
+                    const dPayments = data.payments.filter(p => p.driverId === d.id).reduce((sum, p) => sum + Number(p.amount), 0);
+                    const dDebt = data.arrears.filter(a => a.driverId === d.id && a.status === 'pending').reduce((sum, a) => sum + Number(a.amountOwed), 0);
                     return (
                       <tr key={d.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 font-bold text-slate-800 text-sm">{d.firstName} {d.lastName}</td>

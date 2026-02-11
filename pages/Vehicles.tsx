@@ -266,12 +266,12 @@ const Vehicles: React.FC = () => {
                       <div className="flex justify-between text-sm">
                         <span className="font-bold text-slate-500">Vencimiento SOAT:</span>
                         <span className={`font-black ${new Date(selectedVehicle.soatExpiration) < new Date() ? 'text-rose-500' : 'text-emerald-500'}`}>
-                          {selectedVehicle.soatExpiration ? formatDateDisplay(selectedVehicle.soatExpiration) : 'N/A'}
+                          {selectedVehicle.soatExpiration ? formatDateDisplay(selectedVehicle.soatExpiration).split(' ')[0].replace(',', '') : 'N/A'}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="font-bold text-slate-500">Vencimiento Técnico:</span>
-                        <span className="font-black text-indigo-500">{selectedVehicle.techExpiration ? formatDateDisplay(selectedVehicle.techExpiration) : 'N/A'}</span>
+                        <span className="font-black text-indigo-500">{selectedVehicle.techExpiration ? formatDateDisplay(selectedVehicle.techExpiration).split(' ')[0].replace(',', '') : 'N/A'}</span>
                       </div>
                       <div className="flex justify-between text-sm pt-2 border-t"><span className="font-bold text-slate-500">
                         Renta:
@@ -301,9 +301,9 @@ const Vehicles: React.FC = () => {
                              <div key={e.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                 <div>
                                    <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{e.description}</p>
-                                   <p className="text-[10px] font-bold text-slate-400">{formatDateDisplay(e.date)}</p>
+                                   <p className="text-[10px] font-bold text-slate-400">{formatDateDisplay(e.date).split(' ')[0].replace(',', '')}</p>
                                 </div>
-                                <p className="font-black text-rose-600">-${e.amount.toLocaleString()}</p>
+                                <p className="font-black text-rose-600">-${Number(e.amount).toLocaleString()}</p>
                              </div>
                           )) : <p className="text-center py-8 text-slate-300 italic text-sm">Sin gastos registrados.</p>}
                        </div>

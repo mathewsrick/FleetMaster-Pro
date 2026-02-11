@@ -91,6 +91,7 @@ const Payments: React.FC = () => {
     }
   };
 
+  const isInvalidAmount = !formData.amount || formData.amount <= 0;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.driverId || !formData.vehicleId || saving) return;
@@ -198,9 +199,9 @@ const Payments: React.FC = () => {
                   const vehicle = vehicles.find(v => v.id === p.vehicleId);
                   return (
                     <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
-                      <td className="px-6 py-4 text-sm text-slate-500 font-mono">{formatDateDisplay(p.date)}</td>
+                      <td className="px-6 py-4 text-xs text-slate-500 font-mono">{formatDateDisplay(p.date).split(' ')[0].replace(',', '')}</td>
                       <td className="px-6 py-4">
-                        <p className="font-bold text-slate-800 text-sm">{driver ? `${driver.firstName} ${driver.lastName}` : 'N/A'}</p>
+                        <p className="font-bold text-slate-800 text-xs">{driver ? `${driver.firstName} ${driver.lastName}` : 'N/A'}</p>
                         <p className="text-[10px] font-black text-indigo-600 uppercase tracking-tighter">{vehicle?.licensePlate}</p>
                       </td>
                       <td className="px-6 py-4">
@@ -208,7 +209,7 @@ const Payments: React.FC = () => {
                           {p.type === 'arrear_payment' ? 'ABONO MORA' : 'RENTA'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-black text-slate-900">${p.amount.toLocaleString()}</td>
+                      <td className="px-6 py-4 font-black text-slate-900">${Number(p.amount).toLocaleString()}</td>
                       <td className="px-6 py-4">
                         <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 uppercase tracking-widest inline-flex items-center gap-1">
                           <i className="fa-solid fa-check-double text-[8px]"></i> Recibido
@@ -330,7 +331,7 @@ const Payments: React.FC = () => {
                   <button
                     type="button"
                     disabled={saving}
-                    onClick={() => setFormData({ ...formData, type: 'renta', arrearId: null })}
+                    onClick={() => setFormData({ ...formData, type: 'renta', arrearId: null, amount: formData.vehicleId ? (vehicles.find(v => v.id === formData.vehicleId)?.rentaValue || 0) : 0 })}
                     className={`py-4 px-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
                       formData.type === 'renta'
                         ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-100'
@@ -343,7 +344,7 @@ const Payments: React.FC = () => {
                     type="button"
                     disabled={saving || driverPendingArrears.length === 0}
                     onClick={() =>
-                      setFormData({ ...formData, type: 'arrear_payment' })
+                      setFormData({ ...formData, type: 'arrear_payment', amount: 0 })
                     }
                     className={`py-4 px-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
                       formData.type === 'arrear_payment'
@@ -431,12 +432,13 @@ const Payments: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={saving || isInvalidAmount}
                   className={`w-full sm:flex-[2] px-6 py-5 rounded-3xl font-black flex items-center justify-center gap-3 transition-all shadow-xl uppercase text-[10px] tracking-widest ${
-                    saving 
-                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                    saving
+                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                       : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200/50 active:scale-95'
-                  }`}
+                    } ${isInvalidAmount && !saving ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
                 >
                   {saving ? (
                     <>
