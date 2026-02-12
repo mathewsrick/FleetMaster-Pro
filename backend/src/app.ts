@@ -26,7 +26,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.use(helmet() as any); 
+app.use(helmet() as any);
 app.use(cors() as any);
 // 🔥 WEBHOOK RAW PRIMERO
 app.use('/api/wompi/webhook',
@@ -36,7 +36,7 @@ app.use(express.json({ limit: '10kb' }) as any);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 10,
   message: { error: 'Demasiados intentos. Por favor intenta más tarde.' },
   standardHeaders: true,
   legacyHeaders: false,

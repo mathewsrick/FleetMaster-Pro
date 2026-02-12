@@ -120,7 +120,6 @@ const App: React.FC = () => {
 
   const refreshAccount = async () => {
     try {
-      console.log("REFRESH ACCOUNT EJECUTADO");
       const res = await db.refreshAuth();
 
       if (!res?.accountStatus) return;
