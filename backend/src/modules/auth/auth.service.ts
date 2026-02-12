@@ -13,7 +13,6 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   enterprise: { maxVehicles: 99999, maxDrivers: 99999, hasExcelReports: true, hasCustomApi: true, maxHistoryDays: null, maxRangeDays: null },
 };
 
-// Nueva función de validación de seguridad
 const isPasswordSecure = (password: string): boolean => {
   const minLength = 8;
   const hasUpperCase = /[A-Z]/.test(password);
@@ -39,7 +38,7 @@ export const register = async (email: string, username: string, password: string
   const user = {
     email,
     username,
-    password: await bcrypt.hash(password, 12), // Aumentamos rondas de sal para mayor seguridad
+    password: await bcrypt.hash(password, 12),
     role: 'USER',
     isConfirmed: false,
     confirmationToken,
@@ -54,7 +53,6 @@ export const register = async (email: string, username: string, password: string
 };
 
 export const confirmAccount = async (token: string) => {
-  // Fix: Removed non-existent findUserByConfirmedToken call to resolve reference error
   const user = await repo.findUserByConfirmationToken(token);
   if (!user) {
     throw new Error('Token de confirmación inválido');
@@ -99,6 +97,8 @@ export const login = async (identifier: string, password: string) => {
   const createdAt = new Date(user.createdAt).getTime();
   const trialDaysRemaining = Math.max(0, 5 - Math.floor((now - createdAt) / (1000 * 3600 * 24)));
 
+  // --- LÓGICA DE LICENCIA ---
+  const licenseOverride = await repo.getActiveLicenseOverride(user.id);
   const subscription = await repo.getActiveSubscription(user.id);
 
   let plan: PlanType = 'free_trial';
@@ -111,16 +111,39 @@ export const login = async (identifier: string, password: string) => {
   } else if (!user.isConfirmed) {
     accountStatus = { accessLevel: 'BLOCKED', reason: 'UNCONFIRMED', plan: 'free_trial', daysRemaining: 0, limits: PLAN_LIMITS.free_trial };
     throw Object.assign(new Error('Debes confirmar tu cuenta por correo.'), { accountStatus });
-  } else if (subscription && new Date(subscription.dueDate).getTime() > now) {
+  } 
+  // 1. Prioridad: Licencia Manual (Override)
+  else if (licenseOverride) {
+    accessLevel = 'FULL';
+    plan = licenseOverride.plan as PlanType;
+    const daysRemaining = licenseOverride.expiresAt 
+      ? Math.ceil((new Date(licenseOverride.expiresAt).getTime() - now) / (1000 * 3600 * 24))
+      : 9999;
+    accountStatus = { 
+      accessLevel, 
+      reason: 'ACTIVE_SUBSCRIPTION', 
+      plan, 
+      daysRemaining, 
+      limits: PLAN_LIMITS[plan],
+      isManual: true,
+      reasonOverride: licenseOverride.reason
+    };
+  }
+  // 2. Suscripción Paga (Wompi)
+  else if (subscription && new Date(subscription.dueDate).getTime() > now) {
     accessLevel = 'FULL';
     plan = subscription.plan as PlanType;
     const daysRemaining = Math.ceil((new Date(subscription.dueDate).getTime() - now) / (1000 * 3600 * 24));
     accountStatus = { accessLevel, reason: 'ACTIVE_SUBSCRIPTION', plan, daysRemaining, limits: PLAN_LIMITS[plan] };
-  } else if (trialDaysRemaining > 0) {
+  } 
+  // 3. Periodo de Prueba
+  else if (trialDaysRemaining > 0) {
     accessLevel = 'LIMITED';
     plan = 'free_trial';
     accountStatus = { accessLevel, reason: 'TRIAL', plan, daysRemaining: trialDaysRemaining, limits: PLAN_LIMITS[plan] };
-  } else {
+  } 
+  // 4. Bloqueado
+  else {
     accountStatus = { accessLevel: 'BLOCKED', reason: 'TRIAL_EXPIRED', plan: 'free_trial', daysRemaining: 0, limits: PLAN_LIMITS.free_trial };
     throw Object.assign(new Error('Subscription required'), { accountStatus });
   }

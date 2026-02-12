@@ -1,7 +1,5 @@
-import * as PrismaModule from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-
-const { PrismaClient } = PrismaModule as any;
 
 export const prisma = new PrismaClient();
 
@@ -10,10 +8,14 @@ export const runSeeders = async () => {
 
   try {
     const adminIdentifier = 'rmatheus';
-    const existingAdmin = await prisma.user.findUnique({ where: { username: adminIdentifier } });
+
+    const existingAdmin = await prisma.user.findUnique({
+      where: { username: adminIdentifier }
+    });
 
     if (!existingAdmin) {
       const hashedPassword = bcrypt.hashSync('Rmath327', 12);
+
       await prisma.user.create({
         data: {
           id: 'system-admin-001',
@@ -25,6 +27,7 @@ export const runSeeders = async () => {
           createdAt: new Date()
         }
       });
+
       console.log(`✓ SuperAdmin created: ${adminIdentifier}`);
     }
 

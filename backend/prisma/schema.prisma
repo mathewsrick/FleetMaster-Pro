@@ -53,9 +53,23 @@ model User {
   arrears           Arrear[]
   subscriptions     SubscriptionKey[]
   transactions      Transaction[]
+  licenseOverrides  LicenseOverride[]
 
   @@index([email])
   @@index([username])
+}
+
+model LicenseOverride {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan      String   // basico, pro, enterprise
+  expiresAt DateTime?
+  reason    String?
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model SubscriptionKey {

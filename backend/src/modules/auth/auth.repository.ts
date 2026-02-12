@@ -57,3 +57,16 @@ export const getActiveSubscription = async (userId: string) =>
     where: { userId, status: 'active' },
     orderBy: { dueDate: 'desc' }
   });
+
+export const getActiveLicenseOverride = async (userId: string) => {
+  return prisma.licenseOverride.findFirst({
+    where: {
+      userId,
+      OR: [
+        { expiresAt: null },
+        { expiresAt: { gte: new Date() } }
+      ]
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+};
