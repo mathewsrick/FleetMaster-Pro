@@ -1,26 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { db, formatDateDisplay } from '../services/db';
-import { User } from '../types';
+import React, { useEffect, useState, useCallback } from 'react';
+import { db } from '../services/db';
 import Swal from 'sweetalert2';
 
 const SuperAdmin: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  // Función principal de carga de datos
+  const loadData = useCallback(async (query?: string) => {
     try {
-      setLoading(true);
-      // El backend ya soporta filtrado por query string 'search'
+      if (!query) setLoading(true);
+      else setSearching(true);
+
+      // Si hay una query, la enviamos al backend que ya soporta ?search=
       const [s, u] = await Promise.all([
         db.getAdminStats(),
-        db.getAdminUsers()
+        db.getAdminUsers(query)
       ]);
+      
       setStats(s);
       setUsers(u);
     } catch (e) {
@@ -28,8 +28,25 @@ const SuperAdmin: React.FC = () => {
       Swal.fire('Error', 'No se pudieron cargar los datos administrativos.', 'error');
     } finally {
       setLoading(false);
+      setSearching(false);
     }
-  };
+  }, []);
+
+  // Carga inicial
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Efecto para búsqueda con Debounce (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Solo recargamos si no es la carga inicial (donde searchQuery es '')
+      // o si el usuario escribió algo.
+      loadData(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, loadData]);
 
   const handleGrantLicense = async (user: any) => {
     const { value: formValues } = await Swal.fire({
@@ -71,8 +88,9 @@ const SuperAdmin: React.FC = () => {
     if (formValues) {
       try {
         Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        
-        const response = await fetch(`${(import.meta as any).env?.VITE_API_URL || '/api'}/superadmin/grant-license`, {
+        const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+
+        const response = await fetch(`${API_URL}/api/superadmin/grant-license`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -97,17 +115,12 @@ const SuperAdmin: React.FC = () => {
           showConfirmButton: false
         });
         
-        loadData();
+        loadData(searchQuery);
       } catch (err: any) {
         Swal.fire('Error', err.message, 'error');
       }
     }
   };
-
-  const filteredUsers = users.filter(u => 
-    u.username.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   if (loading && stats === null) return <div className="p-20 text-center"><i className="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-600"></i></div>;
 
@@ -142,7 +155,7 @@ const SuperAdmin: React.FC = () => {
           </div>
           <div className="flex w-full md:w-auto gap-3">
             <div className="relative flex-1 md:w-64">
-              <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <i className={`fa-solid ${searching ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'} absolute left-4 top-1/2 -translate-y-1/2 text-slate-400`}></i>
               <input 
                 type="text" 
                 placeholder="Buscar por email o usuario..." 
@@ -151,13 +164,18 @@ const SuperAdmin: React.FC = () => {
                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium text-sm"
               />
             </div>
-            <button onClick={loadData} className="p-3 bg-slate-50 text-slate-400 hover:text-indigo-600 rounded-2xl border border-slate-200 transition-all">
+            <button onClick={() => loadData(searchQuery)} className="p-3 bg-slate-50 text-slate-400 hover:text-indigo-600 rounded-2xl border border-slate-200 transition-all">
               <i className="fa-solid fa-rotate"></i>
             </button>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto relative">
+          {searching && (
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+              <i className="fa-solid fa-circle-notch fa-spin text-indigo-600 text-2xl"></i>
+            </div>
+          )}
           <table className="w-full text-left">
             <thead className="bg-slate-50/50">
               <tr>
@@ -168,10 +186,9 @@ const SuperAdmin: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredUsers.length === 0 ? (
+              {users.length === 0 ? (
                 <tr><td colSpan={4} className="p-20 text-center text-slate-400 italic font-medium">No se encontraron usuarios que coincidan con la búsqueda.</td></tr>
-              ) : filteredUsers.map(u => {
-                // Si dueDate es nulo y el plan no es free_trial, usualmente es una licencia manual o vitalicia
+              ) : users.map(u => {
                 const isManual = u.dueDate === null && u.plan !== 'free_trial';
                 
                 return (

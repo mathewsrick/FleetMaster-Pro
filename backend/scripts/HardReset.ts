@@ -49,6 +49,8 @@ async function HardReset() {
 
     await prisma.subscriptionKey.deleteMany();
 
+    await prisma.licenseOverride.deleteMany();
+
     await prisma.transaction.deleteMany();
 
     console.log('\n✅ Limpieza completada correctamente.');
