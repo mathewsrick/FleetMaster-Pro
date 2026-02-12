@@ -8,9 +8,10 @@ export const ENV = {
   SMTP_USER: process.env.SMTP_USER || '',
   SMTP_PASS: process.env.SMTP_PASS || '',
   SMTP_FROM: process.env.SMTP_FROM || '"FleetMaster Hub" <contacto@fleetmasterhub.com>',
-  APP_URL: process.env.APP_URL || 'http://localhost:5173',
+  APP_URL: process.env.APP_URL || 'http://localhost:3000',
   // WOMPI Config
   WOMPI_PUBLIC_KEY: process.env.WOMPI_PUBLIC_KEY || 'pub_test_Q5yDA9xoKdePzhS8qn969p6M7Y6eT96e',
   WOMPI_INTEGRITY_SECRET: process.env.WOMPI_INTEGRITY_SECRET,
-  WOMPI_WEBHOOK_SECRET: process.env.WOMPI_WEBHOOK_SECRET
+  WOMPI_WEBHOOK_SECRET: process.env.WOMPI_WEBHOOK_SECRET,
+  WOMPI_API_URL: process.env.WOMPI_API_URL || 'https://sandbox.wompi.co/v1'
 };

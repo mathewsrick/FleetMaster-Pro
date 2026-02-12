@@ -11,14 +11,14 @@ import Landing from './pages/Landing';
 import PricingCheckout from './pages/PricingCheckout';
 import SuperAdmin from './pages/SuperAdmin';
 import ConfirmAccount from './pages/ConfirmAccount';
+import PaymentResult from './pages/PaymentResult';
 import { AuthState, AccountStatus } from './types';
 
 const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) => {
   if (!status) return null;
-  
-  // Mostrar banner solo si quedan 5 días o menos (en Trial o Suscripción Activa)
+
   const isExpiringSoon = status.daysRemaining <= 5 && (status.reason === 'TRIAL' || status.reason === 'ACTIVE_SUBSCRIPTION');
-  
+
   if (!isExpiringSoon) return null;
 
   return (
@@ -54,7 +54,7 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
             <div className="bg-indigo-600 p-2 rounded-lg">
               <i className="fa-solid fa-truck-fast"></i>
             </div>
-            <span className="font-black text-lg tracking-tight">FleetMaster Hub</span>
+            <span className="font-black text-xl tracking-tight">FleetMaster Hub</span>
           </div>
           <nav className="flex-1 px-4 space-y-2">
             {navItems.map(item => (
@@ -124,7 +124,8 @@ const App: React.FC = () => {
         <Route path="/login" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLogin={login} />} />
         <Route path="/confirm/:token" element={<ConfirmAccount />} />
         <Route path="/pricing-checkout" element={auth.isAuthenticated ? <PricingCheckout /> : <Navigate to="/login" />} />
-        
+        <Route path="/payment-result" element={auth.isAuthenticated ? <PaymentResult /> : <Navigate to="/login" />} />
+
         <Route path="/dashboard" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Dashboard /></Layout> : <Navigate to="/" />} />
         <Route path="/superadmin" element={auth.isAuthenticated && auth.user?.role === 'SUPERADMIN' ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><SuperAdmin /></Layout> : <Navigate to="/" />} />
         <Route path="/vehicles" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Vehicles /></Layout> : <Navigate to="/" />} />
@@ -132,7 +133,7 @@ const App: React.FC = () => {
         <Route path="/payments" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Payments /></Layout> : <Navigate to="/" />} />
         <Route path="/expenses" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Expenses /></Layout> : <Navigate to="/" />} />
         <Route path="/reports" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Reports /></Layout> : <Navigate to="/" />} />
-        
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

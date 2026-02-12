@@ -82,7 +82,7 @@ model Transaction {
   plan          String
   duration      String
   status        String   @default("PENDING") // PENDING, APPROVED, DECLINED, ERROR
-  wompiId       String?
+  wompiId       String?  @unique
   paymentMethod String?
   createdAt     DateTime @default(now())
 

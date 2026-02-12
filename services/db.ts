@@ -55,6 +55,7 @@ export const db = {
   
   // Wompi Payment
   initWompiPayment: (plan: string, duration: string) => request<any>('/wompi/initialize', 'POST', { plan, duration }),
+  checkWompiStatus: (id: string) => request<any>(`/wompi/verify/${id}`, 'GET'),
   
   purchasePlan: (plan: string, duration: 'monthly' | 'semiannual' | 'yearly') => request<any>('/subscription/purchase', 'POST', { plan, duration }),
 

@@ -1,4 +1,3 @@
-
 import { Request, Response } from 'express';
 import { prisma } from '../../shared/db';
 import { v4 as uuid } from 'uuid';
@@ -6,13 +5,11 @@ import * as wompiService from './wompi.service';
 import * as subService from '../subscription/subscription.service';
 import { ENV } from '../../config/env';
 
-// Fix: Use any for req and res to bypass express typing conflicts in this environment
 export const initializePayment = async (req: any, res: any) => {
   try {
     const { plan, duration } = req.body;
     const userId = req.user.userId;
 
-    // Precios base (deben coincidir con PricingCheckout.tsx)
     const BASE_PRICES: Record<string, number> = {
       'basico': 59900,
       'pro': 95900,
@@ -29,7 +26,6 @@ export const initializePayment = async (req: any, res: any) => {
     const amountInCents = amount * 100;
     const reference = `FMP-${uuid().substring(0, 8).toUpperCase()}`;
 
-    // Guardar transacción pendiente en BD
     await prisma.transaction.create({
       data: {
         userId,
@@ -49,50 +45,115 @@ export const initializePayment = async (req: any, res: any) => {
       amountInCents,
       reference,
       signature,
-      redirectUrl: `${ENV.APP_URL}/#/dashboard`
+      // Redirigir explícitamente a la página de resultados
+      redirectUrl: `${ENV.APP_URL}/#/payment-result`
     });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
 };
 
-// Fix: Use any for req and res to bypass express typing conflicts in this environment
+export const verifyTransaction = async (req: any, res: any) => {
+  try {
+    const { id } = req.params;
+
+    const tx = await prisma.transaction.findUnique({
+      where: { wompiId: id }
+    });
+
+    if (!tx) return res.status(404).json({ error: 'No encontrada' });
+
+    res.json({
+      status: tx.status,
+      reference: tx.reference
+    });
+
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const handleWebhook = async (req: any, res: any) => {
   try {
     const event = req.body;
     const checksum = req.headers['x-event-checksum'] as string;
 
-    if (!wompiService.validateWebhookSignature(event, checksum)) {
-      console.error('Invalid Wompi Webhook Signature');
+    // Validar firma
+    if (!wompiService.validateWebhookSignature(req.rawBody, checksum)) {
       return res.status(401).end();
     }
 
-    const { transaction } = event.data;
-    const { reference, status, id: wompiId, payment_method_type } = transaction;
-
-    const localTx = await prisma.transaction.findUnique({ where: { reference } });
-    if (!localTx) return res.status(404).end();
-
-    // Actualizar estado de transacción
-    const newStatus = status === 'APPROVED' ? 'APPROVED' : status === 'DECLINED' ? 'DECLINED' : 'ERROR';
-    
-    await prisma.transaction.update({
-      where: { reference },
-      data: { 
-        status: newStatus,
-        wompiId,
-        paymentMethod: payment_method_type
-      }
-    });
-
-    if (status === 'APPROVED') {
-      // Activar suscripción
-      await subService.fulfillPurchase(localTx.userId, localTx.plan, localTx.duration as any, reference);
+    // Solo procesar eventos de actualización
+    if (event.event !== 'transaction.updated') {
+      return res.status(200).end();
     }
 
-    res.status(200).json({ success: true });
+    const { transaction } = event.data;
+    if (!transaction) return res.status(200).end();
+
+    const { reference, status, id: wompiId, payment_method_type, amount_in_cents, currency } = transaction;
+
+    await prisma.$transaction(async (tx: any) => {
+
+      const localTx = await tx.transaction.findUnique({
+        where: { reference }
+      });
+
+      if (!localTx) return;
+
+      // 🔐 VALIDACIÓN ANTIFRAUDE
+      if (amount_in_cents !== localTx.amount * 100) {
+        throw new Error('Monto alterado');
+      }
+
+      if (currency !== 'COP') {
+        throw new Error('Moneda inválida');
+      }
+
+      // 🛡️ IDPOTENCIA FUERTE
+      // Si ya fue aprobado, no hacer nada
+      if (localTx.status === 'APPROVED') return;
+
+      // Si ya existe wompiId en otra transacción → intento de replay
+      const existingWompi = await tx.transaction.findUnique({
+        where: { wompiId }
+      });
+
+      if (existingWompi && existingWompi.reference !== reference) {
+        throw new Error('Replay attack detectado');
+      }
+
+      const newStatus =
+        status === 'APPROVED'
+          ? 'APPROVED'
+          : status === 'DECLINED'
+          ? 'DECLINED'
+          : 'ERROR';
+
+      await tx.transaction.update({
+        where: { reference },
+        data: {
+          status: newStatus,
+          wompiId: String(wompiId),
+          paymentMethod: payment_method_type
+        }
+      });
+
+      if (status === 'APPROVED') {
+        await subService.fulfillPurchase(
+          localTx.userId,
+          localTx.plan,
+          localTx.duration as any,
+          reference
+        );
+      }
+
+    });
+
+    res.status(200).json({ received: true });
+
   } catch (error: any) {
-    console.error('Webhook Error:', error);
+    console.error('Webhook Error:', error.message);
     res.status(500).end();
   }
 };

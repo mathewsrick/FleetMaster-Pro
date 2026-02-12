@@ -49,6 +49,8 @@ async function HardReset() {
 
     await prisma.subscriptionKey.deleteMany();
 
+    await prisma.transaction.deleteMany();
+
     console.log('\n✅ Limpieza completada correctamente.');
   } catch (error) {
     console.error('❌ Error durante reset:', error);
