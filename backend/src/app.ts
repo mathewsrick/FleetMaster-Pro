@@ -28,6 +28,10 @@ const app = express();
 
 app.use(helmet() as any); 
 app.use(cors() as any);
+// 🔥 WEBHOOK RAW PRIMERO
+app.use('/api/wompi/webhook',
+  express.raw({ type: 'application/json' })
+);
 app.use(express.json({ limit: '10kb' }) as any);
 
 const authLimiter = rateLimit({

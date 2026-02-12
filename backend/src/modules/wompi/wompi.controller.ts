@@ -75,20 +75,29 @@ export const verifyTransaction = async (req: any, res: any) => {
 
 export const handleWebhook = async (req: any, res: any) => {
   try {
-    const event = req.body;
+    const raw = req.body.toString();
+    const event = JSON.parse(raw);
     const checksum = req.headers['x-event-checksum'] as string;
 
-    // Validar firma
-    if (!wompiService.validateWebhookSignature(req.rawBody, checksum)) {
+
+    // Validar firma usando el objeto ya parseado
+    if (!wompiService.validateWebhookSignature(event, checksum)) {
+      console.log('❌ Firma inválida');
       return res.status(401).end();
     }
 
     // Solo procesar eventos de actualización
     if (event.event !== 'transaction.updated') {
+      console.log('Evento ignorado:', event.event);
       return res.status(200).end();
     }
 
-    const { transaction } = event.data;
+    if (!event?.data || !event.data?.transaction) {
+      console.log('Evento sin transaction:', event);
+      return res.status(200).end();
+    }
+
+    const transaction = event.data.transaction;
     if (!transaction) return res.status(200).end();
 
     const { reference, status, id: wompiId, payment_method_type, amount_in_cents, currency } = transaction;

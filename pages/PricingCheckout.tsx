@@ -62,8 +62,6 @@ const PricingCheckout: React.FC = () => {
     try {
       // 1. Obtener parámetros de pago e integridad desde el backend
       const wompiData = await db.initWompiPayment(planKey, duration);
-
-      console.log('WIDGET DATA:', wompiData);
       // 2. Abrir el Widget de Wompi
       openWompiWidget(wompiData);
 
