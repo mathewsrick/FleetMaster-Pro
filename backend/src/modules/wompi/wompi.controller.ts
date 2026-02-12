@@ -3,6 +3,7 @@ import { prisma } from '../../shared/db';
 import { v4 as uuid } from 'uuid';
 import * as wompiService from './wompi.service';
 import * as subService from '../subscription/subscription.service';
+import * as emailService from '../../shared/email.service';
 import { ENV } from '../../config/env';
 
 export const initializePayment = async (req: any, res: any) => {
@@ -105,7 +106,8 @@ export const handleWebhook = async (req: any, res: any) => {
     await prisma.$transaction(async (tx: any) => {
 
       const localTx = await tx.transaction.findUnique({
-        where: { reference }
+        where: { reference },
+        include: { user: true }
       });
 
       if (!localTx) return;
@@ -155,6 +157,21 @@ export const handleWebhook = async (req: any, res: any) => {
           localTx.duration as any,
           reference
         );
+
+        // Notificar al SuperAdmin
+        const adminEmail = process.env.SUPPORT_EMAIL || 'admin@fleetmaster.pro';
+        await emailService.sendEmail({
+            to: adminEmail,
+            subject: `[ALERTA] Nuevo Pago Aprobado - ${localTx.user.username}`,
+            html: emailService.templates.adminPaymentNotification({
+                user: localTx.user.username,
+                email: localTx.user.email,
+                plan: localTx.plan,
+                amount: Number(localTx.amount),
+                reference: localTx.reference,
+                date: new Date().toLocaleString()
+            })
+        });
       }
 
     });

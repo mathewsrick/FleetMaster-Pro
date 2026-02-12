@@ -23,6 +23,58 @@ const isPasswordSecure = (password: string): boolean => {
   return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
 };
 
+const getAccountStatusForUser = async (user: any) => {
+  const now = Date.now();
+  const createdAt = new Date(user.createdAt).getTime();
+  const trialDaysRemaining = Math.max(0, 5 - Math.floor((now - createdAt) / (1000 * 3600 * 24)));
+
+  const licenseOverride = await repo.getActiveLicenseOverride(user.id);
+  const subscription = await repo.getActiveSubscription(user.id);
+
+  let plan: PlanType = 'free_trial';
+  let accessLevel: 'FULL' | 'LIMITED' | 'BLOCKED' = 'BLOCKED';
+  let accountStatus: any = {};
+
+  if (user.role === 'SUPERADMIN') {
+    accessLevel = 'FULL';
+    accountStatus = { accessLevel, reason: 'ACTIVE_SUBSCRIPTION', plan: 'enterprise', daysRemaining: 9999, limits: PLAN_LIMITS.enterprise };
+  } else if (!user.isConfirmed) {
+    accountStatus = { accessLevel: 'BLOCKED', reason: 'UNCONFIRMED', plan: 'free_trial', daysRemaining: 0, limits: PLAN_LIMITS.free_trial };
+  } 
+  else if (licenseOverride) {
+    accessLevel = 'FULL';
+    plan = licenseOverride.plan as PlanType;
+    const daysRemaining = licenseOverride.expiresAt 
+      ? Math.ceil((new Date(licenseOverride.expiresAt).getTime() - now) / (1000 * 3600 * 24))
+      : 9999;
+    accountStatus = { 
+      accessLevel, 
+      reason: 'ACTIVE_SUBSCRIPTION', 
+      plan, 
+      daysRemaining, 
+      limits: PLAN_LIMITS[plan],
+      isManual: true,
+      reasonOverride: licenseOverride.reason
+    };
+  }
+  else if (subscription && new Date(subscription.dueDate).getTime() > now) {
+    accessLevel = 'FULL';
+    plan = subscription.plan as PlanType;
+    const daysRemaining = Math.ceil((new Date(subscription.dueDate).getTime() - now) / (1000 * 3600 * 24));
+    accountStatus = { accessLevel, reason: 'ACTIVE_SUBSCRIPTION', plan, daysRemaining, limits: PLAN_LIMITS[plan] };
+  } 
+  else if (trialDaysRemaining > 0) {
+    accessLevel = 'LIMITED';
+    plan = 'free_trial';
+    accountStatus = { accessLevel, reason: 'TRIAL', plan, daysRemaining: trialDaysRemaining, limits: PLAN_LIMITS[plan] };
+  } 
+  else {
+    accountStatus = { accessLevel: 'BLOCKED', reason: 'TRIAL_EXPIRED', plan: 'free_trial', daysRemaining: 0, limits: PLAN_LIMITS.free_trial };
+  }
+
+  return { plan, accessLevel, accountStatus };
+};
+
 export const register = async (email: string, username: string, password: string) => {
   if (!isPasswordSecure(password)) {
     throw new Error('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.');
@@ -93,58 +145,12 @@ export const login = async (identifier: string, password: string) => {
 
   await repo.updateLastActivity(user.id);
 
-  const now = Date.now();
-  const createdAt = new Date(user.createdAt).getTime();
-  const trialDaysRemaining = Math.max(0, 5 - Math.floor((now - createdAt) / (1000 * 3600 * 24)));
+  const { plan, accessLevel, accountStatus } = await getAccountStatusForUser(user);
 
-  // --- LÓGICA DE LICENCIA ---
-  const licenseOverride = await repo.getActiveLicenseOverride(user.id);
-  const subscription = await repo.getActiveSubscription(user.id);
-
-  let plan: PlanType = 'free_trial';
-  let accessLevel: 'FULL' | 'LIMITED' | 'BLOCKED' = 'BLOCKED';
-  let accountStatus: any = {};
-
-  if (user.role === 'SUPERADMIN') {
-    accessLevel = 'FULL';
-    accountStatus = { accessLevel, reason: 'ACTIVE_SUBSCRIPTION', plan: 'enterprise', daysRemaining: 9999, limits: PLAN_LIMITS.enterprise };
-  } else if (!user.isConfirmed) {
-    accountStatus = { accessLevel: 'BLOCKED', reason: 'UNCONFIRMED', plan: 'free_trial', daysRemaining: 0, limits: PLAN_LIMITS.free_trial };
+  if (accountStatus.reason === 'UNCONFIRMED') {
     throw Object.assign(new Error('Debes confirmar tu cuenta por correo.'), { accountStatus });
-  } 
-  // 1. Prioridad: Licencia Manual (Override)
-  else if (licenseOverride) {
-    accessLevel = 'FULL';
-    plan = licenseOverride.plan as PlanType;
-    const daysRemaining = licenseOverride.expiresAt 
-      ? Math.ceil((new Date(licenseOverride.expiresAt).getTime() - now) / (1000 * 3600 * 24))
-      : 9999;
-    accountStatus = { 
-      accessLevel, 
-      reason: 'ACTIVE_SUBSCRIPTION', 
-      plan, 
-      daysRemaining, 
-      limits: PLAN_LIMITS[plan],
-      isManual: true,
-      reasonOverride: licenseOverride.reason
-    };
   }
-  // 2. Suscripción Paga (Wompi)
-  else if (subscription && new Date(subscription.dueDate).getTime() > now) {
-    accessLevel = 'FULL';
-    plan = subscription.plan as PlanType;
-    const daysRemaining = Math.ceil((new Date(subscription.dueDate).getTime() - now) / (1000 * 3600 * 24));
-    accountStatus = { accessLevel, reason: 'ACTIVE_SUBSCRIPTION', plan, daysRemaining, limits: PLAN_LIMITS[plan] };
-  } 
-  // 3. Periodo de Prueba
-  else if (trialDaysRemaining > 0) {
-    accessLevel = 'LIMITED';
-    plan = 'free_trial';
-    accountStatus = { accessLevel, reason: 'TRIAL', plan, daysRemaining: trialDaysRemaining, limits: PLAN_LIMITS[plan] };
-  } 
-  // 4. Bloqueado
-  else {
-    accountStatus = { accessLevel: 'BLOCKED', reason: 'TRIAL_EXPIRED', plan: 'free_trial', daysRemaining: 0, limits: PLAN_LIMITS.free_trial };
+  if (accountStatus.accessLevel === 'BLOCKED' && user.role !== 'SUPERADMIN') {
     throw Object.assign(new Error('Subscription required'), { accountStatus });
   }
 
@@ -154,5 +160,20 @@ export const login = async (identifier: string, password: string) => {
     token, 
     user: { id: user.id, username: user.username, email: user.email, role: user.role, isConfirmed: !!user.isConfirmed }, 
     accountStatus 
+  };
+};
+
+export const refresh = async (userId: string) => {
+  const user = await repo.findUserById(userId);
+  if (!user) throw new Error('Usuario no encontrado');
+
+  const { plan, accessLevel, accountStatus } = await getAccountStatusForUser(user);
+
+  const token = jwt.sign({ userId: user.id, accessLevel, role: user.role, plan }, ENV.JWT_SECRET, { expiresIn: '7d' });
+
+  return {
+    token,
+    user: { id: user.id, username: user.username, email: user.email, role: user.role, isConfirmed: !!user.isConfirmed },
+    accountStatus
   };
 };

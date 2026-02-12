@@ -44,7 +44,7 @@ const PricingCheckout: React.FC = () => {
           timer: 3000,
           showConfirmButton: false
         }).then(() => {
-          window.location.href = '/#/dashboard';
+          window.location.href = `/#/payment-result?id=${transaction.id}`;
         });
       } else {
         Swal.fire({

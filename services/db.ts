@@ -48,6 +48,12 @@ const request = async <T>(url: string, method: string = 'GET', body?: any): Prom
 export const db = {
   init: () => {},
   login: (credentials: { identifier: string; password: string }) => request<any>('/auth/login', 'POST', credentials),
+  refreshAuth: async () => {
+    const data = await request<any>('/auth/refresh', 'GET');
+    const newState = { isAuthenticated: true, user: data.user, token: data.token, accountStatus: data.accountStatus };
+    localStorage.setItem('fmp_auth', JSON.stringify(newState));
+    return newState;
+  },
   register: (credentials: { email: string; username: string; password: string }) => request<any>('/auth/register', 'POST', credentials),
   confirm: (token: string) => request<any>(`/auth/confirm/${token}`, 'GET'),
   requestReset: (identifier: string) => request('/auth/request-reset', 'POST', { identifier }),

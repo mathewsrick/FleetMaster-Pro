@@ -157,6 +157,42 @@ export const templates = {
       </div>
     </div>
   `,
+  adminPaymentNotification: (data: { user: string; email: string; plan: string; amount: number; reference: string; date: string }) => `
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+      ${LOGO_HTML}
+      <div style="background-color: #4f46e5; border-radius: 16px; padding: 24px; text-align: center; color: white; margin-bottom: 32px;">
+        <h2 style="margin: 0; font-size: 20px;">Nuevo Pago Recibido</h2>
+        <p style="opacity: 0.8; font-size: 14px; margin-top: 8px;">Una nueva suscripción ha sido activada en la plataforma.</p>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+          <td style="padding: 12px 0; color: #64748b;">Usuario:</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b; font-weight: bold;">${data.user}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+          <td style="padding: 12px 0; color: #64748b;">Email:</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b;">${data.email}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+          <td style="padding: 12px 0; color: #64748b;">Plan:</td>
+          <td style="padding: 12px 0; text-align: right; color: #4f46e5; font-weight: 800; text-transform: uppercase;">${data.plan}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+          <td style="padding: 12px 0; color: #64748b;">Monto:</td>
+          <td style="padding: 12px 0; text-align: right; color: #15803d; font-weight: 800;">$${data.amount.toLocaleString()}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+          <td style="padding: 12px 0; color: #64748b;">Referencia:</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b; font-mono font-bold;">${data.reference}</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px 0; color: #64748b;">Fecha:</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b;">${data.date}</td>
+        </tr>
+      </table>
+    </div>
+  `,
   weeklyEnterpriseReport: (stats: any) => `
     <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
       ${LOGO_HTML}

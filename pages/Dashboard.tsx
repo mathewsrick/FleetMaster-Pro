@@ -15,9 +15,31 @@ const Dashboard: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
+  const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(null);
 
-  const authData = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
-  const accountStatus: AccountStatus | undefined = authData.accountStatus;
+  useEffect(() => {
+    const syncAccount = async () => {
+      try {
+        const newState = await db.refreshAuth();
+
+        if (!newState?.accountStatus) return;
+
+        setAccountStatus(newState.accountStatus);
+
+        // 🔥 Actualiza también el localStorage para que App tenga los valores correctos
+        const authRaw = localStorage.getItem('fmp_auth');
+        const auth = authRaw ? JSON.parse(authRaw) : {};
+
+        auth.accountStatus = newState.accountStatus;
+
+        localStorage.setItem('fmp_auth', JSON.stringify(auth));
+      } catch (err) {
+        console.error('Error sincronizando estado de cuenta', err);
+      }
+    };
+
+    syncAccount();
+  }, []);
 
   useEffect(() => {
     const loadAllData = async () => {

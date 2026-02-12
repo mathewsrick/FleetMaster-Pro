@@ -23,6 +23,16 @@ export const login = async (req: any, res: any) => {
   }
 };
 
+export const refresh = async (req: any, res: any) => {
+  try {
+    const userId = req.user.userId;
+    const result = await service.refresh(userId);
+    res.json(result);
+  } catch (e: any) {
+    res.status(401).json({ error: e.message });
+  }
+};
+
 export const confirm = async (req: any, res: any) => {
   try {
     await service.confirmAccount(req.params.token);

@@ -12,6 +12,7 @@ import PricingCheckout from './pages/PricingCheckout';
 import SuperAdmin from './pages/SuperAdmin';
 import ConfirmAccount from './pages/ConfirmAccount';
 import PaymentResult from './pages/PaymentResult';
+import { db } from './services/db';
 import { AuthState, AccountStatus } from './types';
 
 const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) => {
@@ -117,6 +118,28 @@ const App: React.FC = () => {
     localStorage.removeItem('fmp_auth');
   };
 
+  const refreshAccount = async () => {
+    try {
+      console.log("REFRESH ACCOUNT EJECUTADO");
+      const res = await db.refreshAuth();
+
+      if (!res?.accountStatus) return;
+
+      setAuth(prev => {
+        const updated = {
+          ...prev,
+          accountStatus: res.accountStatus,
+        };
+
+        localStorage.setItem('fmp_auth', JSON.stringify(updated));
+        return updated;
+      });
+
+    } catch (err) {
+      console.error('Error refreshing account:', err);
+    }
+  };
+
   return (
     <Router>
       <Routes>
@@ -124,7 +147,7 @@ const App: React.FC = () => {
         <Route path="/login" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLogin={login} />} />
         <Route path="/confirm/:token" element={<ConfirmAccount />} />
         <Route path="/pricing-checkout" element={auth.isAuthenticated ? <PricingCheckout /> : <Navigate to="/login" />} />
-        <Route path="/payment-result" element={auth.isAuthenticated ? <PaymentResult /> : <Navigate to="/login" />} />
+        <Route path="/payment-result" element={auth.isAuthenticated ? <PaymentResult refreshAccount={refreshAccount} /> : <Navigate to="/login" />} />
 
         <Route path="/dashboard" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Dashboard /></Layout> : <Navigate to="/" />} />
         <Route path="/superadmin" element={auth.isAuthenticated && auth.user?.role === 'SUPERADMIN' ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><SuperAdmin /></Layout> : <Navigate to="/" />} />

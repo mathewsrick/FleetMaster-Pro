@@ -30,13 +30,13 @@ app.use(helmet() as any);
 app.use(cors() as any);
 // 🔥 WEBHOOK RAW PRIMERO
 app.use('/api/wompi/webhook',
-  express.raw({ type: 'application/json' })
+  express.raw({ type: 'application/json' }) as any
 );
 app.use(express.json({ limit: '10kb' }) as any);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 20,
   message: { error: 'Demasiados intentos. Por favor intenta más tarde.' },
   standardHeaders: true,
   legacyHeaders: false,
