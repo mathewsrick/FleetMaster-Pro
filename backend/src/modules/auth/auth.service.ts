@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
 import * as repo from './auth.repository';
 import { ENV } from '../../config/env';
-import { PlanLimits, PlanType } from '../../../../types';
+import { PlanLimits, PlanType } from '@/types';
 import * as emailService from '../../shared/email.service';
 
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {

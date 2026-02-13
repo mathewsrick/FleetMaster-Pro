@@ -1,7 +1,5 @@
 import { v4 as uuid } from 'uuid';
 import * as repo from './subscription.repository';
-import { PLAN_LIMITS } from '../auth/auth.service';
-import { PlanType } from '../../../../types';
 
 const PLAN_WEIGHTS: Record<string, number> = {
   'free_trial': 0,
