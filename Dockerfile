@@ -43,7 +43,7 @@ RUN pnpm install --prod --frozen-lockfile
 COPY backend/prisma ./backend/prisma
 
 # Generar Prisma Client en producción
-RUN pnpm prisma:generate
+# RUN pnpm prisma:generate
 
 # Copiar builds desde builder
 COPY --from=builder /app/dist ./dist
