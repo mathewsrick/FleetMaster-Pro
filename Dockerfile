@@ -1,7 +1,8 @@
 # ============================================
-# STAGE 1: Build Frontend & Backend
+# FleetMaster Hub - Production Image
 # ============================================
-FROM node:20-alpine AS builder
+
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -11,57 +12,26 @@ RUN corepack enable
 # Copiar archivos de dependencias
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Instalar dependencias
-RUN pnpm install --frozen-lockfile
-
-# Copiar todo el código fuente
-COPY . .
-
-# Generar Prisma Client
-RUN pnpm prisma:generate
-
-# Build frontend y backend
-# RUN pnpm run build
-
-# ============================================
-# STAGE 2: Production Runtime
-# ============================================
-FROM node:20-alpine
-
-WORKDIR /app
-
-# Instalar solo producción
-RUN corepack enable
-
-# Copiar archivos de dependencias
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-
 # Instalar solo dependencias de producción
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts=false
 
-# Copiar Prisma schema y migraciones
+# Copiar Prisma schema (necesario para migraciones si las usas manualmente)
 COPY backend/prisma ./backend/prisma
 
-# Generar Prisma Client en producción
-# RUN pnpm prisma:generate
+# Copiar builds generados LOCALMENTE
+COPY dist ./dist
+COPY backend/dist ./backend/dist
 
-# Copiar builds desde builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/backend/dist ./backend/dist
+# Crear directorios para uploads persistentes
+RUN mkdir -p /app/backend/public/uploads/vehicles \
+    /app/backend/public/uploads/drivers
 
-# Crear directorio para uploads
-RUN mkdir -p /app/backend/public/uploads/vehicles /app/backend/public/uploads/drivers
-
-# Variables de entorno por defecto
+# Variables de entorno
 ENV NODE_ENV=production
 ENV PORT=3001
 
-# Exponer puerto
+# Exponer puerto del backend
 EXPOSE 3001
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
-
-# Ejecutar migraciones y luego iniciar servidor
-CMD pnpm prisma:migrate && node backend/dist/server.js
+# Iniciar servidor
+CMD ["node", "backend/dist/server.js"]
