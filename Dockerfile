@@ -21,7 +21,7 @@ COPY . .
 RUN pnpm prisma:generate
 
 # Build frontend y backend
-RUN pnpm run build
+# RUN pnpm run build
 
 # ============================================
 # STAGE 2: Production Runtime
