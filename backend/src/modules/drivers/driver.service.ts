@@ -12,7 +12,7 @@ const PLAN_MAX_DRIVERS: Record<string, number> = {
 
 export const getAll = async (userId: string, query: any) => {
   const page = parseInt(query.page) || 1;
-  const limit = parseInt(query.limit) || 100;
+  const limit = Math.min(parseInt(query.limit) || 100, 100); // 🔒 Límite máximo de 100
   return await repo.findAll(userId, { page, limit });
 };
 

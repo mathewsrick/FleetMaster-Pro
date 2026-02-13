@@ -9,7 +9,12 @@ export const authenticate: any = (req: any, res: any, next: any) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    const decoded: any = jwt.verify(token, ENV.JWT_SECRET);
+    // 🔒 Seguridad: Especificar algoritmo y validar expiración
+    const decoded: any = jwt.verify(token, ENV.JWT_SECRET, {
+      algorithms: ['HS256'],
+      maxAge: '7d' // Token expira en 7 días
+    });
+    
     req.user = {
       userId: decoded.userId,
       accessLevel: decoded.accessLevel,
@@ -17,7 +22,10 @@ export const authenticate: any = (req: any, res: any, next: any) => {
     };
 
     next();
-  } catch {
+  } catch (error: any) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired' });
+    }
     return res.status(401).json({ error: 'Invalid token' });
   }
 };

@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -26,18 +27,119 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.use(helmet() as any);
-app.use(cors() as any);
+// Configuración de CORS según entorno
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Lista de orígenes permitidos según el entorno
+    const allowedOrigins = process.env.NODE_ENV === 'production'
+      ? [
+          process.env.FRONTEND_URL || 'https://fleetmasterhub.com',
+          // Agregar otros dominios de producción si es necesario
+          // 'https://www.fleetmasterhub.com',
+          // 'https://app.fleetmasterhub.com'
+        ]
+      : [
+          'http://localhost:3000',
+          'http://localhost:5173',
+          'http://127.0.0.1:5173',
+          'http://127.0.0.1:3000'
+        ];
+
+    // Permitir requests sin origin (como mobile apps, Postman, curl)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // Verificar si el origin está en la lista de permitidos
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`🚫 CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400 // 24 horas
+};
+
+// 🔒 Helmet con configuración personalizada para producción
+const helmetConfig = process.env.NODE_ENV === 'production' 
+  ? {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://checkout.wompi.co"],
+          imgSrc: ["'self'", "data:", "https:", "blob:"],
+          connectSrc: ["'self'", "https://production.wompi.co", "https://sandbox.wompi.co"],
+          fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+          frameSrc: ["'self'", "https://checkout.wompi.co"],
+        },
+      },
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
+      }
+    }
+  : {}; // En desarrollo, configuración por defecto
+
+app.use(helmet(helmetConfig) as any);
+app.use(cors(corsOptions) as any);
+
+// ⚡ Compresión de responses (gzip/deflate)
+app.use(compression({
+  level: 6,              // Nivel óptimo de compresión
+  threshold: 1024,       // Solo comprimir si la respuesta es > 1KB
+  filter: (req, res) => {
+    // No comprimir si el cliente lo solicita
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Usar filtro por defecto (comprime JSON, HTML, CSS, JS)
+    return compression.filter(req, res);
+  }
+}));
+
 // 🔥 WEBHOOK RAW PRIMERO
 app.use('/api/wompi/webhook',
   express.raw({ type: 'application/json' }) as any
 );
 app.use(express.json({ limit: '10kb' }) as any);
 
+// Rate limiters específicos por ruta
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000, // 15 minutos
   max: 10,
   message: { error: 'Demasiados intentos. Por favor intenta más tarde.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 5,
+  message: { error: 'Demasiadas solicitudes. Por favor intenta en una hora.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const webhookLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minuto
+  max: 100,
+  message: { error: 'Rate limit exceeded' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 30,
+  message: { error: 'Demasiadas solicitudes administrativas.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -56,12 +158,18 @@ app.use((req, res, next) => {
 
 app.use('/api/public', express.static(publicPath) as any);
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.use('/api/auth', authLimiter as any, authRoutes as any);
-app.use('/api/contact', contactRoutes as any);
+app.use('/api/contact', contactLimiter as any, contactRoutes as any);
+app.use('/api/wompi/webhook', webhookLimiter as any);
 app.use('/api/wompi', wompiRoutes as any);
 app.use('/api/uploads', authenticate as any, uploadRoutes as any);
 app.use('/api/subscription', authenticate as any, subscriptionRoutes as any);
-app.use('/api/superadmin', superadminRoutes as any);
+app.use('/api/superadmin', authenticate as any, adminLimiter as any, superadminRoutes as any);
 app.use('/api/vehicles', authenticate as any, requireActiveSubscription as any, vehicleRoutes as any);
 app.use('/api/drivers', authenticate as any, requireActiveSubscription as any, driverRoutes as any);
 app.use('/api/expenses', authenticate as any, requireActiveSubscription as any, expenseRoutes as any);
@@ -69,10 +177,15 @@ app.use('/api/payments', authenticate as any, requireActiveSubscription as any, 
 app.use('/api/arrears', authenticate as any, requireActiveSubscription as any, arrearRoutes as any);
 app.use('/api/assign', authenticate as any, requireActiveSubscription as any, assignmentRoutes as any);
 
+// Servir frontend en producción
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')) as any);
+  const frontendPath = path.join(__dirname, '..', '..', 'dist');
+  app.use(express.static(frontendPath) as any);
+  
   app.get('*', ((req: any, res: any) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(frontendPath, 'index.html'));
+    }
   }) as any);
 }
 

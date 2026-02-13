@@ -9,10 +9,13 @@ const PLAN_RESTRICTIONS: any = {
 
 export const getAll = async (userId: string, query: any, plan: string) => {
   const page = parseInt(query.page) || 1;
-  const limit = parseInt(query.limit) || 10;
+  const limit = Math.min(parseInt(query.limit) || 10, 100); // 🔒 Límite máximo de 100
   let startDate = query.startDate;
   let endDate = query.endDate;
-  const search = query.search || '';
+  // 🔒 Sanitizar búsqueda (max 100 caracteres, remover caracteres especiales)
+  const search = query.search 
+    ? String(query.search).trim().slice(0, 100).replace(/[<>]/g, '')
+    : '';
 
   const restriction = PLAN_RESTRICTIONS[plan] || PLAN_RESTRICTIONS.free_trial;
 

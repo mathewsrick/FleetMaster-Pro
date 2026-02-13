@@ -1,6 +1,60 @@
 
+# Node
 node_modules
 npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+backend/.env
+.env.prod
+
+# Build outputs (se construyen en el contenedor)
+dist
+backend/dist
+dist-ssr
+*.local
+
+# Database
+backend/storage/*.db
+backend/storage/*.db-journal
 fleet.db
+*.db
+*.db-journal
+
+# Uploads (se montan como volumen)
+backend/public/uploads
+
+# Git
 .git
+.gitignore
+.github
+
+# Editor
+.vscode
+.idea
 .DS_Store
+*.swp
+*.swo
+*~
+
+# Docs
+README.md
+DEPLOYMENT.md
+
+# Docker
+docker-compose*.yml
+.dockerignore
+
+# Tests
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Logs
+logs
+*.log

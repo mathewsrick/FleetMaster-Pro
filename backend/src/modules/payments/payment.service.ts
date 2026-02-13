@@ -15,7 +15,7 @@ const PLAN_RESTRICTIONS: any = {
 
 export const getAll = async (userId: string, query: any, plan: string) => {
   const page = parseInt(query.page) || 1;
-  const limit = parseInt(query.limit) || 10;
+  const limit = Math.min(parseInt(query.limit) || 10, 100); // 🔒 Límite máximo de 100
   let startDate = query.startDate;
   let endDate = query.endDate;
 

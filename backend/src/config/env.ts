@@ -2,6 +2,7 @@ export const ENV = {
   JWT_SECRET: process.env.JWT_SECRET || 'DEV_INSECURE_SECRET',
   PORT: process.env.PORT || 3001,
   DATABASE_PATH: process.env.DATABASE_PATH || 'fleet.db',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
   // SMTP Config
   SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
   SMTP_PORT: Number(process.env.SMTP_PORT) || 587,
