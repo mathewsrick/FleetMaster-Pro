@@ -48,8 +48,8 @@ pnpm dev
 
 | Guía | Descripción | Tiempo |
 |------|-------------|--------|
-| **[AWS-QUICK-START.md](./AWS-QUICK-START.md)** | ⚡ Resumen rápido AWS Free Tier | 5 min |
-| **[AWS-FREE-TIER-DEPLOYMENT.md](./AWS-FREE-TIER-DEPLOYMENT.md)** | 📖 Guía completa paso a paso AWS | 30 min |
+| **[AWS-SUPABASE-QUICK.md](./AWS-SUPABASE-QUICK.md)** | ⚡ Resumen rápido AWS + Supabase | 5 min |
+| **[AWS-SUPABASE-DEPLOYMENT.md](./AWS-SUPABASE-DEPLOYMENT.md)** | 📖 Guía completa paso a paso | 45 min |
 | **[DEPLOYMENT.md](./DEPLOYMENT.md)** | 🐳 Despliegue general con Docker | 15 min |
 | **[PRE-DEPLOY-CHECKLIST.md](./PRE-DEPLOY-CHECKLIST.md)** | ✅ Checklist antes de producción | 5 min |
 
@@ -95,21 +95,22 @@ Solo configura `FRONTEND_URL=https://tudominio.com` en `.env.prod`
 
 ---
 
-## 💰 Despliegue AWS Free Tier
+## 💰 Despliegue AWS + Supabase
 
 ### Costos
 - **Free Tier (12 meses):** $0/mes
-- **Después de 12 meses:** ~$23/mes
+- **Después de 12 meses:** ~$32.50/mes
 
 ### Incluye
-- ✅ EC2 t3.micro (1 vCPU, 1GB RAM)
-- ✅ RDS PostgreSQL db.t3.micro
-- ✅ 20GB Storage SSD
-- ✅ Backups automáticos (7 días)
+- ✅ EC2 t3.micro (1 vCPU, 1GB RAM) - $20/mes
+- ✅ Supabase PostgreSQL (500MB DB + 2GB bandwidth) - $12.50/mes
+- ✅ Ahorro vs RDS: $10/mes menos
+- ✅ Backups automáticos en Supabase
 - ✅ SSL gratuito (Let's Encrypt)
 - ✅ Elastic IP (IP fija)
+- ✅ Panel visual de Supabase Database
 
-**Ver guía completa:** [AWS-FREE-TIER-DEPLOYMENT.md](./AWS-FREE-TIER-DEPLOYMENT.md)
+**Ver guía completa:** [AWS-SUPABASE-DEPLOYMENT.md](./AWS-SUPABASE-DEPLOYMENT.md)
 
 ---
 
@@ -180,7 +181,8 @@ Este proyecto es privado y propietario.
 
 ## 🆘 Soporte
 
-- 📚 Docs: [AWS-FREE-TIER-DEPLOYMENT.md](./AWS-FREE-TIER-DEPLOYMENT.md)
+- 📚 Docs: [AWS-SUPABASE-DEPLOYMENT.md](./AWS-SUPABASE-DEPLOYMENT.md)
+- ⚡ Quick Start: [AWS-SUPABASE-QUICK.md](./AWS-SUPABASE-QUICK.md)
 - 📋 Checklist: [PRE-DEPLOY-CHECKLIST.md](./PRE-DEPLOY-CHECKLIST.md)
 - 🔐 Seguridad: [SECURITY-CHANGES-APPLIED.md](./SECURITY-CHANGES-APPLIED.md)
 
