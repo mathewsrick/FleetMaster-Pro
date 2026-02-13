@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# 🚀 Script de Despliegue - FleetMaster Pro
+# 🚀 Script de Despliegue - FleetMaster Hub
 
 set -e
 
-echo "🚀 Iniciando despliegue de FleetMaster Pro..."
+echo "🚀 Iniciando despliegue de FleetMaster Hub..."
 
 # Colores
 RED='\033[0;31m'

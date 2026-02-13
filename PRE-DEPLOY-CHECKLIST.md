@@ -1,4 +1,4 @@
-# ✅ Checklist Pre-Despliegue - FleetMaster Pro
+# ✅ Checklist Pre-Despliegue - FleetMaster Hub
 
 ## 🔐 Seguridad
 

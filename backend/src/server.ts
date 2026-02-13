@@ -17,7 +17,7 @@ const log = {
 // Inicialización asíncrona de la base de datos y servidor
 const bootstrap = async () => {
   try {
-    log.info(`Iniciando FleetMaster Pro en modo ${isProduction ? 'PRODUCCIÓN' : 'DESARROLLO'}`);
+    log.info(`Iniciando FleetMaster Hub en modo ${isProduction ? 'PRODUCCIÓN' : 'DESARROLLO'}`);
     
     // Ejecutar seeders al inicio
     log.info('Ejecutando seeders...');
