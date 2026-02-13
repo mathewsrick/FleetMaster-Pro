@@ -6,7 +6,8 @@
     "target": "ES2022",
     "lib": ["ES2022"],
     "outDir": "./backend/dist",
-    "rootDir": ".",
+    "rootDir": "./backend/src",
+    "noEmit": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "strict": true,
@@ -17,6 +18,6 @@
     "sourceMap": true,
     "types": ["node"]
   },
-  "include": ["backend/src/**/*", "types.ts"],
+  "include": ["backend/src/**/*"],
   "exclude": ["node_modules", "backend/dist"]
 }
