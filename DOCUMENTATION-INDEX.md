@@ -14,6 +14,7 @@
 |-----------|-------------|--------|-------------|
 | **[PRODUCTION-READY-SUMMARY.md](./PRODUCTION-READY-SUMMARY.md)** | 📊 Resumen completo del estado | 5 min | **Leer primero** |
 | **[PRE-DEPLOY-CHECKLIST.md](./PRE-DEPLOY-CHECKLIST.md)** | ✅ Checklist de verificación | 5 min | Antes de desplegar |
+| **[WOMPI-WEBHOOKS-PRODUCTION.md](./WOMPI-WEBHOOKS-PRODUCTION.md)** | 💳 Configurar webhooks de pagos | 15 min | Configuración Wompi |
 
 ### Despliegue AWS + Supabase (Recomendado)
 
@@ -199,6 +200,7 @@ FleetMaster-Pro/
 | No puedo conectar a DB | [PRODUCTION-COMMANDS.md](./PRODUCTION-COMMANDS.md) | Troubleshooting |
 | CORS bloqueado | [AWS-SUPABASE-DEPLOYMENT.md](./AWS-SUPABASE-DEPLOYMENT.md) | Paso 6 |
 | SSL no funciona | [PRODUCTION-COMMANDS.md](./PRODUCTION-COMMANDS.md) | Seguridad |
+| Webhooks de Wompi no llegan | [WOMPI-WEBHOOKS-PRODUCTION.md](./WOMPI-WEBHOOKS-PRODUCTION.md) | Troubleshooting |
 | Container no inicia | [PRODUCTION-COMMANDS.md](./PRODUCTION-COMMANDS.md) | Troubleshooting |
 | Costos de AWS | [PRODUCTION-READY-SUMMARY.md](./PRODUCTION-READY-SUMMARY.md) | Costos |
 | Migraciones Prisma | [PRODUCTION-COMMANDS.md](./PRODUCTION-COMMANDS.md) | Base de Datos |

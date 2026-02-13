@@ -13,7 +13,7 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "build:client": "vite build",
     "build:server": "tsc --project tsconfig.server.json",
-    "build": "npm run build:client && npm run build:server",
+    "build": "pnpm run build:client && pnpm run build:server",
     "start": "node backend/dist/server.js",
     "start:dev": "tsx --env-file backend/.env backend/src/server.ts",
     "prisma:generate": "prisma generate",

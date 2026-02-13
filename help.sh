@@ -18,6 +18,7 @@ cat << 'EOF'
 📖 DESPLIEGUE:
    ./AWS-SUPABASE-DEPLOYMENT.md         Guía paso a paso (60 min)
    ./AWS-SUPABASE-QUICK.md              Comandos rápidos (45 min)
+   ./WOMPI-WEBHOOKS-PRODUCTION.md       Configurar webhooks Wompi (15 min)
    ./PRE-DEPLOY-CHECKLIST.md            Checklist antes de desplegar
 
 🛠️ OPERACIONES:

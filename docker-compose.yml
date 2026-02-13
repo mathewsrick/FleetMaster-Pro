@@ -4,12 +4,12 @@ services:
 
   fleetmaster:
     build: .
-    container_name: fleetmaster-pro
+    container_name: fleetmaster
     restart: unless-stopped
     expose:
       - "3001"
     env_file:
-      - .env.prod
+      - backend/.env.prod
     volumes:
       - uploads-data:/app/backend/public/uploads
     networks:

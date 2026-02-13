@@ -1,7 +1,12 @@
 # 🎉 FleetMaster Pro - Resumen de Preparación para Producción
 
 **Fecha:** Febrero 13, 2026  
-**Estado:** ✅ **100% LISTO PARA DESPLIEGUE**
+**Estado:** ✅ **100% LISTO# Wompi Production (ver WOMPI-WEBHOOKS-PRODUCTION.md)
+WOMPI_PUBLIC_KEY=pub_prod_xxxxx
+WOMPI_INTEGRITY_SECRET=prod_integrity_xxxxx
+WOMPI_WEBHOOK_SECRET=prod_webhook_xxxxx
+WOMPI_API_URL=https://production.wompi.co/v1
+# Webhook URL: https://tudominio.com/api/wompi/webhook DESPLIEGUE**
 
 ---
 

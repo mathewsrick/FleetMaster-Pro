@@ -25,8 +25,9 @@
 - [ ] **WOMPI_INTEGRITY_SECRET** de producción
 - [ ] **WOMPI_WEBHOOK_SECRET** de producción
 - [ ] **WOMPI_API_URL** apunta a producción: `https://production.wompi.co/v1`
-- [ ] Webhook configurado en panel de Wompi
+- [ ] Webhook configurado en panel de Wompi: `https://tudominio.com/api/wompi/webhook`
 - [ ] Prueba de pago realizada
+- [ ] Ver guía completa: [WOMPI-WEBHOOKS-PRODUCTION.md](./WOMPI-WEBHOOKS-PRODUCTION.md)
 
 ## 🗄️ Base de Datos
 

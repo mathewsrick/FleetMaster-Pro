@@ -150,11 +150,12 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=TuPasswordSeguro123!
 ADMIN_EMAIL=admin@tudominio.com
 
-# Wompi Production
+# Wompi Production (ver WOMPI-WEBHOOKS-PRODUCTION.md)
 WOMPI_PUBLIC_KEY=pub_prod_xxxxx
 WOMPI_INTEGRITY_SECRET=prod_integrity_xxxxx
 WOMPI_WEBHOOK_SECRET=prod_webhook_xxxxx
 WOMPI_API_URL=https://production.wompi.co/v1
+# Webhook URL: https://tudominio.com/api/wompi/webhook
 
 # Email (opcional)
 EMAIL_HOST=smtp.gmail.com

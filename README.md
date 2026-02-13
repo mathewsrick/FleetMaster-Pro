@@ -50,6 +50,7 @@ pnpm dev
 |------|-------------|--------|
 | **[AWS-SUPABASE-QUICK.md](./AWS-SUPABASE-QUICK.md)** | ⚡ Resumen rápido AWS + Supabase | 5 min |
 | **[AWS-SUPABASE-DEPLOYMENT.md](./AWS-SUPABASE-DEPLOYMENT.md)** | 📖 Guía completa paso a paso | 45 min |
+| **[WOMPI-WEBHOOKS-PRODUCTION.md](./WOMPI-WEBHOOKS-PRODUCTION.md)** | 💳 Configurar webhooks de pagos | 15 min |
 | **[DEPLOYMENT.md](./DEPLOYMENT.md)** | 🐳 Despliegue general con Docker | 15 min |
 | **[PRE-DEPLOY-CHECKLIST.md](./PRE-DEPLOY-CHECKLIST.md)** | ✅ Checklist antes de producción | 5 min |
 
