@@ -18,11 +18,11 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
     prisma.driver.count({ where: { userId } })
   ]);
 
-  const transformed = data.map(d => ({
+  const transformed = data.map((d: typeof data[0]) => ({
     ...d,
     vehiclePlate: d.vehicle?.licensePlate || null,
     vehicleId: d.vehicle?.id || null,
-    totalDebt: d.arrears.reduce((acc, curr) => acc + curr.amountOwed, 0)
+    totalDebt: d.arrears.reduce((acc: number, curr: typeof d.arrears[0]) => acc + Number(curr.amountOwed), 0)
   }));
 
   return { data: transformed, total };
@@ -40,11 +40,21 @@ export const update = async (userId: string, id: string, data: any) =>
     data
   });
 
-export const unassignVehicles = async (userId: string, driverId: string) =>
-  prisma.vehicle.updateMany({
-    where: { driverId, userId },
-    data: { driverId: null }
+export const unassignVehicles = async (userId: string, driverId: string) => {
+  // Encontrar el driver para obtener su vehicleId
+  const driver = await prisma.driver.findUnique({
+    where: { id: driverId },
+    select: { vehicleId: true }
   });
+  
+  if (driver?.vehicleId) {
+    // Desasignar el vehículo actualizando el driver
+    await prisma.driver.update({
+      where: { id: driverId },
+      data: { vehicleId: null }
+    });
+  }
+};
 
 export const remove = async (userId: string, id: string) =>
   prisma.driver.delete({ where: { id } });

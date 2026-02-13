@@ -10,7 +10,8 @@ export const pay = async (userId: string, arrearId: string, amount: number) => {
   const arrear = await repo.findById(userId, arrearId);
   if (!arrear) throw new Error('Arrear not found');
 
-  if (amount >= arrear.amountOwed) {
+  const amountOwed = Number(arrear.amountOwed);
+  if (amount >= amountOwed) {
     await repo.markPaid(arrearId);
   } else {
     await repo.reduceAmount(arrearId, amount);

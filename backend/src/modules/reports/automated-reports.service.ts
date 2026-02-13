@@ -45,7 +45,10 @@ export const generateAndSendWeeklyReports = async () => {
       const totalDebt = Number(arrearsAgg._sum.amountOwed || 0);
 
       const totalVehicles = await prisma.vehicle.count({ where: { userId } });
-      const activeVehicles = await prisma.vehicle.count({ where: { userId, driverId: { not: null } } });
+      // Contar vehículos activos (asignados a drivers)
+      const activeVehicles = await prisma.driver.count({ 
+        where: { userId, vehicleId: { not: null } } 
+      });
 
       const stats = {
         dateRange,
