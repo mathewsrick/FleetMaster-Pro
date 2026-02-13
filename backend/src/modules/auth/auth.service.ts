@@ -57,10 +57,17 @@ const getAccountStatusForUser = async (user: any) => {
       reasonOverride: licenseOverride.reason
     };
   }
-  else if (subscription && new Date(subscription.dueDate).getTime() > now) {
+  else if (
+    subscription &&
+    subscription.dueDate &&
+    new Date(subscription.dueDate).getTime() > now
+  ) {
     accessLevel = 'FULL';
     plan = subscription.plan as PlanType;
-    const daysRemaining = Math.ceil((new Date(subscription.dueDate).getTime() - now) / (1000 * 3600 * 24));
+    const daysRemaining = subscription.dueDate ? Math.ceil(
+      (new Date(subscription.dueDate).getTime() - now) /
+      (1000 * 3600 * 24)
+    ) : 0;
     accountStatus = { accessLevel, reason: 'ACTIVE_SUBSCRIPTION', plan, daysRemaining, limits: PLAN_LIMITS[plan] };
   } 
   else if (trialDaysRemaining > 0) {

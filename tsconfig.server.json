@@ -2,11 +2,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "target": "ES2022",
     "lib": ["ES2022"],
     "outDir": "./backend/dist",
-    "rootDir": "./backend/src",
+    "rootDir": ".",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "strict": true,
@@ -17,6 +17,6 @@
     "sourceMap": true,
     "types": ["node"]
   },
-  "include": ["backend/src/**/*"],
+  "include": ["backend/src/**/*", "types.ts"],
   "exclude": ["node_modules", "backend/dist"]
 }
