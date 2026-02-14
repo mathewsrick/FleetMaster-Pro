@@ -1,4 +1,3 @@
-
 # Node
 node_modules
 npm-debug.log
@@ -13,6 +12,9 @@ backend/.env
 .env.prod
 
 # Build outputs (se construyen en el contenedor)
+# dist
+# backend/dist
+# dist-ssr
 *.local
 
 # Database

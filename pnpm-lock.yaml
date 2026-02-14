@@ -62,6 +62,9 @@ importers:
       pg:
         specifier: ^8.18.0
         version: 8.18.0
+      prisma:
+        specifier: ^6.19.2
+        version: 6.19.2(typescript@5.9.3)
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -129,9 +132,6 @@ importers:
       concurrently:
         specifier: ^8.2.2
         version: 8.2.2
-      prisma:
-        specifier: ^6.19.2
-        version: 6.19.2(typescript@5.9.3)
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18

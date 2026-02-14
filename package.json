@@ -24,9 +24,9 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
-    "prisma": "^6.19.2",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^6.19.2",
+    "prisma": "^6.19.2",
     "@types/compression": "^1.8.1",
     "@types/node-cron": "^3.0.11",
     "bcryptjs": "^2.4.3",
