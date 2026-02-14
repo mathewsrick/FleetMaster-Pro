@@ -8,6 +8,8 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --prod --frozen-lockfile
 
+RUN pnpm prisma:generate
+
 # Copiar código compilado
 COPY dist ./dist
 COPY backend/dist ./backend/dist
@@ -22,4 +24,4 @@ ENV PORT=3001
 
 EXPOSE 3001
 
-CMD pnpm prisma:migrate && node backend/dist/server.js
+CMD node backend/dist/server.js
