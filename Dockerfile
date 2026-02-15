@@ -17,6 +17,9 @@ RUN pnpm exec prisma generate
 # compilar TypeScript
 RUN pnpm exec tsc --build backend/tsconfig.json
 
+COPY . .
+RUN pnpm exec build:client  # tu script "build:client" genera /dist
+
 # ---------- RUNTIME ----------
 FROM node:20-alpine AS runner
 
