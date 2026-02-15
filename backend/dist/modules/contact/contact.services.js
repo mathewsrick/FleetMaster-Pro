@@ -33,4 +33,3 @@ export const sendContactEmail = async (name, email, message) => {
         html: emailService.templates.contactNotification(sanitizedName, email, sanitizedMessage)
     });
 };
-//# sourceMappingURL=contact.services.js.map

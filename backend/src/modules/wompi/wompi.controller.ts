@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { prisma } from '../../shared/db';
+import { prisma } from '../../shared/db.js';
 import { v4 as uuid } from 'uuid';
-import * as wompiService from './wompi.service';
-import * as subService from '../subscription/subscription.service';
-import * as emailService from '../../shared/email.service';
-import { ENV } from '../../config/env';
+import * as wompiService from './wompi.service.js';
+import * as subService from '../subscription/subscription.service.js';
+import * as emailService from '../../shared/email.service.js';
+import { ENV } from '../../config/env.js';
 
 export const initializePayment = async (req: any, res: any) => {
   try {

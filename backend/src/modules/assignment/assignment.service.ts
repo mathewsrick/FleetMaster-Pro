@@ -1,6 +1,6 @@
-import { prisma } from '../../shared/db';
-import * as emailService from '../../shared/email.service';
-import * as driverRepo from '../drivers/driver.repository';
+import { prisma } from '../../shared/db.js';
+import * as emailService from '../../shared/email.service.js';
+import * as driverRepo from '../drivers/driver.repository.js';
 
 export const assignDriverToVehicle = async (
   userId: string,

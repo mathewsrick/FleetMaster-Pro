@@ -49,4 +49,3 @@ export const removeById = async (req, res) => {
     await service.removeById(req.params.id);
     res.json({ success: true });
 };
-//# sourceMappingURL=arrear.controller.js.map

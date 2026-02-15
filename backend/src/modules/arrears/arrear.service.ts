@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import * as repo from './arrear.repository';
+import * as repo from './arrear.repository.js';
 
 export const getAll = async (userId: string) => repo.findAll(userId);
 

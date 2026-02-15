@@ -1,4 +1,4 @@
-import * as service from './payment.service';
+import * as service from './payment.service.js';
 
 export const getAll = async (req: any, res: any) => {
   // Extraer el plan directamente del token decodificado en el middleware de auth

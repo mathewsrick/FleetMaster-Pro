@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import app from './app.js';
-import { runSeeders } from './shared/db';
-import { generateAndSendWeeklyReports } from './modules/reports/automated-reports.service';
+import { runSeeders } from './shared/db.js';
+import { generateAndSendWeeklyReports } from './modules/reports/automated-reports.service.js';
 
 const port = process.env.PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';

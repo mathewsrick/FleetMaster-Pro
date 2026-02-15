@@ -9,4 +9,3 @@ export const requireActiveSubscription = (req, res, next) => {
         error: 'Active subscription required',
     });
 };
-//# sourceMappingURL=subscription.middleware.js.map

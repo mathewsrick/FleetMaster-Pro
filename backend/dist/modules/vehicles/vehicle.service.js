@@ -34,4 +34,3 @@ export const save = async (userId, data) => {
 export const remove = async (userId, id) => {
     await repo.remove(userId, id);
 };
-//# sourceMappingURL=vehicle.service.js.map

@@ -8,4 +8,3 @@ router.post('/', controller.createFromPartialPayment);
 router.delete('/origin-payment/:paymentId', controller.removeByOriginPayment);
 router.delete('/:id', controller.removeById);
 export default router;
-//# sourceMappingURL=arrear.routes.js.map

@@ -29,4 +29,3 @@ router.post('/drivers', upload.single('document'), (req, res) => {
     }
 });
 export default router;
-//# sourceMappingURL=upload.routes.js.map

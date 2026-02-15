@@ -151,4 +151,3 @@ export const handleWebhook = async (req, res) => {
         res.status(500).end();
     }
 };
-//# sourceMappingURL=wompi.controller.js.map

@@ -12,4 +12,3 @@ export const submitContact = async (req, res) => {
         res.status(500).json({ error: 'Error al enviar el mensaje. Intente más tarde.' });
     }
 };
-//# sourceMappingURL=contact.controller.js.map

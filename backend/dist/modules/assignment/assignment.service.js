@@ -43,4 +43,3 @@ export const assignDriverToVehicle = async (userId, driverId, vehicleId) => {
     }
     return { success: true };
 };
-//# sourceMappingURL=assignment.service.js.map

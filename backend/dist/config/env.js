@@ -16,4 +16,3 @@ export const ENV = {
     WOMPI_WEBHOOK_SECRET: process.env.WOMPI_WEBHOOK_SECRET,
     WOMPI_API_URL: process.env.WOMPI_API_URL || 'https://sandbox.wompi.co/v1'
 };
-//# sourceMappingURL=env.js.map

@@ -92,4 +92,3 @@ export const remove = async (userId, id) => {
     }
     return prisma.vehicle.delete({ where: { id } });
 };
-//# sourceMappingURL=vehicle.repository.js.map

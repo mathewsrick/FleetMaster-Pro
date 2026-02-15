@@ -64,4 +64,3 @@ export const generateAndSendWeeklyReports = async () => {
     }
     console.log('--- PROCESO DE REPORTES FINALIZADO ---');
 };
-//# sourceMappingURL=automated-reports.service.js.map

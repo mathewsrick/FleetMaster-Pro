@@ -1,5 +1,5 @@
-import { prisma } from '../../shared/db';
-import * as emailService from '../../shared/email.service';
+import { prisma } from '../../shared/db.js';
+import * as emailService from '../../shared/email.service.js';
 
 export const generateAndSendWeeklyReports = async () => {
   console.log('--- INICIANDO ENVÍO DE REPORTES SEMANALES ENTERPRISE ---');

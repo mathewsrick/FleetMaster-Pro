@@ -44,4 +44,3 @@ export const unassignVehicles = async (userId, driverId) => {
     }
 };
 export const remove = async (userId, id) => prisma.driver.delete({ where: { id } });
-//# sourceMappingURL=driver.repository.js.map

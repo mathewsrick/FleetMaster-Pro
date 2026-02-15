@@ -1,4 +1,4 @@
-import { prisma } from '../../shared/db';
+import { prisma } from '../../shared/db.js';
 
 export const findUserByUsername = async (username: string) =>
   prisma.user.findUnique({ where: { username } });

@@ -44,4 +44,3 @@ export const findAllFleets = async (filter) => {
         vehicleCount: f._count.vehicles
     }));
 };
-//# sourceMappingURL=superadmin.repository.js.map

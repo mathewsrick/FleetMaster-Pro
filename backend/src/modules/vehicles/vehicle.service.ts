@@ -1,5 +1,5 @@
-import * as repo from './vehicle.repository';
-import * as authRepo from '../auth/auth.repository';
+import * as repo from './vehicle.repository.js';
+import * as authRepo from '../auth/auth.repository.js';
 
 const PLAN_MAX_VEHICLES: Record<string, number> = {
   'free_trial': 1,

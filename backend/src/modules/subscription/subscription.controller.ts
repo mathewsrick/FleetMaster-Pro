@@ -1,4 +1,4 @@
-import * as service from './subscription.service';
+import * as service from './subscription.service.js';
 
 export const activate = async (req: any, res: any) => {
   try {

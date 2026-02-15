@@ -59,4 +59,3 @@ export const resetPassword = async (req, res) => {
         res.status(400).json({ error: e.message });
     }
 };
-//# sourceMappingURL=auth.controller.js.map

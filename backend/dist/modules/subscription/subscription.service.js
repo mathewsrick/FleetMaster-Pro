@@ -99,4 +99,3 @@ export const generateKey = async (plan, price) => {
     await repo.createKey(key);
     return key;
 };
-//# sourceMappingURL=subscription.service.js.map

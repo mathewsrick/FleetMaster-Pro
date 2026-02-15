@@ -1,10 +1,10 @@
 import { v4 as uuid } from 'uuid';
-import * as paymentRepo from './payment.repository';
-import * as arrearRepo from '../arrears/arrear.repository';
-import * as authRepo from '../auth/auth.repository';
-import * as driverRepo from '../drivers/driver.repository';
-import * as emailService from '../../shared/email.service';
-import { prisma } from '../../shared/db';
+import * as paymentRepo from './payment.repository.js';
+import * as arrearRepo from '../arrears/arrear.repository.js';
+import * as authRepo from '../auth/auth.repository.js';
+import * as driverRepo from '../drivers/driver.repository.js';
+import * as emailService from '../../shared/email.service.js';
+import { prisma } from '@/shared/db.js';
 
 const PLAN_RESTRICTIONS: any = {
   free_trial: { maxHistoryDays: 30, maxRangeDays: null },

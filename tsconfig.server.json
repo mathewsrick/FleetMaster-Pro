@@ -5,16 +5,8 @@
     "lib": ["ES2022"],
 
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "./backend/dist",
-    "rootDir": "./backend/src",
-    "noEmit": false,
-    "esModuleInterop": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "types": ["node"]
+    "moduleResolution": "bundler",
+    "noEmit": true,
   },
-  "include": ["backend/src"]
+  "include": ["src", "vite.config.ts"],
 }

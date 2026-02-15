@@ -9,4 +9,3 @@ router.get('/confirm/:token', controller.confirm);
 router.post('/request-reset', controller.requestReset);
 router.post('/reset-password', controller.resetPassword);
 export default router;
-//# sourceMappingURL=auth.routes.js.map

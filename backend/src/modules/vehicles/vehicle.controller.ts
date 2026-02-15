@@ -1,4 +1,4 @@
-import * as service from './vehicle.service';
+import * as service from './vehicle.service.js';
 
 export const getAll = async (req: any, res: any) => {
   const vehicles = await service.getAll(req.user.userId, req.query);

@@ -35,4 +35,3 @@ export const create = async (data) => {
     });
 };
 export const remove = async (userId, id) => prisma.payment.delete({ where: { id } });
-//# sourceMappingURL=payment.repository.js.map

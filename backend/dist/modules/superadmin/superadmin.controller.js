@@ -48,4 +48,3 @@ export const grantLicense = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-//# sourceMappingURL=superadmin.controller.js.map

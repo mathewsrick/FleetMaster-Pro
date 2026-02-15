@@ -32,4 +32,3 @@ export const upload = multer({
         fileSize: 8 * 1024 * 1024 // 8MB limit
     }
 });
-//# sourceMappingURL=multer.config.js.map

@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { ENV } from '../../config/env';
+import { ENV } from '../../config/env.js';
 
 /**
  * Wompi Integrity Signature:

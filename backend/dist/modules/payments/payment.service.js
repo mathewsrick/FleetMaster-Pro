@@ -103,4 +103,3 @@ export const remove = async (userId, id) => {
     }
     await paymentRepo.remove(userId, id);
 };
-//# sourceMappingURL=payment.service.js.map

@@ -1,4 +1,4 @@
-import * as service from './assignment.service';
+import * as service from './assignment.service.js';
 
 export const assign = async (req: any, res: any) => {
   try {

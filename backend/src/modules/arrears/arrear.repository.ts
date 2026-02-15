@@ -1,4 +1,4 @@
-import { prisma } from '../../shared/db';
+import { prisma } from '../../shared/db.js';
 
 export const findAll = async (userId: string) =>
   prisma.arrear.findMany({

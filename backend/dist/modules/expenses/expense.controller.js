@@ -17,4 +17,3 @@ export const remove = async (req, res) => {
     await service.remove(req.user.userId, req.params.id);
     res.json({ success: true });
 };
-//# sourceMappingURL=expense.controller.js.map

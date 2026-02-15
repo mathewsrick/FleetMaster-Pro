@@ -35,4 +35,3 @@ export const update = async (userId, data) => prisma.expense.update({
     }
 });
 export const remove = async (userId, id) => prisma.expense.delete({ where: { id } });
-//# sourceMappingURL=expense.repository.js.map

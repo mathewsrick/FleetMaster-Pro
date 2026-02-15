@@ -24,4 +24,3 @@ export const reduceAmount = async (id, amount) => prisma.arrear.update({
 });
 export const removeByOriginPayment = async (originPaymentId) => prisma.arrear.deleteMany({ where: { originPaymentId } });
 export const removeById = async (id) => prisma.arrear.delete({ where: { id } });
-//# sourceMappingURL=arrear.repository.js.map

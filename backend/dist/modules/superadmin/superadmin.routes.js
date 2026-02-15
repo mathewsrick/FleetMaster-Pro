@@ -12,4 +12,3 @@ router.get('/stats', authenticate, requireSuperAdmin, controller.getGlobalStats)
 router.get('/users', authenticate, requireSuperAdmin, controller.getUsers);
 router.post('/grant-license', authenticate, requireSuperAdmin, controller.grantLicense);
 export default router;
-//# sourceMappingURL=superadmin.routes.js.map

@@ -46,4 +46,3 @@ export const updateOrCreate = async (userId, data) => {
 export const remove = async (userId, id) => {
     await repo.remove(userId, id);
 };
-//# sourceMappingURL=expense.service.js.map

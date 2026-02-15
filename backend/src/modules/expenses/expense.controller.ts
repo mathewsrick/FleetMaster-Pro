@@ -1,4 +1,4 @@
-import * as service from './expense.service';
+import * as service from './expense.service.js';
 
 export const getAll = async (req: any, res: any) => {
   const plan = req.user.plan || 'free_trial';

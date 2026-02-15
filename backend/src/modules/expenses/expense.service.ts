@@ -1,4 +1,4 @@
-import * as repo from './expense.repository';
+import * as repo from './expense.repository.js';
 
 const PLAN_RESTRICTIONS: any = {
   free_trial: { maxHistoryDays: 30, maxRangeDays: null },

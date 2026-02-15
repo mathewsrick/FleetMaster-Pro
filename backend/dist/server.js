@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import app from './app';
+import app from './app.js';
 import { runSeeders } from './shared/db';
 import { generateAndSendWeeklyReports } from './modules/reports/automated-reports.service';
 const port = process.env.PORT || 3001;
@@ -68,4 +68,3 @@ process.on('SIGINT', () => {
     process.exit(0);
 });
 bootstrap();
-//# sourceMappingURL=server.js.map

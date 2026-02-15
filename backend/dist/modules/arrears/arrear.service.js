@@ -28,4 +28,3 @@ export const removeByOriginPayment = async (paymentId) => {
 export const removeById = async (id) => {
     await repo.removeById(id);
 };
-//# sourceMappingURL=arrear.service.js.map

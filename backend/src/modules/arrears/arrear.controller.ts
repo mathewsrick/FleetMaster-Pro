@@ -1,6 +1,6 @@
-import * as service from './arrear.service';
+import * as service from './arrear.service.js';
 import { v4 as uuid } from 'uuid';
-import { prisma } from '../../shared/db';
+import { prisma } from '../../shared/db.js';
 
 export const all = async (req: any, res: any) => {
   res.json(await service.getAll(req.user.userId));

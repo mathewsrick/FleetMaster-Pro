@@ -6,4 +6,3 @@ router.post('/activate', authenticate, controller.activate);
 router.post('/purchase', authenticate, controller.purchase);
 router.post('/generate', authenticate, controller.generateKey);
 export default router;
-//# sourceMappingURL=subscription.routes.js.map

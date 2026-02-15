@@ -19,4 +19,3 @@ export const createKey = async (data) => prisma.subscriptionKey.create({
         dueDate: new Date(data.dueDate)
     }
 });
-//# sourceMappingURL=subscription.repository.js.map

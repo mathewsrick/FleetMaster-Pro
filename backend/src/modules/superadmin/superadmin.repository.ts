@@ -1,4 +1,4 @@
-import { prisma } from '../../shared/db';
+import { prisma } from '@/shared/db.js';
 
 export const getSaaSStats = async () => {
   const [totalUsers, activeSubs, totalVehicles, mrr] = await Promise.all([
@@ -37,7 +37,7 @@ export const findAllFleets = async (filter: string) => {
     orderBy: { createdAt: 'desc' }
   });
 
-  return fleets.map(f => ({
+  return fleets.map((f: typeof fleets[number]) => ({
     id: f.id,
     username: f.username,
     email: f.email,

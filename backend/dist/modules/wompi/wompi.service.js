@@ -26,4 +26,3 @@ export const validateWebhookSignature = (event, checksum) => {
     const generated = crypto.createHash('sha256').update(chain).digest('hex');
     return generated === checksum;
 };
-//# sourceMappingURL=wompi.service.js.map

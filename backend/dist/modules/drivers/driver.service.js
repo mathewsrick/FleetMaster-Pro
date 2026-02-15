@@ -43,4 +43,3 @@ export const remove = async (userId, id) => {
     await repo.unassignVehicles(userId, id);
     await repo.remove(userId, id);
 };
-//# sourceMappingURL=driver.service.js.map

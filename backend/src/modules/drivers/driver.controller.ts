@@ -1,4 +1,4 @@
-import * as service from './driver.service';
+import * as service from './driver.service.js';
 
 export const getAll = async (req: any, res: any) => {
   res.json(await service.getAll(req.user.userId, req.query));

@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import * as repo from './subscription.repository';
+import * as repo from './subscription.repository.js';
 
 const PLAN_WEIGHTS: Record<string, number> = {
   'free_trial': 0,

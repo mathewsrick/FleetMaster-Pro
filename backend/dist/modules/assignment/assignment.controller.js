@@ -12,4 +12,3 @@ export const assign = async (req, res) => {
         res.status(500).json({ error: 'Error al asignar conductor', message: error.message });
     }
 };
-//# sourceMappingURL=assignment.controller.js.map

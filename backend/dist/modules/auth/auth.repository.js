@@ -45,4 +45,3 @@ export const getActiveLicenseOverride = async (userId) => {
         orderBy: { createdAt: 'desc' }
     });
 };
-//# sourceMappingURL=auth.repository.js.map

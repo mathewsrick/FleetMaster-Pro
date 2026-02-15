@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { authenticate } from '../../middlewares/auth.middleware';
-import * as controller from './wompi.controller';
+import { authenticate } from '../../middlewares/auth.middleware.js';
+import * as controller from './wompi.controller.js';
 
 const router = Router();
 

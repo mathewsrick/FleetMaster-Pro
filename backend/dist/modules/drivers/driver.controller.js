@@ -22,4 +22,3 @@ export const remove = async (req, res) => {
     await service.remove(req.user.userId, req.params.id);
     res.status(204).end();
 };
-//# sourceMappingURL=driver.controller.js.map

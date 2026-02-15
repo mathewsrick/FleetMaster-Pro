@@ -246,4 +246,3 @@ export const templates = {
     </div>
   `
 };
-//# sourceMappingURL=email.service.js.map

@@ -1,4 +1,4 @@
-import { prisma } from '../../shared/db';
+import { prisma } from '@/shared/db.js';
 
 export const findAll = async (userId: string, options: { page: number, limit: number }) => {
   const { page, limit } = options;
@@ -15,7 +15,7 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
     prisma.vehicle.count({ where: { userId } })
   ]);
 
-  const transformed = data.map(v => ({
+  const transformed = data.map((v: typeof data[0]) => ({
     ...v,
     driverName: v.driver ? `${v.driver.firstName} ${v.driver.lastName}` : null
   }));

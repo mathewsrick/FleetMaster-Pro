@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
-import * as repo from './driver.repository';
-import * as authRepo from '../auth/auth.repository';
-import * as emailService from '../../shared/email.service';
+import * as repo from './driver.repository.js';
+import * as authRepo from '../auth/auth.repository.js';
+import * as emailService from '@/shared/email.service.js';
 
 const PLAN_MAX_DRIVERS: Record<string, number> = {
   'free_trial': 1,
