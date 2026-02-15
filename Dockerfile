@@ -4,17 +4,18 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 RUN corepack enable
 
+# instalar dependencias
 COPY package.json pnpm-lock.yaml ./
-COPY backend/prisma ./backend/prisma
-
 RUN pnpm install --frozen-lockfile
 
-# generar cliente
+# copiar todo el backend (TS), no dist
+COPY backend ./backend
+
+# generar cliente Prisma
 RUN pnpm exec prisma generate
 
-COPY dist ./dist
-COPY backend/dist ./backend/dist
-
+# compilar TypeScript
+RUN pnpm exec tsc --build backend/tsconfig.json
 
 # ---------- RUNTIME ----------
 FROM node:20-alpine AS runner
@@ -22,18 +23,18 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 RUN corepack enable
 
+# instalar solo prod
 COPY package.json pnpm-lock.yaml ./
-COPY backend/prisma ./backend/prisma
-
 RUN pnpm install --prod --frozen-lockfile
 
-# generar cliente otra vez (MUY IMPORTANTE)
+# generar cliente Prisma de nuevo
+COPY backend/prisma ./backend/prisma
 RUN pnpm exec prisma generate
 
-# copiar app compilada
-COPY --from=builder /app/dist ./dist
+# copiar la app compilada
 COPY --from=builder /app/backend/dist ./backend/dist
 
+# carpetas de uploads
 RUN mkdir -p /app/backend/public/uploads/vehicles \
     /app/backend/public/uploads/drivers
 
@@ -42,4 +43,5 @@ ENV PORT=3001
 
 EXPOSE 3001
 
+# migraciones + arrancar server
 CMD ["sh", "-c", "pnpm exec prisma migrate deploy && node backend/dist/server.js"]
