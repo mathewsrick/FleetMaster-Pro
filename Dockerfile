@@ -4,7 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 RUN corepack enable
 
-# 1️⃣ copiar package.json y lockfile y instalar TODAS las deps (prod + dev)
+# 1️⃣ instalar todas las deps (prod + dev) para poder construir backend + frontend
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
@@ -17,11 +17,11 @@ RUN pnpm exec prisma generate
 # 4️⃣ compilar backend TS
 RUN pnpm exec tsc --build backend/tsconfig.server.json
 
-# 5️⃣ copiar frontend y otros archivos esenciales
+# 5️⃣ copiar frontend y otros archivos necesarios
 COPY . .
 
-# 6️⃣ construir frontend (Vite)
-RUN pnpm run build:client  # genera /dist
+# 6️⃣ construir frontend (Vite) → genera /dist
+RUN pnpm run build:client
 
 # ---------- RUNTIME ----------
 FROM node:20-alpine AS runner

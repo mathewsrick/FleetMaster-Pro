@@ -3,10 +3,15 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
-
     "module": "NodeNext",
     "moduleResolution": "bundler",
-    "noEmit": true,
+    "outDir": "./dist",        // Carpeta de salida compilada
+    "rootDir": "./src",        // Código fuente
+    "esModuleInterop": true,
+    "strict": true
   },
-  "include": ["src", "vite.config.ts"],
+  "include": [
+    "src/**/*",   // Todo tu código backend
+    "shared/**/*" // Archivos compartidos que usa server.ts
+  ]
 }
