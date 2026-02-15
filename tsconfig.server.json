@@ -5,13 +5,13 @@
     "lib": ["ES2022"],
     "module": "NodeNext",
     "moduleResolution": "bundler",
-    "outDir": "./dist",        // Carpeta de salida compilada
-    "rootDir": "./src",        // Código fuente
+    "outDir": "./backend/dist",
+    "rootDir": "./backend/src",
     "esModuleInterop": true,
     "strict": true
   },
   "include": [
-    "src/**/*",   // Todo tu código backend
-    "shared/**/*" // Archivos compartidos que usa server.ts
+    "backend/src/**/*",
+    "backend/src/shared/**/*"
   ]
 }

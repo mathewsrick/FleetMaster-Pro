@@ -12,7 +12,7 @@ RUN pnpm install --frozen-lockfile
 COPY backend ./backend
 
 # copiar tsconfig.server.json para compilación
-COPY tsconfig.server.json ./
+COPY tsconfig.server.json tsconfig.json ./
 
 # 3️⃣ generar cliente Prisma
 RUN pnpm exec prisma generate
