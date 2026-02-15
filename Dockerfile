@@ -15,7 +15,7 @@ COPY backend ./backend
 RUN pnpm exec prisma generate
 
 # 4️⃣ compilar backend TS
-RUN pnpm exec tsc --build backend/tsconfig.json
+RUN pnpm exec tsc --build backend/tsconfig.server.json
 
 # 5️⃣ copiar frontend y otros archivos esenciales
 COPY . .
