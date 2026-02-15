@@ -1,61 +1,53 @@
 # ---------- BUILDER ----------
 FROM node:20-alpine AS builder
-
 WORKDIR /app
 RUN corepack enable
 
-# 1️⃣ instalar todas las deps (prod + dev) para poder construir backend + frontend
+# instalar todas las deps
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-# 2️⃣ copiar backend
+# copiar backend completo
 COPY backend ./backend
+# copiar tsconfigs
+COPY tsconfig.json tsconfig.server.json ./
 
-# copiar tsconfig.server.json para compilación
-COPY tsconfig.server.json tsconfig.json ./
-
-# 3️⃣ generar cliente Prisma
+# generar Prisma
 RUN pnpm exec prisma generate
 
-# 4️⃣ compilar backend TS
+# compilar backend
 RUN pnpm exec tsc --build tsconfig.server.json
 
-# 5️⃣ copiar frontend y otros archivos necesarios
+# copiar frontend
 COPY . .
-
-# 6️⃣ construir frontend (Vite) → genera /dist
-RUN pnpm run build:client
+RUN pnpm run build:client  # genera /dist
 
 # ---------- RUNTIME ----------
 FROM node:20-alpine AS runner
-
 WORKDIR /app
 RUN corepack enable
 
-# 1️⃣ instalar solo prod
+# instalar solo prod
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile
 
-# 2️⃣ generar cliente Prisma en prod
+# generar cliente Prisma en prod
 COPY backend/prisma ./backend/prisma
 RUN pnpm exec prisma generate
 
-# 3️⃣ copiar backend compilado
+# copiar backend compilado
 COPY --from=builder /app/backend/dist ./backend/dist
 
-# 4️⃣ copiar frontend compilado
-COPY --from=builder /app/dist ./dist
+# copiar frontend compilado
+COPY --from=builder /app ./dist
 
-# 5️⃣ crear carpetas para uploads
+# crear carpetas de uploads
 RUN mkdir -p /app/backend/public/uploads/vehicles \
     /app/backend/public/uploads/drivers
 
-# 6️⃣ variables de entorno
 ENV NODE_ENV=production
 ENV PORT=3001
 
-# 7️⃣ exponer puerto
 EXPOSE 3001
 
-# 8️⃣ migraciones + arrancar servidor
 CMD ["sh", "-c", "pnpm exec prisma migrate deploy && node backend/dist/server.js"]
