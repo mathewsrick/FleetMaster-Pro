@@ -1,5 +1,5 @@
-import * as emailService from '@/shared/email.service.js';
-import { ENV } from '@/config/env.js';
+import * as emailService from '../../shared/email.service.js';
+import { ENV } from '../../config/env.js';
 
 // 🔒 Validación de email robusta
 const isValidEmail = (email: string): boolean => {

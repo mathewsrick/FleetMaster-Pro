@@ -23,7 +23,7 @@ WORKDIR /app
 RUN corepack enable
 
 # solo dependencias producción
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 COPY backend/prisma ./backend/prisma
 
 RUN pnpm install --prod --frozen-lockfile

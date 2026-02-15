@@ -4,7 +4,7 @@ import * as arrearRepo from '../arrears/arrear.repository.js';
 import * as authRepo from '../auth/auth.repository.js';
 import * as driverRepo from '../drivers/driver.repository.js';
 import * as emailService from '../../shared/email.service.js';
-import { prisma } from '@/shared/db.js';
+import { prisma } from '../../shared/db.js';
 
 const PLAN_RESTRICTIONS: any = {
   free_trial: { maxHistoryDays: 30, maxRangeDays: null },

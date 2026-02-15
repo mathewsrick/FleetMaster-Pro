@@ -1,4 +1,4 @@
-import { prisma } from '@/shared/db.js';
+import { prisma } from '../../shared/db.js';
 
 export const getSaaSStats = async () => {
   const [totalUsers, activeSubs, totalVehicles, mrr] = await Promise.all([

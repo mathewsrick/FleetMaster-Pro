@@ -1,5 +1,5 @@
 import * as repo from './superadmin.repository.js';
-import { prisma } from '@/shared/db.js';
+import { prisma } from '../../shared/db.js';
 import { v4 as uuid } from 'uuid';
 
 export const getGlobalStats = async (req: any, res: any) => {

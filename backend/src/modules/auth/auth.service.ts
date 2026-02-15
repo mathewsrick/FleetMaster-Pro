@@ -2,9 +2,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
 import * as repo from './auth.repository.js';
-import { ENV } from '@/config/env.js';
-import { PlanLimits, PlanType } from '@/shared/types.js';
-import * as emailService from '@/shared/email.service.js';
+import { ENV } from '../../config/env.js';
+import { PlanLimits, PlanType } from '../../shared/types.js';
+import * as emailService from '../../shared/email.service.js';
 
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   free_trial: { maxVehicles: 1, maxDrivers: 1, hasExcelReports: false, hasCustomApi: false, maxHistoryDays: 30, maxRangeDays: null },

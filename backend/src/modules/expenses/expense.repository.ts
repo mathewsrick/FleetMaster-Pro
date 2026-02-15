@@ -1,4 +1,4 @@
-import { prisma } from '@/shared/db.js';
+import { prisma } from '../../shared/db.js';
 
 export const findAll = async (userId: string, options: { page: number, limit: number, startDate?: string, endDate?: string, search?: string }) => {
   const { page, limit, startDate, endDate, search } = options;
