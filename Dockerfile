@@ -4,7 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 COPY backend/prisma ./backend/prisma
 
 RUN pnpm install --frozen-lockfile
