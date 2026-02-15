@@ -22,7 +22,6 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 RUN corepack enable
 
-# solo dependencias producción
 COPY package.json pnpm-lock.yaml ./
 COPY backend/prisma ./backend/prisma
 
