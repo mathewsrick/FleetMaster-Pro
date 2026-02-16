@@ -1,9 +1,5 @@
 # ============================================
-# Multi-stage# Copy compiled backend from builder
-COPY --from=backend-builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist
-
-# Copy built frontend from builder
-COPY --from=frontend-builder --chown=nodejs:nodejs /app/frontend/dist ./disterfile for AWS EC2 Production
+# Multi-stage Dockerfile for AWS EC2 Production
 # ============================================
 
 # ---------- STAGE 1: Frontend Build ----------
@@ -66,7 +62,7 @@ RUN pnpm exec prisma generate --schema=./backend/prisma/schema.prisma
 COPY --from=backend-builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist
 
 # Copy built frontend from builder
-COPY --from=frontend-builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=frontend-builder --chown=nodejs:nodejs /app/frontend/dist ./dist
 
 # Create upload directories with proper permissions
 RUN mkdir -p /app/backend/public/uploads/vehicles \
