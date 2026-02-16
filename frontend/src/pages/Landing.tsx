@@ -31,6 +31,16 @@ const Landing: React.FC = () => {
     }
   };
 
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    e.preventDefault();
+    const section = document.getElementById(sectionId);
+    if (section) {
+      const navHeight = 80; // altura del navbar
+      const sectionTop = section.offsetTop - navHeight;
+      window.scrollTo({ top: sectionTop, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-600 scroll-smooth">
       {/* Floating WhatsApp Button */}
@@ -59,9 +69,9 @@ const Landing: React.FC = () => {
             </span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500">
-            <a href="#features" className="hover:text-indigo-600 transition-colors">Funcionalidades</a>
-            <a href="#pricing" className="hover:text-indigo-600 transition-colors">Planes</a>
-            <a href="#contact" className="hover:text-indigo-600 transition-colors">Contacto</a>
+            <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="hover:text-indigo-600 transition-colors cursor-pointer">Funcionalidades</a>
+            <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="hover:text-indigo-600 transition-colors cursor-pointer">Planes</a>
+            <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className="hover:text-indigo-600 transition-colors cursor-pointer">Contacto</a>
             <Link to="/login" className="bg-slate-900 text-white px-6 py-2.5 rounded-full hover:bg-indigo-600 hover:shadow-lg transition-all active:scale-95">
               Iniciar Sesión
             </Link>
