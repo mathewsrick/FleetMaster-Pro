@@ -34,6 +34,8 @@ const corsOptions = {
     const allowedOrigins = process.env.NODE_ENV === 'production'
       ? [
           process.env.FRONTEND_URL || 'https://fleetmasterhub.com',
+          'http://54.242.90.134',
+          'https://54.242.90.134'
           // Agregar otros dominios de producción si es necesario
           // 'https://www.fleetmasterhub.com',
           // 'https://app.fleetmasterhub.com'
