@@ -67,49 +67,28 @@ const corsOptions = {
 };
 
 // 🔒 Helmet con configuración personalizada para producción
-const helmetConfig = process.env.NODE_ENV === 'production'
+const helmetConfig = process.env.NODE_ENV === 'production' 
   ? {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: [
-            "'self'",
-            "'unsafe-inline'",
-            "'unsafe-eval'",
-            "https:",
-            "blob:"
-          ],
-          styleSrc: [
-            "'self'",
-            "'unsafe-inline'",
-            "https:"
-          ],
-          imgSrc: [
-            "'self'",
-            "data:",
-            "blob:",
-            "https:"
-          ],
-          connectSrc: [
-            "'self'",
-            "https:",
-            "wss:"
-          ],
-          fontSrc: [
-            "'self'",
-            "https:",
-            "data:"
-          ],
-          frameSrc: [
-            "'self'",
-            "https://checkout.wompi.co"
-          ]
-        }
+          styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://checkout.wompi.co"],
+          imgSrc: ["'self'", "data:", "https:", "blob:"],
+          connectSrc: ["'self'", "https://production.wompi.co", "https://sandbox.wompi.co"],
+          fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+          frameSrc: ["'self'", "https://checkout.wompi.co"],
+        },
+      },
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
       }
     }
   : {}; // En desarrollo, configuración por defecto
 
-app.use(helmet(helmetConfig) as any);
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors(corsOptions) as any);
 
 // ⚡ Compresión de responses (gzip/deflate)
