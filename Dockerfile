@@ -1,5 +1,9 @@
 # ============================================
-# Multi-stage Dockerfile for AWS EC2 Production
+# Multi-stage# Copy compiled backend from builder
+COPY --from=backend-builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist
+
+# Copy built frontend from builder
+COPY --from=frontend-builder --chown=nodejs:nodejs /app/frontend/dist ./disterfile for AWS EC2 Production
 # ============================================
 
 # ---------- STAGE 1: Frontend Build ----------
