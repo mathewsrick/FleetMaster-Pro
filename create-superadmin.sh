@@ -159,100 +159,14 @@ fi
 
 echo -e "\n${YELLOW}Creando SuperAdmin...${NC}"
 
-# Crear script temporal de Node.js
-cat > /tmp/create-superadmin-temp.js << 'SCRIPT_END'
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
-
-// Configurar Prisma con la ruta correcta del schema
-const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: process.env.DATABASE_URL
-        }
-    }
-});
-
-async function createSuperAdmin() {
-    const username = process.env.SA_USERNAME;
-    const email = process.env.SA_EMAIL;
-    const password = process.env.SA_PASSWORD;
-
-    try {
-        console.log('🔍 Verificando si el usuario ya existe...');
-        
-        // Verificar si ya existe
-        const existing = await prisma.user.findFirst({
-            where: {
-                OR: [
-                    { username: username },
-                    { email: email }
-                ]
-            }
-        });
-
-        if (existing) {
-            console.error('❌ ERROR: Ya existe un usuario con ese username o email');
-            console.error('Username existente:', existing.username);
-            console.error('Email existente:', existing.email);
-            process.exit(1);
-        }
-
-        console.log('🔐 Hasheando password...');
-        
-        // Hash del password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        console.log('📝 Creando SuperAdmin en la base de datos...');
-        
-        // Crear SuperAdmin
-        const admin = await prisma.user.create({
-            data: {
-                username: username,
-                email: email,
-                password: hashedPassword,
-                role: 'SUPERADMIN',
-                confirmed: true,
-                plan: 'enterprise',
-                dueDate: null, // Sin expiración
-            }
-        });
-
-        console.log('✅ SuperAdmin creado exitosamente');
-        console.log('ID:', admin.id);
-        console.log('Username:', admin.username);
-        console.log('Email:', admin.email);
-        console.log('Role:', admin.role);
-
-        process.exit(0);
-    } catch (error) {
-        console.error('❌ Error al crear SuperAdmin:', error.message);
-        if (error.code) {
-            console.error('Código de error:', error.code);
-        }
-        process.exit(1);
-    } finally {
-        await prisma.$disconnect();
-    }
-}
-
-createSuperAdmin();
-SCRIPT_END
-
 # Ejecutar según el modo
 if [ "$EXEC_MODE" = "docker" ]; then
     echo -e "${BLUE}Ejecutando en contenedor Docker...${NC}"
     
-    # Copiar script al contenedor (en el directorio del backend donde están los node_modules)
-    docker cp /tmp/create-superadmin-temp.js fleetmaster:/app/backend/create-superadmin.js
-    
-    # Ejecutar dentro del contenedor desde el directorio del backend
+    # Ejecutar el script TypeScript que ya existe usando npx tsx
     docker exec -w /app/backend \
-                -e SA_USERNAME="$ADMIN_USERNAME" \
-                -e SA_EMAIL="$ADMIN_EMAIL" \
-                -e SA_PASSWORD="$ADMIN_PASSWORD" \
                 fleetmaster \
-                node create-superadmin.js
+                npx tsx scripts/CreateSuperAdmin.ts "$ADMIN_USERNAME" "$ADMIN_EMAIL" "$ADMIN_PASSWORD"
     
     RESULT=$?
     
@@ -262,35 +176,14 @@ if [ "$EXEC_MODE" = "docker" ]; then
 else
     echo -e "${BLUE}Ejecutando localmente...${NC}"
     
-    # Verificar Node.js
-    if ! command -v node &> /dev/null; then
-        echo -e "${RED}❌ Node.js no está instalado${NC}"
-        exit 1
-    fi
-    
-    # Verificar que exista .env o .env.prod
-    if [ -f "backend/.env.prod" ]; then
-        export $(cat backend/.env.prod | grep -v '^#' | xargs)
-    elif [ -f "backend/.env" ]; then
-        export $(cat backend/.env | grep -v '^#' | xargs)
-    else
-        echo -e "${RED}❌ No se encontró archivo .env${NC}"
-        exit 1
-    fi
-    
+    # Ejecutar en modo local usando el script TypeScript
     cd backend
-    
-    SA_USERNAME="$ADMIN_USERNAME" \
-    SA_EMAIL="$ADMIN_EMAIL" \
-    SA_PASSWORD="$ADMIN_PASSWORD" \
-    node /tmp/create-superadmin-temp.js
-    
+    npx tsx scripts/CreateSuperAdmin.ts "$ADMIN_USERNAME" "$ADMIN_EMAIL" "$ADMIN_PASSWORD"
     RESULT=$?
-    
     cd ..
 fi
 
-# Limpiar script temporal
+# Limpiar archivos temporales si existen
 rm -f /tmp/create-superadmin-temp.js
 
 # ===================================================================
