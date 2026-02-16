@@ -1,4 +1,8 @@
-import 'dotenv/config';
+// Solo cargar dotenv en desarrollo (no en Docker/producción)
+if (process.env.NODE_ENV !== 'production') {
+  await import('dotenv/config');
+}
+
 import app from './app.js';
 import { runSeeders } from './shared/db.js';
 import { generateAndSendWeeklyReports } from './modules/reports/automated-reports.service.js';
