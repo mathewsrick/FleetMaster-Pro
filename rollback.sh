@@ -19,10 +19,10 @@ fi
 
 # Mostrar últimas imágenes
 echo -e "${YELLOW}📦 Imágenes disponibles:${NC}"
-docker images | grep fleetmaster-pro
+docker images | grep fleetmaster-hub
 
 # Obtener la última imagen anterior
-CURRENT_IMAGE=$(docker ps -a --filter "name=fleetmaster-pro" --format "{{.Image}}" | head -1)
+CURRENT_IMAGE=$(docker ps -a --filter "name=fleetmaster-hub" --format "{{.Image}}" | head -1)
 echo -e "${YELLOW}🔍 Imagen actual: ${CURRENT_IMAGE}${NC}"
 
 # Confirmar rollback

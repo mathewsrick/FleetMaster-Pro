@@ -1,0 +1,23 @@
+# robots.txt para FleetMaster Hub
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /vehicles/
+Disallow: /drivers/
+Disallow: /payments/
+Disallow: /expenses/
+Disallow: /reports/
+Disallow: /superadmin/
+
+# Permitir páginas públicas
+Allow: /$
+Allow: /pricing-checkout
+Allow: /confirm-account
+
+# Sitemap
+Sitemap: https://fleetmasterhub.com/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1

@@ -14,7 +14,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-APP_NAME="fleetmaster-pro"
+APP_NAME="fleetmaster-hub"
 DOCKER_IMAGE="${APP_NAME}:latest"
 CONTAINER_NAME="${APP_NAME}-app"
 BACKUP_DIR="./backups"

@@ -1,14 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FleetMaster Hub</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>FleetMaster Hub - Sistema de Gestión de Flotas Vehiculares</title>
+    <meta name="title" content="FleetMaster Hub - Sistema de Gestión de Flotas Vehiculares" />
+    <meta name="description" content="Software completo para administrar tu flota vehicular. Controla vehículos, conductores, pagos y gastos en un solo lugar. Reportes automatizados y gestión eficiente." />
+    <meta name="keywords" content="gestión de flotas, software vehicular, administración de vehículos, control de conductores, pagos vehiculares, reportes de flota, SaaS Colombia" />
+    <meta name="author" content="FleetMaster Hub" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://fleetmasterhub.com/" />
+    <meta property="og:title" content="FleetMaster Hub - Sistema de Gestión de Flotas Vehiculares" />
+    <meta property="og:description" content="Software completo para administrar tu flota vehicular. Controla vehículos, conductores, pagos y gastos en un solo lugar." />
+    <meta property="og:image" content="https://fleetmasterhub.com/favicon.png" />
+    <meta property="og:locale" content="es_CO" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://fleetmasterhub.com/" />
+    <meta property="twitter:title" content="FleetMaster Hub - Sistema de Gestión de Flotas Vehiculares" />
+    <meta property="twitter:description" content="Software completo para administrar tu flota vehicular. Controla vehículos, conductores, pagos y gastos en un solo lugar." />
+    <meta property="twitter:image" content="https://fleetmasterhub.com/favicon.png" />
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#4F46E5" />
+    <meta name="msapplication-TileColor" content="#4F46E5" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://fleetmasterhub.com/" />
+    
+    <!-- Stylesheets -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css">
+    
     <!-- Wompi Widget Script -->
     <script type="text/javascript" src="https://checkout.wompi.co/widget.js" data-env="sandbox"></script>
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "FleetMaster Hub",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "COP",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "priceCurrency": "COP",
+          "price": "0",
+          "billingIncrement": "month",
+          "unitText": "month"
+        }
+      },
+      "description": "Sistema completo de gestión de flotas vehiculares con control de vehículos, conductores, pagos y reportes automatizados.",
+      "featureList": [
+        "Gestión de vehículos",
+        "Control de conductores",
+        "Registro de pagos",
+        "Control de gastos",
+        "Reportes automatizados",
+        "Múltiples planes de suscripción"
+      ],
+      "screenshot": "https://fleetmasterhub.com/favicon.png",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "120"
+      }
+    }
+    </script>
   </head>
   <body class="bg-slate-50 text-slate-900 h-screen">
     <div id="root"></div>

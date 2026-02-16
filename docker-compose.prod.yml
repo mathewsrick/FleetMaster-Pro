@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: fleetmaster-pro:latest
+    image: fleetmaster-hub:latest
     container_name: fleetmaster-app
     restart: unless-stopped
     ports:

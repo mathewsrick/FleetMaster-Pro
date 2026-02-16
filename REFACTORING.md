@@ -210,7 +210,7 @@ docker-compose -f docker-compose.prod.yml up -d --build
 
 ```bash
 # Build
-docker build -t fleetmaster-pro:latest .
+docker build -t fleetmaster-hub:latest .
 
 # Run
 docker run -d \
@@ -219,7 +219,7 @@ docker run -d \
   -p 3001:3001 \
   --env-file .env.prod \
   -v $(pwd)/backend/public/uploads:/app/backend/public/uploads \
-  fleetmaster-pro:latest
+  fleetmaster-hub:latest
 ```
 
 ## 🔧 Variables de Entorno

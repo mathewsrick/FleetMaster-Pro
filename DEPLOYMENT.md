@@ -3,7 +3,7 @@
 ## 📁 Estructura del Proyecto
 
 ```
-FleetMaster-Pro/
+fleetmaster-hub/
 ├── frontend/              # Frontend React + Vite
 │   ├── src/
 │   │   ├── pages/        # Páginas de la aplicación
@@ -114,11 +114,11 @@ EOF
 
 ```bash
 # Clonar repositorio
-git clone https://github.com/tu-usuario/FleetMaster-Pro.git
-cd FleetMaster-Pro
+git clone https://github.com/tu-usuario/fleetmaster-hub.git
+cd fleetmaster-hub
 
 # Construir imagen
-docker build -t fleetmaster-pro:latest .
+docker build -t fleetmaster-hub:latest .
 
 # Ejecutar con Docker Compose
 docker-compose -f docker-compose.prod.yml up -d
@@ -130,7 +130,7 @@ version: '3.8'
 
 services:
   app:
-    image: fleetmaster-pro:latest
+    image: fleetmaster-hub:latest
     container_name: fleetmaster-app
     restart: unless-stopped
     ports:
@@ -168,7 +168,7 @@ services:
 
 ```bash
 # Construir
-docker build -t fleetmaster-pro:latest .
+docker build -t fleetmaster-hub:latest .
 
 # Ejecutar
 docker run -d \
@@ -177,7 +177,7 @@ docker run -d \
   -p 3001:3001 \
   --env-file .env.prod \
   -v $(pwd)/backend/public/uploads:/app/backend/public/uploads \
-  fleetmaster-pro:latest
+  fleetmaster-hub:latest
 ```
 
 ### Paso 4: Configurar Nginx como Reverse Proxy
@@ -267,7 +267,7 @@ curl http://localhost:3001/api/health
 git pull origin main
 
 # Rebuild
-docker build -t fleetmaster-pro:latest .
+docker build -t fleetmaster-hub:latest .
 
 # Reiniciar
 docker-compose down

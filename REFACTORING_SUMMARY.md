@@ -10,7 +10,7 @@ Se ha reorganizado exitosamente todo el frontend en su propia estructura de carp
 ## 📂 Nueva Estructura del Proyecto
 
 ```
-FleetMaster-Pro/
+fleetmaster-hub/
 │
 ├── frontend/                    ✨ NUEVO - Frontend independiente
 │   ├── src/
@@ -255,8 +255,8 @@ docker-compose -f docker-compose.prod.yml up -d --build
 ./deploy-ec2.sh
 
 # Docker directo
-docker build -t fleetmaster-pro:latest .
-docker run -d --name fleetmaster-app -p 3001:3001 --env-file .env.prod fleetmaster-pro:latest
+docker build -t fleetmaster-hub:latest .
+docker run -d --name fleetmaster-app -p 3001:3001 --env-file .env.prod fleetmaster-hub:latest
 ```
 
 ---

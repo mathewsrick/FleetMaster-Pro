@@ -52,7 +52,7 @@ DESARROLLO LOCAL:
 
 DOCKER:
    docker-compose up -d                Iniciar producción
-   docker logs -f fleetmaster-pro      Ver logs
+   docker logs -f fleetmaster-hub      Ver logs
    docker-compose restart              Reiniciar
 
 DOCUMENTACIÓN:

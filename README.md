@@ -32,8 +32,8 @@ Este proyecto ha sido completamente refactorizado con:
 
 ```bash
 # 1. Clonar repositorio
-git clone https://github.com/tu-usuario/FleetMaster-Pro.git
-cd FleetMaster-Pro
+git clone https://github.com/tu-usuario/fleetmaster-hub.git
+cd fleetmaster-hub
 
 # 2. Instalar dependencias raíz
 npm install
@@ -115,7 +115,7 @@ docker-compose -f docker-compose.prod.yml down
 ## 📂 Estructura del Proyecto
 
 ```
-FleetMaster-Pro/
+fleetmaster-hub/
 ├── frontend/              # ✨ Frontend React + Vite
 │   ├── src/
 │   │   ├── pages/        # Páginas de la aplicación
@@ -298,6 +298,6 @@ Este proyecto es privado y propietario.
 
 **Construido con ❤️ para gestión de flotas profesional**
 
-[⬆ Volver arriba](#-fleetmaster-pro)
+[⬆ Volver arriba](#-fleetmaster-hub)
 
 </div>
