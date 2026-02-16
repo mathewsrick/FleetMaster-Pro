@@ -10,7 +10,7 @@ WORKDIR /app/frontend
 RUN corepack enable
 
 # Copy frontend package files
-COPY frontend/package.json frontend/pnpm-lock.yaml* ./
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Copy frontend source code
@@ -35,7 +35,7 @@ COPY backend/ ./backend/
 COPY tsconfig.server.json ./
 
 # Generate Prisma Client
-RUN pnpm exec prisma generate
+RUN pnpm exec prisma generate --schema=./backend/prisma/schema.prisma
 
 # Build backend TypeScript
 RUN pnpm run build:server
@@ -56,7 +56,7 @@ RUN pnpm install --prod --frozen-lockfile
 
 # Copy Prisma schema and generate client
 COPY backend/prisma ./backend/prisma
-RUN pnpm exec prisma generate
+RUN pnpm exec prisma generate --schema=./backend/prisma/schema.prisma
 
 # Copy compiled backend from builder
 COPY --from=backend-builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist
@@ -90,4 +90,4 @@ EXPOSE 3001
 ENTRYPOINT ["dumb-init", "--"]
 
 # Run migrations and start server
-CMD ["sh", "-c", "pnpm exec prisma migrate deploy && node backend/dist/server.js"]
+CMD ["sh", "-c", "pnpm exec prisma migrate deploy --schema=./backend/prisma/schema.prisma && node backend/dist/server.js"]
