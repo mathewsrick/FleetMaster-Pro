@@ -88,7 +88,7 @@ const SuperAdmin: React.FC = () => {
     if (formValues) {
       try {
         Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+        const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
         const response = await fetch(`${API_URL}/api/superadmin/grant-license`, {
           method: 'POST',
