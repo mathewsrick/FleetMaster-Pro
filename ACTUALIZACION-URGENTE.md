@@ -3,6 +3,7 @@
 **Fecha:** 16 de Febrero, 2026  
 **Problema detectado:** Archivos de scripts no incluidos en el contenedor Docker
 
+
 ---
 
 ## 🚨 Acción Requerida
