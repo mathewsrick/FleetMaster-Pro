@@ -2,6 +2,7 @@ import 'dotenv/config';
 import app from './app.js';
 import { runSeeders } from './shared/db.js';
 import { generateAndSendWeeklyReports } from './modules/reports/automated-reports.service.js';
+import { checkExpirationsAndNotify } from './modules/notifications/cron-notifications.service.js';
 
 const port = process.env.PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -18,7 +19,7 @@ const log = {
 const bootstrap = async () => {
   try {
     log.info(`Iniciando FleetMaster Hub en modo ${isProduction ? 'PRODUCCIÓN' : 'DESARROLLO'}`);
-    
+
     // Ejecutar seeders al inicio
     log.info('Ejecutando seeders...');
     await runSeeders();
@@ -41,7 +42,16 @@ const bootstrap = async () => {
         }, {
           timezone: 'America/Bogota'
         });
-        log.info('⏰ Tarea programada: Reportes semanales (Lunes 8:00 AM)');
+        // Notificaciones diarias de vencimientos (Diario 7:00 AM)
+        cron.schedule('0 7 * * *', async () => {
+          console.log('🔔 Ejecutando verificación de vencimientos diaria...');
+          try {
+            await checkExpirationsAndNotify();
+          } catch (error) {
+            console.error('❌ Error en verificación de vencimientos:', error);
+          }
+        }, { timezone: 'America/Bogota' });
+        console.log('⏰ Tareas programadas: Reportes (Lunes) y Vencimientos (Diario)');
       });
     });
   } catch (error) {

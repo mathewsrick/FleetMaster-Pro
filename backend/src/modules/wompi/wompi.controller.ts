@@ -159,7 +159,7 @@ export const handleWebhook = async (req: any, res: any) => {
         );
 
         // Notificar al SuperAdmin
-        const adminEmail = process.env.SUPPORT_EMAIL || 'admin@fleetmaster.pro';
+        const adminEmail = process.env.SUPPORT_EMAIL || 'contacto@fleetmasterhub.com';
         await emailService.sendEmail({
             to: adminEmail,
             subject: `[ALERTA] Nuevo Pago Aprobado - ${localTx.user.username}`,
@@ -171,6 +171,16 @@ export const handleWebhook = async (req: any, res: any) => {
                 reference: localTx.reference,
                 date: new Date().toLocaleString()
             })
+        });
+      } else if (status === 'DECLINED' || status === 'ERROR') {
+        // Email al Usuario - Fallo
+        await emailService.sendEmail({
+          to: localTx.user.email,
+          subject: `Pago Declinado - FleetMaster Hub`,
+          html: emailService.templates.paymentFailed({
+            plan: localTx.plan,
+            reference: localTx.reference
+          })
         });
       }
 

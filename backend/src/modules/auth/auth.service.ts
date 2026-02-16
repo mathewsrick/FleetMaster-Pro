@@ -109,6 +109,16 @@ export const register = async (email: string, username: string, password: string
     subject: "Bienvenido a FleetMaster Hub - Confirma tu cuenta",
     html: emailService.templates.welcome(username, confirmationToken)
   });
+  const adminEmail = process.env.SUPPORT_EMAIL || 'contacto@fleetmasterhub.com';
+  await emailService.sendEmail({
+    to: adminEmail,
+    subject: `[ALERTA] Nuevo Usuario Registrado: ${username}`,
+    html: emailService.templates.adminNewUser({
+      username,
+      email,
+      date: new Date().toLocaleString()
+    })
+  });
 };
 
 export const confirmAccount = async (token: string) => {

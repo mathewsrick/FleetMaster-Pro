@@ -88,6 +88,17 @@ export const templates = {
       <p style="font-size: 13px; text-align: center; color: #64748b;">Recuerda realizar la inspección inicial y reportar cualquier novedad.</p>
     </div>
   `,
+  adminNewUser: (data: { username: string; email: string; date: string }) => `
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+      ${LOGO_HTML}
+      <h2 style="color: #1e293b; text-align: center; font-size: 20px; margin-bottom: 24px;">Nuevo Usuario Registrado</h2>
+      <div style="background: #f8fafc; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0;">
+        <p><strong>Usuario:</strong> ${data.username}</p>
+        <p><strong>Email:</strong> ${data.email}</p>
+        <p><strong>Fecha:</strong> ${data.date}</p>
+      </div>
+    </div>
+  `,
   passwordReset: (token: string) => `
     <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
       ${LOGO_HTML}
@@ -157,6 +168,19 @@ export const templates = {
       </div>
     </div>
   `,
+  paymentFailed: (data: { plan: string; reference: string }) => `
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+      ${LOGO_HTML}
+      <div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 32px;">
+        <h2 style="color: #b91c1c; margin: 0; font-size: 20px;">Pago no procesado</h2>
+        <p style="color: #991b1b; font-size: 14px; margin: 8px 0 0 0;">Lamentablemente tu pago para el plan <strong>${data.plan.toUpperCase()}</strong> fue declinado.</p>
+      </div>
+      <p style="font-size: 14px; color: #64748b; text-align: center;">Referencia: ${data.reference}</p>
+      <div style="text-align: center; margin-top: 24px;">
+        <a href="${ENV.APP_URL}/#/pricing-checkout" style="color: #4f46e5; font-weight: bold; text-decoration: underline;">Intentar de nuevo</a>
+      </div>
+    </div>
+  `,
   adminPaymentNotification: (data: { user: string; email: string; plan: string; amount: number; reference: string; date: string }) => `
     <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
       ${LOGO_HTML}
@@ -191,6 +215,39 @@ export const templates = {
           <td style="padding: 12px 0; text-align: right; color: #1e293b;">${data.date}</td>
         </tr>
       </table>
+    </div>
+  `,
+  /* ================= ALERTAS ================= */
+
+  documentExpirationAlert: (data: {
+    vehiclePlate: string;
+    type: string;
+    daysRemaining: number;
+    expirationDate: string;
+  }) => `
+    <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;padding:48px;border:1px solid #e2e8f0;border-radius:24px;text-align:center;">
+      ${LOGO_HTML}
+      <h2 style="color:#b45309;">Alerta de Vencimiento</h2>
+      <p>${data.type} del vehículo ${data.vehiclePlate}</p>
+      <h1>${data.daysRemaining} días</h1>
+      <p>Vence el ${data.expirationDate}</p>
+    </div>
+  `,
+  subscriptionExpirationAlert: (data: {
+    plan: string;
+    daysRemaining: number;
+    expirationDate: string;
+  }) => `
+    <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;padding:48px;border:1px solid #e2e8f0;border-radius:24px;text-align:center;">
+      ${LOGO_HTML}
+      <h2>Tu plan está por expirar</h2>
+      <p>Plan ${data.plan.toUpperCase()}</p>
+      <h1>${data.daysRemaining} días</h1>
+      <p>Expira el ${data.expirationDate}</p>
+      <a href="${ENV.APP_URL}/#/pricing-checkout"
+         style="background:#4f46e5;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;">
+         Renovar ahora
+      </a>
     </div>
   `,
   weeklyEnterpriseReport: (stats: any) => `
