@@ -4,7 +4,7 @@ import { runSeeders } from './shared/db.js';
 import { generateAndSendWeeklyReports } from './modules/reports/automated-reports.service.js';
 import { checkExpirationsAndNotify } from './modules/notifications/cron-notifications.service.js';
 
-const port = process.env.PORT || 3001;
+const port = Number(process.env.PORT) || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Logger simple
@@ -25,7 +25,7 @@ const bootstrap = async () => {
     await runSeeders();
     log.success('Seeders ejecutados correctamente');
 
-    app.listen(port, () => {
+    app.listen(port, '0.0.0.0', () => {
       log.success(`FLEETMASTER HUB ONLINE - Puerto: ${port}`);
       log.info(`API disponible en: http://localhost:${port}/api`);
 

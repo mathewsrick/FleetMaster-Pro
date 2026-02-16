@@ -14,7 +14,7 @@ services:
       - NODE_ENV=production
       - PORT=3001
     env_file:
-      - .env.prod
+      - backend/.env.prod
     volumes:
       - uploads:/app/backend/public/uploads
     healthcheck:
