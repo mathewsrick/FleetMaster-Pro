@@ -179,14 +179,15 @@ app.use('/api/assign', authenticate as any, requireActiveSubscription as any, as
 
 // Servir frontend en producción
 if (process.env.NODE_ENV === 'production') {
-  const frontendPath = path.join(__dirname, '..', '..', 'dist');
-  app.use(express.static(frontendPath) as any);
-  
-  app.get('*', ((req: any, res: any) => {
+  const frontendPath = path.join(process.cwd(), 'dist');
+
+  app.use(express.static(frontendPath));
+
+  app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
       res.sendFile(path.join(frontendPath, 'index.html'));
     }
-  }) as any);
+  });
 }
 
 export default app;
