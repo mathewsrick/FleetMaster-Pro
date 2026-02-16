@@ -181,10 +181,19 @@ app.use('/api/assign', authenticate as any, requireActiveSubscription as any, as
 const frontendPath = path.join(process.cwd(), 'dist');
 
 if (fs.existsSync(frontendPath)) {
-  app.use(express.static(frontendPath));
+
+  app.use(express.static(frontendPath, {
+    index: false,   // 👈 importante
+    fallthrough: true
+  }));
 
   app.get('*', (req, res) => {
+    if (req.path.startsWith('/api')) {
+      return res.status(404).end();
+    }
+
     res.sendFile(path.join(frontendPath, 'index.html'));
   });
+
 }
 export default app;
