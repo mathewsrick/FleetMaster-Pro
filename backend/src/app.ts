@@ -67,23 +67,44 @@ const corsOptions = {
 };
 
 // 🔒 Helmet con configuración personalizada para producción
-const helmetConfig = process.env.NODE_ENV === 'production' 
+const helmetConfig = process.env.NODE_ENV === 'production'
   ? {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com"],
-          scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://checkout.wompi.co"],
-          imgSrc: ["'self'", "data:", "https:", "blob:"],
-          connectSrc: ["'self'", "https://production.wompi.co", "https://sandbox.wompi.co"],
-          fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
-          frameSrc: ["'self'", "https://checkout.wompi.co"],
-        },
-      },
-      hsts: {
-        maxAge: 31536000,
-        includeSubDomains: true,
-        preload: true
+          scriptSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            "'unsafe-eval'",
+            "https:",
+            "blob:"
+          ],
+          styleSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            "https:"
+          ],
+          imgSrc: [
+            "'self'",
+            "data:",
+            "blob:",
+            "https:"
+          ],
+          connectSrc: [
+            "'self'",
+            "https:",
+            "wss:"
+          ],
+          fontSrc: [
+            "'self'",
+            "https:",
+            "data:"
+          ],
+          frameSrc: [
+            "'self'",
+            "https://checkout.wompi.co"
+          ]
+        }
       }
     }
   : {}; // En desarrollo, configuración por defecto
@@ -178,16 +199,13 @@ app.use('/api/arrears', authenticate as any, requireActiveSubscription as any, a
 app.use('/api/assign', authenticate as any, requireActiveSubscription as any, assignmentRoutes as any);
 
 // Servir frontend en producción
-if (process.env.NODE_ENV === 'production') {
-  const frontendPath = path.join(process.cwd(), 'dist');
+const frontendPath = path.join(process.cwd(), 'dist');
 
+if (fs.existsSync(frontendPath)) {
   app.use(express.static(frontendPath));
 
   app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(path.join(frontendPath, 'index.html'));
-    }
+    res.sendFile(path.join(frontendPath, 'index.html'));
   });
 }
-
 export default app;
