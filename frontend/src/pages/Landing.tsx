@@ -38,7 +38,7 @@ const Landing: React.FC = () => {
         href={WHATSAPP_LINK}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-8 right-8 z-[60] bg-emerald-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-2xl hover:bg-emerald-600 hover:scale-110 transition-all active:scale-95 group animate-bounce"
+        className="fixed bottom-8 right-8 z-[60] bg-emerald-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-2xl hover:bg-emerald-600 hover:scale-110 transition-all active:scale-95 group"
         title="Chatea con nosotros"
       >
         <i className="fa-brands fa-whatsapp"></i>
