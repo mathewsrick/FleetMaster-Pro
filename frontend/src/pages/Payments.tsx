@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, formatDateDisplay } from '../services/db';
-import { Payment, Driver, Vehicle, Arrear } from '../types';
+import { db, formatDateDisplay } from '@/services/db';
+import { Payment, Driver, Vehicle, Arrear } from '@/types/types';
 import Swal from 'sweetalert2';
 
 const Payments: React.FC = () => {

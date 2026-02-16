@@ -1,5 +1,6 @@
 # Node
 node_modules
+frontend/node_modules
 npm-debug.log
 yarn-error.log
 pnpm-debug.log
@@ -12,9 +13,11 @@ backend/.env
 .env.prod
 
 # Build outputs (se construyen en el contenedor)
-# dist
-# backend/dist
-# dist-ssr
+dist/
+frontend/dist/
+backend/dist/
+*.js.map
+dist-ssr
 *.local
 
 # Database
@@ -43,12 +46,28 @@ backend/public/uploads
 # Docs
 README.md
 DEPLOYMENT.md
+metadata.json
 
 # Docker
 docker-compose*.yml
 .dockerignore
 
-# Tests
+# Scripts
+deploy.sh
+rollback.sh
+help.sh
+
+# Nginx config (if separate)
+nginx/
+nginx.conf
+
+# Logs
+logs/
+*.log
+
+# Testing
+coverage/
+.nyc_output/
 **/*.test.ts
 **/*.test.tsx
 **/*.spec.ts

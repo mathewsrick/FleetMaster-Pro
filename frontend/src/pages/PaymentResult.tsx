@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { db } from '../services/db';
+import { db } from '@/services/db';
 
 const PaymentResult: React.FC<{ refreshAccount: () => Promise<void> }> = ({ refreshAccount }) => {
   const location = useLocation();

@@ -1,4 +1,4 @@
-import { Vehicle, Driver, Payment, Expense, Arrear, User, PaginatedResponse } from '../types';
+import { Vehicle, Driver, Payment, Expense, Arrear, User, PaginatedResponse } from '@/types/types';
 
 const getApiBase = () => {
   try {

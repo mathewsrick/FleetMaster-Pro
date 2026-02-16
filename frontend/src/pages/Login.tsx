@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { db } from '../services/db';
+import { db } from '@/services/db';
 
 interface LoginProps {
   onLogin: (data: any) => void;

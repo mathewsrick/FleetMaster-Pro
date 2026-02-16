@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { db, formatDateDisplay } from '../services/db';
-import { Vehicle, Driver, Payment, Expense, Arrear } from '../types';
+import { db, formatDateDisplay } from '@/services/db';
+import { Vehicle, Driver, Payment, Expense, Arrear } from '@/types/types';
 import * as XLSX from 'xlsx';
 
 const Reports: React.FC = () => {

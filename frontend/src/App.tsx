@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
-import Dashboard from './pages/Dashboard';
-import Vehicles from './pages/Vehicles';
-import Drivers from './pages/Drivers';
-import Payments from './pages/Payments';
-import Expenses from './pages/Expenses';
-import Reports from './pages/Reports';
-import Login from './pages/Login';
-import Landing from './pages/Landing';
-import PricingCheckout from './pages/PricingCheckout';
-import SuperAdmin from './pages/SuperAdmin';
-import ConfirmAccount from './pages/ConfirmAccount';
-import PaymentResult from './pages/PaymentResult';
-import { db } from './services/db';
-import { AuthState, AccountStatus } from './types';
+import Dashboard from '@/pages/Dashboard';
+import Vehicles from '@/pages/Vehicles';
+import Drivers from '@/pages/Drivers';
+import Payments from '@/pages/Payments';
+import Expenses from '@/pages/Expenses';
+import Reports from '@/pages/Reports';
+import Login from '@/pages/Login';
+import Landing from '@/pages/Landing';
+import PricingCheckout from '@/pages/PricingCheckout';
+import SuperAdmin from '@/pages/SuperAdmin';
+import ConfirmAccount from '@/pages/ConfirmAccount';
+import PaymentResult from '@/pages/PaymentResult';
+import { db } from '@/services/db';
+import { AuthState, AccountStatus } from '@/types/types';
 
 const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) => {
   if (!status) return null;

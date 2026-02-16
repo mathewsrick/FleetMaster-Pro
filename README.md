@@ -7,38 +7,143 @@
 Sistema completo de gestión de flotas vehiculares con pagos Wompi, autenticación JWT, subscripciones y reportes avanzados.
 
 [![Production Ready](https://img.shields.io/badge/Production-Ready-green.svg)](./DEPLOYMENT.md)
-[![Security](https://img.shields.io/badge/Security-Hardened-blue.svg)](./SECURITY-CHANGES-APPLIED.md)
+[![Security](https://img.shields.io/badge/Security-A+-blue.svg)](./DEPLOYMENT.md)
+[![Docker Optimized](https://img.shields.io/badge/Docker-Optimized-2496ED.svg)](./Dockerfile)
+
+---
+
+## ✨ Refactorización v1.1.0
+
+Este proyecto ha sido completamente refactorizado con:
+
+- ✅ **Frontend organizado** en carpeta dedicada (`frontend/`)
+- ✅ **Dockerfile multi-stage** optimizado (75% más pequeño)
+- ✅ **Configuraciones optimizadas** para producción
+- ✅ **Listo para AWS EC2** con scripts automatizados
+- ✅ **Documentación completa** de despliegue
+
+📖 **[Ver cambios completos →](./REFACTORING_SUMMARY.md)**
 
 ---
 
 ## 🚀 Inicio Rápido
 
-### Desarrollo Local
+### 📦 Instalación
 
 ```bash
-# 1. Instalar dependencias
-pnpm install
+# 1. Clonar repositorio
+git clone https://github.com/tu-usuario/FleetMaster-Pro.git
+cd FleetMaster-Pro
 
-# 2. Configurar variables de entorno
+# 2. Instalar dependencias raíz
+npm install
+
+# 3. Instalar dependencias frontend
+cd frontend && npm install && cd ..
+
+# 4. Configurar variables de entorno
 cp backend/.env.example backend/.env
-nano backend/.env  # Editar con tus valores
-
-# 3. Iniciar base de datos (con Docker)
-docker-compose -f docker-compose.dev.yml up -d
-
-# 4. Ejecutar migraciones
-pnpm prisma:migrate
-
-# 5. Crear SuperAdmin
-pnpm create:superadmin admin admin@example.com Password123!
-
-# 6. Iniciar desarrollo
-pnpm dev
+cp frontend/.env.example frontend/.env
+# Editar archivos .env con tus valores
 ```
 
-**Aplicación corriendo en:**
-- Frontend: http://localhost:5173
-- Backend: http://localhost:3001
+### 🔧 Desarrollo Local
+
+```bash
+# Opción 1: Todo junto (recomendado)
+npm run dev
+
+# Opción 2: Por separado
+npm run dev:server    # Backend en puerto 3001
+npm run dev:client    # Frontend en puerto 3000
+```
+
+**URLs:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001/api
+- Health Check: http://localhost:3001/api/health
+
+### 📦 Build para Producción
+
+```bash
+# Build completo (frontend + backend)
+npm run build
+
+# Solo frontend
+npm run build:client
+
+# Solo backend
+npm run build:server
+```
+
+---
+
+## 🐳 Despliegue con Docker
+
+### Opción 1: Docker Compose (Recomendado)
+
+```bash
+# Producción con Nginx
+docker-compose -f docker-compose.prod.yml up -d --build
+
+# Ver logs
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Detener
+docker-compose -f docker-compose.prod.yml down
+```
+
+### Opción 2: Script Automatizado (AWS EC2)
+
+```bash
+# Deploy completo con backups y health checks
+./deploy-ec2.sh
+```
+
+**El script incluye:**
+- ✅ Backups automáticos
+- ✅ Pull del código más reciente
+- ✅ Build optimizado
+- ✅ Migraciones de BD
+- ✅ Health checks con reintentos
+- ✅ Limpieza automática
+
+📖 **[Guía completa AWS EC2 →](./DEPLOYMENT.md)**
+
+---
+
+## 📂 Estructura del Proyecto
+
+```
+FleetMaster-Pro/
+├── frontend/              # ✨ Frontend React + Vite
+│   ├── src/
+│   │   ├── pages/        # Páginas de la aplicación
+│   │   ├── services/     # API client
+│   │   ├── types/        # TypeScript definitions
+│   │   ├── App.tsx       # Componente raíz
+│   │   └── index.tsx     # Entry point
+│   ├── package.json      # Dependencias frontend
+│   ├── tsconfig.json     # Config TypeScript
+│   └── vite.config.ts    # Config Vite
+│
+├── backend/              # Backend Express + Prisma
+│   ├── src/
+│   │   ├── modules/      # Módulos de negocio
+│   │   ├── middlewares/  # Auth, rate limiting
+│   │   ├── config/       # Configuraciones
+│   │   └── server.ts     # Entry point
+│   ├── prisma/           # Schema y migraciones
+│   └── public/           # Assets públicos
+│
+├── nginx/                # Configuración Nginx
+│   └── default.conf      # Reverse proxy optimizado
+│
+├── Dockerfile            # Multi-stage optimizado
+├── docker-compose.prod.yml
+├── deploy-ec2.sh         # Script de despliegue
+└── DEPLOYMENT.md         # Documentación completa
+```
 
 ---
 
@@ -119,16 +224,16 @@ Solo configura `FRONTEND_URL=https://tudominio.com` en `.env.prod`
 
 ```bash
 # Desarrollo
-pnpm dev              # Iniciar dev server
-pnpm build            # Build de producción
+npm run dev              # Iniciar dev server
+npm run build            # Build de producción
 
 # Base de Datos
-pnpm prisma:generate  # Generar Prisma Client
-pnpm prisma:migrate   # Ejecutar migraciones
-pnpm prisma:studio    # Abrir GUI de BD
+npm run prisma:generate  # Generar Prisma Client
+npm run prisma:migrate   # Ejecutar migraciones
+npm run prisma:studio    # Abrir GUI de BD
 
 # Administración
-pnpm create:superadmin <username> <email> <password>
+npm run create:superadmin <username> <email> <password>
 
 # Despliegue
 ./deploy.sh          # Deploy manual

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { db } from '../services/db';
+import { db } from '@/services/db';
 import Swal from 'sweetalert2';
 
 type Duration = 'monthly' | 'semiannual' | 'yearly';

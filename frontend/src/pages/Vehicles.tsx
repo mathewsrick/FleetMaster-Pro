@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { db, formatDateDisplay } from '../services/db';
-import { Vehicle, Payment, Expense } from '../types';
+import { db, formatDateDisplay } from '@/services/db';
+import { Vehicle, Payment, Expense } from '@/types/types';
 import Swal from 'sweetalert2';
 
 const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';

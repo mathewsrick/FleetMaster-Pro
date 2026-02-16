@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { db } from '../services/db';
+import { db } from '@/services/db';
 
 const ConfirmAccount: React.FC = () => {
   const { token } = useParams<{ token: string }>();

@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { db } from '../services/db';
-import { Vehicle, Driver, Payment, Expense, AccountStatus } from '../types';
+import { db } from '@/services/db';
+import { Vehicle, Driver, Payment, Expense, AccountStatus } from '@/types/types';
 import { Link } from 'react-router-dom';
 
 const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';

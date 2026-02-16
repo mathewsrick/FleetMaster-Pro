@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { db } from '../services/db';
+import { db } from '@/services/db';
 import Swal from 'sweetalert2';
 
 const SuperAdmin: React.FC = () => {
