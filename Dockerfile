@@ -61,6 +61,11 @@ RUN pnpm exec prisma generate --schema=./backend/prisma/schema.prisma
 # Copy compiled backend from builder
 COPY --from=backend-builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist
 
+# Copy scripts folder for SuperAdmin creation and other utilities
+COPY --chown=nodejs:nodejs backend/scripts ./backend/scripts
+COPY --chown=nodejs:nodejs backend/src ./backend/src
+COPY --chown=nodejs:nodejs tsconfig.json ./backend/tsconfig.json
+
 # Copy built frontend from builder
 COPY --from=frontend-builder --chown=nodejs:nodejs /app/frontend/dist ./dist
 

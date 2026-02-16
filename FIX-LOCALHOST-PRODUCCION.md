@@ -17,7 +17,17 @@ cd ~/fleetmasterhub
 git pull
 ```
 
-### Paso 3: Ejecuta el Script de Fix
+### Paso 3: Rebuild del Contenedor (Necesario una vez)
+```bash
+# Solo necesitas hacer esto la primera vez después de actualizar
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml build --no-cache
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+**Nota:** Este rebuild es necesario porque agregamos los archivos de scripts al contenedor.
+
+### Paso 4: Ejecuta el Script de Fix
 ```bash
 chmod +x fix-production-url.sh
 ./fix-production-url.sh

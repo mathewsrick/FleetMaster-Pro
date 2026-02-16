@@ -163,15 +163,15 @@ echo -e "\n${YELLOW}Creando SuperAdmin...${NC}"
 if [ "$EXEC_MODE" = "docker" ]; then
     echo -e "${BLUE}Ejecutando en contenedor Docker...${NC}"
     
+    # Verificar que tsx esté disponible o instalarlo temporalmente
+    echo -e "${YELLOW}Verificando dependencias...${NC}"
+    
     # Ejecutar el script TypeScript que ya existe usando npx tsx
     docker exec -w /app/backend \
                 fleetmaster \
-                npx tsx scripts/CreateSuperAdmin.ts "$ADMIN_USERNAME" "$ADMIN_EMAIL" "$ADMIN_PASSWORD"
+                npx -y tsx scripts/CreateSuperAdmin.ts "$ADMIN_USERNAME" "$ADMIN_EMAIL" "$ADMIN_PASSWORD"
     
     RESULT=$?
-    
-    # Limpiar
-    docker exec fleetmaster rm -f /app/backend/create-superadmin.js
     
 else
     echo -e "${BLUE}Ejecutando localmente...${NC}"
