@@ -164,7 +164,14 @@ cat > /tmp/create-superadmin-temp.js << 'SCRIPT_END'
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
-const prisma = new PrismaClient();
+// Configurar Prisma con la ruta correcta del schema
+const prisma = new PrismaClient({
+    datasources: {
+        db: {
+            url: process.env.DATABASE_URL
+        }
+    }
+});
 
 async function createSuperAdmin() {
     const username = process.env.SA_USERNAME;
@@ -172,6 +179,8 @@ async function createSuperAdmin() {
     const password = process.env.SA_PASSWORD;
 
     try {
+        console.log('🔍 Verificando si el usuario ya existe...');
+        
         // Verificar si ya existe
         const existing = await prisma.user.findFirst({
             where: {
@@ -189,9 +198,13 @@ async function createSuperAdmin() {
             process.exit(1);
         }
 
+        console.log('🔐 Hasheando password...');
+        
         // Hash del password
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        console.log('📝 Creando SuperAdmin en la base de datos...');
+        
         // Crear SuperAdmin
         const admin = await prisma.user.create({
             data: {
@@ -214,6 +227,9 @@ async function createSuperAdmin() {
         process.exit(0);
     } catch (error) {
         console.error('❌ Error al crear SuperAdmin:', error.message);
+        if (error.code) {
+            console.error('Código de error:', error.code);
+        }
         process.exit(1);
     } finally {
         await prisma.$disconnect();
@@ -227,20 +243,21 @@ SCRIPT_END
 if [ "$EXEC_MODE" = "docker" ]; then
     echo -e "${BLUE}Ejecutando en contenedor Docker...${NC}"
     
-    # Copiar script al contenedor
-    docker cp /tmp/create-superadmin-temp.js fleetmaster:/tmp/create-superadmin.js
+    # Copiar script al contenedor (en el directorio del backend donde están los node_modules)
+    docker cp /tmp/create-superadmin-temp.js fleetmaster:/app/backend/create-superadmin.js
     
-    # Ejecutar dentro del contenedor
-    docker exec -e SA_USERNAME="$ADMIN_USERNAME" \
+    # Ejecutar dentro del contenedor desde el directorio del backend
+    docker exec -w /app/backend \
+                -e SA_USERNAME="$ADMIN_USERNAME" \
                 -e SA_EMAIL="$ADMIN_EMAIL" \
                 -e SA_PASSWORD="$ADMIN_PASSWORD" \
                 fleetmaster \
-                node /tmp/create-superadmin.js
+                node create-superadmin.js
     
     RESULT=$?
     
     # Limpiar
-    docker exec fleetmaster rm -f /tmp/create-superadmin.js
+    docker exec fleetmaster rm -f /app/backend/create-superadmin.js
     
 else
     echo -e "${BLUE}Ejecutando localmente...${NC}"
