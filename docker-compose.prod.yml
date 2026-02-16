@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
-  app:
+  fleetmaster:
     build:
       context: .
       dockerfile: Dockerfile
     image: fleetmaster-hub:latest
-    container_name: fleetmaster-app
+    container_name: fleetmaster
     restart: unless-stopped
     ports:
       - "3001:3001"
