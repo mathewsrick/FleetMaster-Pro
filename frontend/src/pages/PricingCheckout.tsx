@@ -141,11 +141,11 @@ const PricingCheckout: React.FC = () => {
             isDisabled={isPlanActive || cannotChooseBasico}
             restrictionMsg={cannotChooseBasico ? "Tu nivel de cuenta no permite bajar a este plan" : (isPlanActive ? "Tienes un plan vigente" : "")}
           />
-          <PlanOption 
-            name="Pro" 
-            price={getPrice(95900)} 
+          <PlanOption
+            name="Pro"
+            price={getPrice(95900)}
             duration={duration}
-            recommended 
+            recommended
             limits="6 Vehículos | 10 Conductores"
             desc="Reportes de Excel, soporte prioritario y búsqueda de 90 días."
             onSelect={() => handlePurchase('pro')}

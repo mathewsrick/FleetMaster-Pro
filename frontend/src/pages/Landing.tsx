@@ -85,7 +85,7 @@ const Landing: React.FC = () => {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 italic">en un solo lugar.</span>
           </h1>
           <p className="text-slate-500 text-lg max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
-            La plataforma definitiva para rentadores de vehículos. Gestiona conductores, automatiza cobros de mora, guarda registros fotográficos y visualiza tu rentabilidad en tiempo real.
+            La plataforma definitiva para la administración de vehículos. Gestiona conductores, automatiza cobros de mora, guarda registros fotográficos y visualiza tu rentabilidad en tiempo real.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/login" className="w-full sm:w-auto bg-indigo-600 text-white px-10 py-5 rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95">
