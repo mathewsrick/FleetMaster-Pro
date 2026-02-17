@@ -1,0 +1,71 @@
+/* Mobile Menu Fix - Asegura visibilidad en todos los dispositivos */
+
+/* Forzar visibilidad del botón hamburguesa en móvil */
+@media (max-width: 1023px) {
+  button[aria-label="Abrir menú"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 100 !important;
+  }
+}
+
+/* Asegurar que el overlay del menú esté por encima de todo */
+.mobile-menu-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
+}
+
+/* Prevenir scroll cuando el menú está abierto */
+body.menu-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* Mejorar área táctil del botón en iOS */
+@supports (-webkit-touch-callout: none) {
+  button[aria-label="Abrir menú"] {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* Animación suave del menú lateral */
+@media (max-width: 1023px) {
+  .mobile-sidebar {
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+}
+
+/* Optimizar renderizado en móvil */
+@media (max-width: 640px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Mejorar performance de animaciones */
+  .transition-transform,
+  .transition-all {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+/* Fix para Safari iOS */
+@supports (-webkit-overflow-scrolling: touch) {
+  .fixed {
+    position: -webkit-sticky !important;
+    position: fixed !important;
+  }
+}

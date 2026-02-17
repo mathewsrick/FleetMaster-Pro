@@ -88,28 +88,49 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <TrialBanner status={status} />
 
-      {/* Mobile Sidebar Overlay - SIEMPRE renderizado pero oculto */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-[9999] lg:hidden"
-          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+      {/* Mobile Menu Overlay - Renderizado condicional */}
+      <div
+        className={`fixed inset-0 z-[9999] lg:hidden transition-all duration-300 ${
+          isMobileMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'
+        }`}
+        style={{ 
+          position: 'fixed !important' as any,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 9999
+        }}
+      >
+        {/* Overlay Background */}
+        <div 
+          className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" 
+          onClick={closeMenu}
+          style={{ 
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%'
+          }}
+        />
+        
+        {/* Sidebar Menu */}
+        <aside 
+          className={`absolute top-0 left-0 bottom-0 w-[280px] max-w-[85vw] bg-slate-900 flex flex-col shadow-2xl transform transition-transform duration-300 ${
+            isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+          style={{ 
+            position: 'absolute',
+            height: '100%',
+            zIndex: 10000
+          }}
         >
-          {/* Overlay oscuro */}
-          <div 
-            className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" 
-            onClick={closeMenu}
-            style={{ position: 'absolute', width: '100%', height: '100%' }}
-          ></div>
-          
-          {/* Menú lateral */}
-          <aside 
-            className="absolute top-0 left-0 bottom-0 w-72 bg-slate-900 flex flex-col shadow-2xl"
-            style={{ position: 'absolute', height: '100%', maxWidth: '80%' }}
-          >
-            <SidebarContent />
-          </aside>
-        </div>
-      )}
+          <SidebarContent />
+        </aside>
+      </div>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Sidebar */}
@@ -118,44 +139,50 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
         </aside>
 
         <main className="flex-1 overflow-auto">
-          <header className="bg-white h-16 sm:h-20 border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-            {/* Mobile Menu Button - MÁS VISIBLE */}
+          {/* Header Responsive */}
+          <header className="bg-white h-14 sm:h-16 md:h-20 border-b border-slate-200 px-3 sm:px-4 md:px-8 flex items-center sticky top-0 z-50 shadow-sm">
+            {/* Mobile Menu Button */}
             <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden flex items-center justify-center w-12 h-12 -ml-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 active:bg-slate-200 transition-all rounded-lg"
+              onClick={() => {
+                console.log('Menu button clicked!');
+                setIsMobileMenuOpen(true);
+              }}
+              className="lg:hidden flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 active:bg-indigo-50 transition-all rounded-xl"
               aria-label="Abrir menú"
               type="button"
               style={{ 
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation',
-                display: 'flex'
+                zIndex: 1
               }}
             >
-              <i className="fa-solid fa-bars text-2xl"></i>
+              <i className="fa-solid fa-bars text-xl sm:text-2xl"></i>
             </button>
 
-            {/* Logo móvil (opcional) */}
-            <div className="lg:hidden flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-              <div className="bg-indigo-600 p-1.5 rounded-lg text-white">
-                <i className="fa-solid fa-truck-fast text-sm"></i>
+            {/* Logo Móvil - Visible solo en móvil */}
+            <div className="lg:hidden flex items-center gap-1.5 sm:gap-2">
+              <div className="bg-indigo-600 p-1 sm:p-1.5 px-2 rounded-lg text-white">
+                <i className="fa-solid fa-truck-fast text-xs sm:text-sm"></i>
               </div>
-              <span className="font-black text-base tracking-tight text-slate-900">Fleet</span>
+              <span className="text-sm sm:text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">FleetMaster Hub</span>
             </div>
 
-            {/* User Info */}
-            <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-black text-slate-900">{username}</p>
-                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
-                  {role === 'SUPERADMIN' ? 'Control Maestro' : (status?.plan.replace('_', ' ') || 'Free Trial')}
-                </p>
+            {/* User Info - Más compacto en móvil */}
+            <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+              <div className="text-right hidden md:block">
+              <p className="text-sm font-black text-slate-900">{username}</p>
+              <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
+                {role === 'SUPERADMIN' ? 'Control Maestro' : (status?.plan.replace('_', ' ') || 'Free Trial')}
+              </p>
               </div>
-              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-black border border-slate-200 uppercase text-sm">
-                {username[0]}
+              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-slate-100 rounded-xl sm:rounded-2xl flex items-center justify-center text-slate-400 font-black border border-slate-200 uppercase text-xs sm:text-sm">
+              {username[0]}
               </div>
             </div>
           </header>
-          <div className="p-4 sm:p-8">
+          
+          {/* Content Area - Padding responsive */}
+          <div className="p-3 sm:p-4 md:p-6 lg:p-8">
             {children}
           </div>
         </main>

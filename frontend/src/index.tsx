@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { db } from './services/db';
+import './assets/mobile-menu-fix.css';
 
 // Inicializa la base de datos (SQLITE Mock o API)
 db.init();
