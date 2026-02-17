@@ -13,7 +13,10 @@
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   
-  # Redirigir todo a index.html para SPA
+  # No reescribir rutas API
+  RewriteCond %{REQUEST_URI} !^/api/
+  
+  # Redirigir todo a index.html para SPA (BrowserRouter)
   RewriteRule . /index.html [L]
 </IfModule>
 

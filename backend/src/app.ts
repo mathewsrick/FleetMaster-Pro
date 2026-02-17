@@ -222,7 +222,9 @@ if (fs.existsSync(frontendPath)) {
     }
   }));
 
+  // SPA fallback - todas las rutas no API sirven index.html (BrowserRouter)
   app.get('*', (req, res) => {
+    // API routes retornan 404
     if (req.path.startsWith('/api')) {
       return res.status(404).end();
     }

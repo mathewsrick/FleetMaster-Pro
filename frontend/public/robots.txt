@@ -7,20 +7,20 @@ Allow: /
 
 # Bloquear áreas privadas
 Disallow: /api/
-Disallow: /#/dashboard
-Disallow: /#/vehicles
-Disallow: /#/drivers
-Disallow: /#/payments
-Disallow: /#/expenses
-Disallow: /#/reports
-Disallow: /#/superadmin
+Disallow: /dashboard
+Disallow: /vehicles
+Disallow: /drivers
+Disallow: /payments
+Disallow: /expenses
+Disallow: /reports
+Disallow: /superadmin
+Disallow: /confirm/
+Disallow: /payment-result
 
 # Permitir páginas públicas importantes
 Allow: /$
-Allow: /#/pricing-checkout
-Allow: /#/login
-Allow: /#/confirm
-Allow: /#/payment-result
+Allow: /pricing-checkout
+Allow: /login
 
 # Bots específicos
 User-agent: Googlebot
