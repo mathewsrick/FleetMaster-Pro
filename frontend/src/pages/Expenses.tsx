@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { db, formatDateDisplay } from '@/services/db';
+import { db, formatDateDisplay, getTodayDateDisplay, formatDateToISO } from '@/services/db';
 import { Expense, Vehicle } from '@/types/types';
 import Swal from 'sweetalert2';
 import ResponsiveTable from '@/components/ResponsiveTable';
 import ResponsiveModal from '@/components/ResponsiveModal';
 import ModalFooter from '@/components/ModalFooter';
+import DateInput from '@/components/DateInput';
 
 const Expenses: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -20,7 +21,7 @@ const Expenses: React.FC = () => {
   const [formData, setFormData] = useState<Partial<Expense>>({
     description: '',
     amount: 0,
-    date: new Date().toISOString().split('T')[0],
+    date: formatDateToISO(getTodayDateDisplay()),
     vehicleId: ''
   });
 
@@ -72,7 +73,7 @@ const Expenses: React.FC = () => {
     try {
       await db.saveExpense({ ...formData, id: crypto.randomUUID() } as Expense);
       setIsModalOpen(false);
-      setFormData({ description: '', amount: 0, date: new Date().toISOString().split('T')[0], vehicleId: '' });
+      setFormData({ description: '', amount: 0, date: formatDateToISO(getTodayDateDisplay()), vehicleId: '' });
       loadData();
     } catch (err: any) {
       alert('Error al guardar el gasto');
@@ -223,7 +224,12 @@ const Expenses: React.FC = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <input type="number" required placeholder="Costo" value={formData.amount || ''} onChange={e => setFormData({...formData, amount: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none" />
-              <input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none text-sm" />
+              <DateInput
+                required 
+                value={formData.date || ''} 
+                onChange={(isoDate) => setFormData({...formData, date: isoDate})} 
+                className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none text-sm" 
+              />
             </div>
             <ModalFooter
               primaryButton={{

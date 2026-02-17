@@ -12,11 +12,57 @@ const getApiBase = () => {
 
 const API_BASE = getApiBase();
 
+// Convertir fecha de dd/mm/yyyy a yyyy-mm-dd (ISO format para backend)
+export const formatDateToISO = (dateStr: string): string => {
+  if (!dateStr) return '';
+  // Si ya está en formato ISO (yyyy-mm-dd), retornar tal cual
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  
+  // Si está en formato dd/mm/yyyy, convertir a ISO
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  return dateStr;
+};
+
+// Convertir fecha de yyyy-mm-dd (ISO) a dd/mm/yyyy para mostrar
+export const formatDateToDisplay = (dateStr: string): string => {
+  if (!dateStr) return '';
+  
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  
+  return `${day}/${month}/${year}`;
+};
+
+// Obtener fecha actual en formato dd/mm/yyyy
+export const getTodayDateDisplay = (): string => {
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const year = today.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+// Formato para mostrar en reportes (incluye hora)
 export const formatDateDisplay = (dateStr: string) => {
   if (!dateStr) return 'N/A';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
-  return d.toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+  
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  const hour = String(d.getHours()).padStart(2, '0');
+  const minute = String(d.getMinutes()).padStart(2, '0');
+  
+  return `${day}/${month}/${year} ${hour}:${minute}`;
 };
 
 const getAuth = () => {

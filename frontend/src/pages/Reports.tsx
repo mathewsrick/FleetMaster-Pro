@@ -57,7 +57,9 @@ const Reports: React.FC = () => {
     const table = document.getElementById(tableId);
     if (!table) return;
     const wb = XLSX.utils.table_to_book(table);
-    XLSX.writeFile(wb, `${fileName}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    const today = new Date();
+    const dateStr = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
+    XLSX.writeFile(wb, `${fileName}_${dateStr}.xlsx`);
   };
 
   // Lógica de filtrado y paginación local

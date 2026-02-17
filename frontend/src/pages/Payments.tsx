@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { db, formatDateDisplay } from '@/services/db';
+import { db, formatDateDisplay, getTodayDateDisplay, formatDateToISO } from '@/services/db';
 import { Payment, Driver, Vehicle, Arrear } from '@/types/types';
 import Swal from 'sweetalert2';
 import ResponsiveTable from '@/components/ResponsiveTable';
 import ResponsiveModal from '@/components/ResponsiveModal';
 import ModalFooter from '@/components/ModalFooter';
+import DateInput from '@/components/DateInput';
 
 const Payments: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -26,7 +27,7 @@ const Payments: React.FC = () => {
 
   const [formData, setFormData] = useState<Partial<Payment>>({
     amount: 0,
-    date: new Date().toISOString().split('T')[0],
+    date: formatDateToISO(getTodayDateDisplay()),
     driverId: '',
     vehicleId: '',
     type: 'renta',
@@ -104,7 +105,7 @@ const Payments: React.FC = () => {
       if (formData.type === 'arrear_payment' && formData.arrearId) {
         await db.payArrear(formData.arrearId, {
           amount: formData.amount || 0,
-          date: formData.date || new Date().toISOString().split('T')[0],
+          date: formData.date || formatDateToISO(getTodayDateDisplay()),
         });
       } else {
         await db.savePayment({
@@ -116,7 +117,7 @@ const Payments: React.FC = () => {
       setEditingId(null);
       setFormData({
         amount: 0,
-        date: new Date().toISOString().split('T')[0],
+        date: formatDateToISO(getTodayDateDisplay()),
         driverId: '',
         vehicleId: '',
         type: 'renta',
@@ -151,18 +152,18 @@ const Payments: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <div className="flex bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm w-full md:w-auto">
             <div className="flex items-center px-3 bg-slate-50 border-r border-slate-200 text-slate-400 text-[10px] font-black tracking-widest uppercase">Desde</div>
-            <input 
-              type="date" 
+            <DateInput
               value={dateRange.startDate} 
-              onChange={e => {setDateRange({ ...dateRange, startDate: e.target.value }); setPage(1);}}
+              onChange={(isoDate) => {setDateRange({ ...dateRange, startDate: isoDate }); setPage(1);}}
               className="px-3 py-2 text-xs font-bold outline-none flex-1 min-w-[120px]"
+              placeholder="dd/mm/yyyy"
             />
             <div className="flex items-center px-3 bg-slate-50 border-x border-slate-200 text-slate-400 text-[10px] font-black tracking-widest uppercase">Hasta</div>
-            <input 
-              type="date" 
+            <DateInput
               value={dateRange.endDate} 
-              onChange={e => {setDateRange({ ...dateRange, endDate: e.target.value }); setPage(1);}}
+              onChange={(isoDate) => {setDateRange({ ...dateRange, endDate: isoDate }); setPage(1);}}
               className="px-3 py-2 text-xs font-bold outline-none flex-1 min-w-[120px]"
+              placeholder="dd/mm/yyyy"
             />
           </div>
 
@@ -441,14 +442,10 @@ const Payments: React.FC = () => {
               </div>
               <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Fecha de Pago</label>
-                <input
-                  type="date"
+                <DateInput
                   required
-                  disabled={saving}
-                  value={formData.date}
-                  onChange={e =>
-                    setFormData({ ...formData, date: e.target.value })
-                  }
+                  value={formData.date || ''}
+                  onChange={(isoDate) => setFormData({ ...formData, date: isoDate })}
                   className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-3xl outline-none font-bold text-base sm:text-sm transition-all"
                 />
               </div>

@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { db, formatDateDisplay } from '@/services/db';
+import { db, formatDateDisplay, getTodayDateDisplay, formatDateToISO } from '@/services/db';
 import { Vehicle, Payment, Expense } from '@/types/types';
 import Swal from 'sweetalert2';
 import ResponsiveTable from '@/components/ResponsiveTable';
 import ResponsiveModal from '@/components/ResponsiveModal';
 import ModalFooter from '@/components/ModalFooter';
+import DateInput from '@/components/DateInput';
 
 const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
@@ -32,7 +33,7 @@ const Vehicles: React.FC = () => {
 
   const initialForm: Partial<Vehicle> = {
     year: new Date().getFullYear(), licensePlate: '', model: '', color: '',
-    purchaseDate: new Date().toISOString().split('T')[0],
+    purchaseDate: formatDateToISO(getTodayDateDisplay()),
     insurance: '', insuranceNumber: '', soatExpiration: '', techExpiration: '',
     rentaValue: 0, driverId: null, photos: []
   };
@@ -405,22 +406,20 @@ const Vehicles: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 block">Vencimiento SOAT</label>
-              <input 
-                type="date" 
+              <DateInput
                 required 
                 value={formData.soatExpiration || ''} 
-                onChange={e => setFormData({...formData, soatExpiration: e.target.value})} 
-                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base" 
+                onChange={(isoDate) => setFormData({...formData, soatExpiration: isoDate})} 
+                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base focus:ring-2 focus:ring-indigo-500" 
               />
             </div>
             <div>
               <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 block">Vencimiento Técnico</label>
-              <input 
-                type="date" 
+              <DateInput
                 required 
                 value={formData.techExpiration || ''} 
-                onChange={e => setFormData({...formData, techExpiration: e.target.value})} 
-                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base" 
+                onChange={(isoDate) => setFormData({...formData, techExpiration: isoDate})} 
+                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base focus:ring-2 focus:ring-indigo-500" 
               />
             </div>
           </div>
