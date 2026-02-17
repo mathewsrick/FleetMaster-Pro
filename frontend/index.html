@@ -49,15 +49,6 @@
     <meta property="twitter:image:alt" content="FleetMaster Hub Logo" />
     <meta name="twitter:creator" content="@FleetMasterHub" />
     <meta name="twitter:site" content="@FleetMasterHub" />
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-26RRWRWGCK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-26RRWRWGCK');
-    </script>
     
     <!-- MS Tile Color -->
     <meta name="msapplication-TileColor" content="#4F46E5" />
@@ -75,6 +66,17 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
     <link rel="preconnect" href="https://checkout.wompi.co" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    
+    <!-- Google Analytics (GA4) - Tracking con send_page_view false para BrowserRouter -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-26RRWRWGCK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-26RRWRWGCK', {
+        send_page_view: false
+      });
+    </script>
     
     <!-- Verificación de propiedad del sitio -->
     <!-- Descomentar cuando tengas las cuentas configuradas -->

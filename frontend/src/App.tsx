@@ -14,6 +14,7 @@ import ConfirmAccount from '@/pages/ConfirmAccount';
 import PaymentResult from '@/pages/PaymentResult';
 import { db } from '@/services/db';
 import { AuthState, AccountStatus } from '@/types/types';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) => {
   if (!status) return null;
@@ -190,6 +191,30 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
   );
 };
 
+const AppContent: React.FC<{ auth: AuthState; login: (data: any) => void; logout: () => void; refreshAccount: () => Promise<void> }> = ({ auth, login, logout, refreshAccount }) => {
+  usePageTracking();
+
+  return (
+    <Routes>
+      <Route path="/" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Landing />} />
+      <Route path="/login" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLogin={login} />} />
+      <Route path="/confirm/:token" element={<ConfirmAccount />} />
+      <Route path="/pricing-checkout" element={auth.isAuthenticated ? <PricingCheckout /> : <Navigate to="/login" />} />
+      <Route path="/payment-result" element={auth.isAuthenticated ? <PaymentResult refreshAccount={refreshAccount} /> : <Navigate to="/login" />} />
+
+      <Route path="/dashboard" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Dashboard /></Layout> : <Navigate to="/" />} />
+      <Route path="/superadmin" element={auth.isAuthenticated && auth.user?.role === 'SUPERADMIN' ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><SuperAdmin /></Layout> : <Navigate to="/" />} />
+      <Route path="/vehicles" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Vehicles /></Layout> : <Navigate to="/" />} />
+      <Route path="/drivers" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Drivers /></Layout> : <Navigate to="/" />} />
+      <Route path="/payments" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Payments /></Layout> : <Navigate to="/" />} />
+      <Route path="/expenses" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Expenses /></Layout> : <Navigate to="/" />} />
+      <Route path="/reports" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Reports /></Layout> : <Navigate to="/" />} />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+};
+
 const App: React.FC = () => {
   const [auth, setAuth] = useState<AuthState>(() => {
     const saved = localStorage.getItem('fmp_auth');
@@ -231,23 +256,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Landing />} />
-        <Route path="/login" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLogin={login} />} />
-        <Route path="/confirm/:token" element={<ConfirmAccount />} />
-        <Route path="/pricing-checkout" element={auth.isAuthenticated ? <PricingCheckout /> : <Navigate to="/login" />} />
-        <Route path="/payment-result" element={auth.isAuthenticated ? <PaymentResult refreshAccount={refreshAccount} /> : <Navigate to="/login" />} />
-
-        <Route path="/dashboard" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Dashboard /></Layout> : <Navigate to="/" />} />
-        <Route path="/superadmin" element={auth.isAuthenticated && auth.user?.role === 'SUPERADMIN' ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><SuperAdmin /></Layout> : <Navigate to="/" />} />
-        <Route path="/vehicles" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Vehicles /></Layout> : <Navigate to="/" />} />
-        <Route path="/drivers" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Drivers /></Layout> : <Navigate to="/" />} />
-        <Route path="/payments" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Payments /></Layout> : <Navigate to="/" />} />
-        <Route path="/expenses" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Expenses /></Layout> : <Navigate to="/" />} />
-        <Route path="/reports" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Reports /></Layout> : <Navigate to="/" />} />
-
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <AppContent auth={auth} login={login} logout={logout} refreshAccount={refreshAccount} />
     </Router>
   );
 };
