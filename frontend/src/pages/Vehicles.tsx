@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { db, formatDateDisplay } from '@/services/db';
 import { Vehicle, Payment, Expense } from '@/types/types';
 import Swal from 'sweetalert2';
+import ResponsiveTable from '@/components/ResponsiveTable';
 
 const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
@@ -176,68 +177,98 @@ const Vehicles: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Modelo / Año</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Placa</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Conductor Asignado</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading && vehicles.length === 0 ? (
-                <tr><td colSpan={4} className="p-12 text-center text-indigo-600"><i className="fa-solid fa-circle-notch fa-spin text-2xl"></i></td></tr>
-              ) : vehicles.map(v => (
-                <tr key={v.id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-6 py-4 font-bold text-slate-800">
-                    {v.model} <span className="text-xs text-slate-400 ml-1 font-medium">{v.year}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 uppercase font-mono tracking-widest text-xs">{v.licensePlate}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {v.driverName ? (
-                       <div className="flex items-center gap-2">
-                          <i className="fa-solid fa-circle-user text-indigo-400"></i>
-                          <span className="text-sm font-bold text-slate-700">{v.driverName}</span>
-                       </div>
-                    ) : (
-                       <span className="text-[10px] font-bold text-slate-300 italic uppercase bg-slate-50 px-2 py-1 rounded-lg tracking-wider">Disponible</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                       <button title="Ver Detalle Operativo" onClick={() => handleShowDetail(v)} className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all shadow-sm border border-transparent hover:border-indigo-100"><i className="fa-solid fa-eye"></i></button>
-                       <button onClick={() => {
-                          setEditingId(v.id);
-                          setFormData({
-                            id: v.id,
-                            year: v.year,
-                            licensePlate: v.licensePlate,
-                            model: v.model,
-                            color: v.color,
-                            purchaseDate: v.purchaseDate,
-                            insurance: v.insurance,
-                            insuranceNumber: v.insuranceNumber,
-                            soatExpiration: v.soatExpiration,
-                            techExpiration: v.techExpiration,
-                            rentaValue: v.rentaValue,
-                            driverId: v.driverId || null,
-                            photos: v.photos || []
-                          });
-                          setPreviews(v.photos || []);
-                          setPendingFiles([]);
-                          setIsModalOpen(true);
-                       }} className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"><i className="fa-solid fa-pen-to-square"></i></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ResponsiveTable
+          columns={[
+            {
+              key: 'model',
+              label: 'Modelo / Año',
+              mobileLabel: 'Vehículo',
+              mobileOrder: 0,
+              render: (_, v: Vehicle) => (
+                <div>
+                  <span className="font-bold text-slate-800">{v.model}</span>
+                  <span className="text-xs text-slate-400 ml-1 font-medium">{v.year}</span>
+                </div>
+              )
+            },
+            {
+              key: 'licensePlate',
+              label: 'Placa',
+              mobileOrder: 1,
+              render: (plate: string) => (
+                <span className="font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 uppercase font-mono tracking-widest text-xs">
+                  {plate}
+                </span>
+              )
+            },
+            {
+              key: 'driverName',
+              label: 'Conductor Asignado',
+              mobileLabel: 'Conductor',
+              mobileOrder: 2,
+              render: (name: string | null) => name ? (
+                <div className="flex items-center gap-2">
+                  <i className="fa-solid fa-circle-user text-indigo-400"></i>
+                  <span className="text-sm font-bold text-slate-700 truncate">{name}</span>
+                </div>
+              ) : (
+                <span className="text-[10px] font-bold text-slate-300 italic uppercase bg-slate-50 px-2 py-1 rounded-lg tracking-wider">
+                  Disponible
+                </span>
+              )
+            },
+            {
+              key: 'actions',
+              label: 'Acciones',
+              className: 'text-right',
+              mobileOrder: 3,
+              render: (_, v: Vehicle) => (
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    title="Ver Detalle Operativo"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleShowDetail(v);
+                    }}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all shadow-sm border border-transparent hover:border-indigo-100"
+                  >
+                    <i className="fa-solid fa-eye"></i>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingId(v.id);
+                      setFormData({
+                        id: v.id,
+                        year: v.year,
+                        licensePlate: v.licensePlate,
+                        model: v.model,
+                        color: v.color,
+                        purchaseDate: v.purchaseDate,
+                        insurance: v.insurance,
+                        insuranceNumber: v.insuranceNumber,
+                        soatExpiration: v.soatExpiration,
+                        techExpiration: v.techExpiration,
+                        rentaValue: v.rentaValue,
+                        driverId: v.driverId || null,
+                        photos: v.photos || []
+                      });
+                      setPreviews(v.photos || []);
+                      setPendingFiles([]);
+                      setIsModalOpen(true);
+                    }}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
+                </div>
+              )
+            }
+          ]}
+          data={vehicles}
+          loading={loading}
+          emptyMessage="No hay vehículos registrados"
+        />
       </div>
 
       {/* Modal Detalle Operativo */}

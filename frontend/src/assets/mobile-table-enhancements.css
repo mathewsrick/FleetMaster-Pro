@@ -1,0 +1,235 @@
+/* Mejoras específicas para tablas móviles */
+
+/* Optimización de truncado de texto */
+.mobile-truncate-1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.mobile-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Cards con animación de entrada */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-card-enter {
+  animation: slideInUp 0.3s ease-out;
+}
+
+/* Mejora de toque en móviles */
+@media (max-width: 768px) {
+  /* Asegurar que los botones sean táctiles */
+  button, a[role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Deshabilitar zoom en inputs en iOS */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Mejorar el aspecto de selects nativos */
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+  }
+
+  /* Scroll suave en contenedores */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Cards con mejor feedback táctil */
+  .mobile-card {
+    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+
+  .mobile-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  /* Paginación responsive */
+  .pagination-mobile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .pagination-mobile button {
+    flex-shrink: 0;
+  }
+
+  /* Headers sticky en modales */
+  .modal-header-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: white;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Mejora de badges en móvil */
+  .badge-mobile {
+    font-size: 10px;
+    padding: 0.25rem 0.5rem;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  /* Grid responsive para formularios */
+  .form-grid-mobile {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Loading skeleton para cards */
+  .skeleton-card {
+    background: linear-gradient(
+      90deg,
+      #f1f5f9 0%,
+      #e2e8f0 50%,
+      #f1f5f9 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 0.75rem;
+    height: 120px;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* Safe area para dispositivos con notch */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Mejora de modales en móvil */
+  .modal-mobile {
+    max-height: 90vh;
+    max-height: 90dvh; /* Dynamic viewport height */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Botones de acción flotantes */
+  .fab-mobile {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 50;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Espaciado consistente */
+  .mobile-spacing {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Texto responsive */
+  .text-mobile-sm {
+    font-size: 0.75rem; /* 12px */
+  }
+
+  .text-mobile-base {
+    font-size: 0.875rem; /* 14px */
+  }
+
+  .text-mobile-lg {
+    font-size: 1rem; /* 16px */
+  }
+}
+
+/* Tablets en portrait */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Ajustes para tablets */
+  .table-cell-tablet {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Headers de tabla más compactos */
+  .table-header-tablet {
+    font-size: 0.625rem; /* 10px */
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+}
+
+/* Utilidad para ocultar scrollbar pero mantener funcionalidad */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scroll en toda la app */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevenir el pull-to-refresh en PWA */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* Mejora de performance en animaciones */
+.will-animate {
+  will-change: transform, opacity;
+}
+
+/* Reset de will-change después de la animación */
+.will-animate:not(:hover):not(:active) {
+  will-change: auto;
+}

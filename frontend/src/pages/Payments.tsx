@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, formatDateDisplay } from '@/services/db';
 import { Payment, Driver, Vehicle, Arrear } from '@/types/types';
 import Swal from 'sweetalert2';
+import ResponsiveTable from '@/components/ResponsiveTable';
 
 const Payments: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -176,60 +177,94 @@ const Payments: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Conductor / Vehículo</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tipo</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Monto</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading && payments.length === 0 ? (
-                <tr><td colSpan={6} className="p-12 text-center text-indigo-600"><i className="fa-solid fa-circle-notch fa-spin text-2xl"></i></td></tr>
-              ) : payments.length === 0 ? (
-                <tr><td colSpan={6} className="p-12 text-center text-slate-400 font-bold italic">No hay registros para este periodo.</td></tr>
-              ) : (
-                payments.map(p => {
-                  const driver = drivers.find(d => d.id === p.driverId);
-                  const vehicle = vehicles.find(v => v.id === p.vehicleId);
-                  return (
-                    <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
-                      <td className="px-6 py-4 text-xs text-slate-500 font-mono">{formatDateDisplay(p.date).split(' ')[0].replace(',', '')}</td>
-                      <td className="px-6 py-4">
-                        <p className="font-bold text-slate-800 text-xs">{driver ? `${driver.firstName} ${driver.lastName}` : 'N/A'}</p>
-                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-tighter">{vehicle?.licensePlate}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[10px] font-black px-2 py-1 rounded-lg border uppercase tracking-widest ${p.type === 'arrear_payment' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
-                          {p.type === 'arrear_payment' ? 'ABONO MORA' : 'RENTA'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 font-black text-slate-900">${Number(p.amount).toLocaleString()}</td>
-                      <td className="px-6 py-4">
-                        <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 uppercase tracking-widest inline-flex items-center gap-1">
-                          <i className="fa-solid fa-check-double text-[8px]"></i> Recibido
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button 
-                          onClick={() => handleDelete(p.id)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all mx-auto mr-0"
-                        >
-                          <i className="fa-solid fa-trash-can text-sm text-rose-400"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        <ResponsiveTable
+          columns={[
+            {
+              key: 'date',
+              label: 'Fecha',
+              mobileOrder: 2,
+              render: (date: string) => (
+                <span className="text-xs text-slate-500 font-mono">
+                  {formatDateDisplay(date).split(' ')[0].replace(',', '')}
+                </span>
+              )
+            },
+            {
+              key: 'driver',
+              label: 'Conductor / Vehículo',
+              mobileLabel: 'Conductor',
+              mobileOrder: 0,
+              render: (_, p: Payment) => {
+                const driver = drivers.find(d => d.id === p.driverId);
+                const vehicle = vehicles.find(v => v.id === p.vehicleId);
+                return (
+                  <div>
+                    <p className="font-bold text-slate-800 text-xs truncate">
+                      {driver ? `${driver.firstName} ${driver.lastName}` : 'N/A'}
+                    </p>
+                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-tighter">
+                      {vehicle?.licensePlate}
+                    </p>
+                  </div>
+                );
+              }
+            },
+            {
+              key: 'type',
+              label: 'Tipo',
+              mobileOrder: 3,
+              render: (type: string) => (
+                <span className={`text-[10px] font-black px-2 py-1 rounded-lg border uppercase tracking-widest whitespace-nowrap ${
+                  type === 'arrear_payment' 
+                    ? 'bg-amber-50 text-amber-600 border-amber-100' 
+                    : 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                }`}>
+                  {type === 'arrear_payment' ? 'ABONO MORA' : 'RENTA'}
+                </span>
+              )
+            },
+            {
+              key: 'amount',
+              label: 'Monto',
+              mobileOrder: 1,
+              render: (amount: number) => (
+                <span className="font-black text-slate-900">
+                  ${Number(amount).toLocaleString()}
+                </span>
+              )
+            },
+            {
+              key: 'status',
+              label: 'Estado',
+              hideOnMobile: true,
+              render: () => (
+                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 uppercase tracking-widest inline-flex items-center gap-1">
+                  <i className="fa-solid fa-check-double text-[8px]"></i> Recibido
+                </span>
+              )
+            },
+            {
+              key: 'actions',
+              label: 'Acciones',
+              className: 'text-right',
+              mobileOrder: 4,
+              render: (_, p: Payment) => (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(p.id);
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all mx-auto md:mr-0"
+                >
+                  <i className="fa-solid fa-trash-can text-sm text-rose-400"></i>
+                </button>
+              )
+            }
+          ]}
+          data={payments}
+          loading={loading}
+          emptyMessage="No hay registros para este periodo."
+        />
 
         <div className="px-6 py-4 bg-slate-50 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-xs font-bold text-slate-400 tracking-tight text-center sm:text-left">

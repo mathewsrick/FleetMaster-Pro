@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, formatDateDisplay } from '@/services/db';
 import { Driver, Vehicle, Payment, Arrear } from '@/types/types';
 import Swal from 'sweetalert2';
+import ResponsiveTable from '@/components/ResponsiveTable';
 
 const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
@@ -161,68 +162,109 @@ const Drivers: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Conductor</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Vehículo Asignado</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado de Cuenta</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading && drivers.length === 0 ? (
-                <tr><td colSpan={4} className="p-12 text-center text-indigo-600"><i className="fa-solid fa-circle-notch fa-spin text-2xl"></i></td></tr>
-              ) : drivers.map(d => (
-                <tr key={d.id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-6 py-4">
-                    <p className="font-bold text-slate-900">{d.firstName} {d.lastName}</p>
-                    <p className="text-[10px] font-mono text-slate-400 uppercase tracking-tighter">ID: {d.idNumber} | {d.email || 'Sin email'}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    {d.vehiclePlate ? (
-                      <div className="flex items-center gap-2">
-                         <i className="fa-solid fa-car-side text-indigo-300"></i>
-                         <span className="text-[10px] font-black bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase tracking-widest shadow-sm font-mono">{d.vehiclePlate}</span>
-                      </div>
-                    ) : (
-                      <span className="text-[10px] font-bold text-slate-300 italic uppercase bg-slate-50 px-2 py-1 rounded-lg tracking-wider">Sin Vehículo</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {d.totalDebt && d.totalDebt > 0 ? (
-                      <div className="flex items-center gap-2">
-                         <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shadow-sm shadow-rose-200"></span>
-                         <span className="text-sm font-black text-rose-600">${Number(d.totalDebt).toLocaleString()}</span>
-                         <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest ml-1 bg-rose-50 px-1.5 py-0.5 rounded">MORA</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200"></span>
-                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-1.5 py-0.5 rounded">AL DÍA</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button title="Ver Detalle y Documentos" onClick={() => handleShowDetail(d)} className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all border border-transparent hover:border-indigo-100 shadow-sm"><i className="fa-solid fa-eye"></i></button>
-                      <button onClick={() => {
-                        setEditingId(d.id);
-                        setFormData(d);
-                        setPreviews({ license: d.licensePhoto || '', idCard: d.idPhoto || '' });
-                        setPendingLicense(null);
-                        setPendingIdCard(null);
-                        setIsModalOpen(true);
-                      }} className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"><i className="fa-solid fa-pen-to-square"></i></button>
-                      <button onClick={() => handleDelete(d.id)} className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"><i className="fa-solid fa-trash"></i></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ResponsiveTable
+          columns={[
+            {
+              key: 'name',
+              label: 'Conductor',
+              mobileOrder: 0,
+              render: (_, d: Driver) => (
+                <div>
+                  <p className="font-bold text-slate-900 truncate">{d.firstName} {d.lastName}</p>
+                  <p className="text-[10px] font-mono text-slate-400 uppercase tracking-tighter truncate">
+                    ID: {d.idNumber} {d.email && `| ${d.email}`}
+                  </p>
+                </div>
+              )
+            },
+            {
+              key: 'vehiclePlate',
+              label: 'Vehículo Asignado',
+              mobileLabel: 'Vehículo',
+              mobileOrder: 1,
+              render: (plate: string | null) => plate ? (
+                <div className="flex items-center gap-2">
+                  <i className="fa-solid fa-car-side text-indigo-300"></i>
+                  <span className="text-[10px] font-black bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase tracking-widest shadow-sm font-mono">
+                    {plate}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-[10px] font-bold text-slate-300 italic uppercase bg-slate-50 px-2 py-1 rounded-lg tracking-wider">
+                  Sin Vehículo
+                </span>
+              )
+            },
+            {
+              key: 'totalDebt',
+              label: 'Estado de Cuenta',
+              mobileLabel: 'Estado',
+              mobileOrder: 2,
+              render: (debt: number | null) => debt && debt > 0 ? (
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shadow-sm shadow-rose-200"></span>
+                  <span className="text-sm font-black text-rose-600">${Number(debt).toLocaleString()}</span>
+                  <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest ml-1 bg-rose-50 px-1.5 py-0.5 rounded">
+                    MORA
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200"></span>
+                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-1.5 py-0.5 rounded">
+                    AL DÍA
+                  </span>
+                </div>
+              )
+            },
+            {
+              key: 'actions',
+              label: 'Acciones',
+              className: 'text-right',
+              mobileOrder: 3,
+              render: (_, d: Driver) => (
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    title="Ver Detalle y Documentos"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleShowDetail(d);
+                    }}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all border border-transparent hover:border-indigo-100 shadow-sm"
+                  >
+                    <i className="fa-solid fa-eye"></i>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingId(d.id);
+                      setFormData(d);
+                      setPreviews({ license: d.licensePhoto || '', idCard: d.idPhoto || '' });
+                      setPendingLicense(null);
+                      setPendingIdCard(null);
+                      setIsModalOpen(true);
+                    }}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(d.id);
+                    }}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                  >
+                    <i className="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              )
+            }
+          ]}
+          data={drivers}
+          loading={loading}
+          emptyMessage="No hay conductores registrados"
+        />
       </div>
 
       {/* Modal Detalle Integral */}
