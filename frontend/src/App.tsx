@@ -32,6 +32,7 @@ const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) =>
 };
 
 const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username: string; role?: string; status?: AccountStatus | null }> = ({ children, logout, username, role, status }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: 'fa-chart-pie' },
@@ -46,40 +47,76 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
     navItems.unshift({ path: '/superadmin', label: 'Admin SaaS', icon: 'fa-shield-halved' });
   }
 
+    const closeMenu = () => setIsMobileMenuOpen(false);
+
+  const SidebarContent = () => (
+    <>
+      <div className="p-8 flex items-center justify-between lg:justify-start gap-3">
+        <div className="flex items-center gap-3">
+          <div className="bg-indigo-600 p-2 rounded-lg text-white">
+            <i className="fa-solid fa-truck-fast"></i>
+          </div>
+          <span className="font-black text-xl tracking-tight text-white">FleetMaster</span>
+        </div>
+        <button onClick={closeMenu} className="lg:hidden text-slate-400 hover:text-white">
+          <i className="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+      <nav className="flex-1 px-4 space-y-2">
+        {navItems.map(item => (
+          <Link
+            key={item.path}
+            to={item.path}
+            onClick={closeMenu}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${location.pathname === item.path ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+          >
+            <i className={`fa-solid ${item.icon} w-5`}></i>
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+      <div className="p-6 border-t border-white/5">
+        <button onClick={() => { logout(); closeMenu(); }} className="flex items-center gap-3 px-4 py-3 w-full text-rose-400 hover:text-rose-300 font-bold transition-colors">
+          <i className="fa-solid fa-right-from-bracket"></i>
+          Cerrar Sesión
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <TrialBanner status={status} />
-      <div className="flex flex-1">
-        <aside className="w-64 bg-slate-900 text-white hidden lg:flex flex-col">
-          <div className="p-8 flex items-center gap-3">
-            <div className="bg-indigo-600 p-2 rounded-lg">
-              <i className="fa-solid fa-truck-fast"></i>
-            </div>
-            <span className="font-black text-lg tracking-tight">FleetMaster Hub</span>
-          </div>
-          <nav className="flex-1 px-4 space-y-2">
-            {navItems.map(item => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${location.pathname === item.path ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
-              >
-                <i className={`fa-solid ${item.icon} w-5`}></i>
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="p-6 border-t border-white/5">
-            <button onClick={logout} className="flex items-center gap-3 px-4 py-3 w-full text-rose-400 hover:text-rose-300 font-bold transition-colors">
-              <i className="fa-solid fa-right-from-bracket"></i>
-              Cerrar Sesión
-            </button>
-          </div>
+
+      {/* Mobile Sidebar Overlay */}
+      <div
+        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+      >
+        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeMenu}></div>
+        <aside className={`absolute top-0 left-0 bottom-0 w-72 bg-slate-900 flex flex-col transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <SidebarContent />
+        </aside>
+      </div>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop Sidebar */}
+        <aside className="w-64 bg-slate-900 hidden lg:flex flex-col flex-shrink-0">
+          <SidebarContent />
         </aside>
 
         <main className="flex-1 overflow-auto">
-          <header className="bg-white h-20 border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-40">
-            <div className="flex items-center gap-4 ml-auto">
+          <header className="bg-white h-20 border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-40">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden text-slate-700 hover:text-indigo-600 transition-colors p-2"
+              aria-label="Abrir menú"
+            >
+              <i className="fa-solid fa-bars text-2xl"></i>
+            </button>
+
+            {/* User Info */}
+            <div className="flex items-center gap-3 sm:gap-4 ml-auto">
               <div className="text-right">
                 <p className="text-sm font-black text-slate-900">{username}</p>
                 <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
