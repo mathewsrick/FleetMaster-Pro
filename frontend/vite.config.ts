@@ -39,7 +39,9 @@ export default defineConfig(({ mode }) => {
               'charts': ['recharts'],
             }
           }
-        }
+        },
+        // Copiar archivos SEO al build
+        copyPublicDir: true
       }
     };
 });

@@ -90,8 +90,10 @@ const Expenses: React.FC = () => {
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Gastos de Flota</h1>
           <p className="text-slate-500 text-sm font-medium tracking-tight uppercase tracking-widest text-[10px]">Egresos Operativos</p>
         </div>
-        <button onClick={() => setIsModalOpen(true)} className="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg flex items-center gap-2 active:scale-95">
-          <i className="fa-solid fa-plus"></i> Registrar Gasto
+        <button onClick={() => setIsModalOpen(true)} className="w-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg flex items-center gap-2 active:scale-95">
+          <span className='m-auto'>
+            <i className="fa-solid fa-plus"></i> Registrar Gasto
+          </span>
         </button>
       </div>
 

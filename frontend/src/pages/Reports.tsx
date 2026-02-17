@@ -128,19 +128,19 @@ const Reports: React.FC = () => {
       </div>
 
       {/* Tabs - Pills style con scroll horizontal */}
-      <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 sm:pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar">
+      <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar">
         {availableTabs.map(tab => (
           <button 
             key={tab.id} 
             onClick={() => setActiveTab(tab.id as any)} 
-            className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 text-[10px] sm:text-xs font-black rounded-xl transition-all whitespace-nowrap shadow-sm ${
+            className={`flex items-center gap-2 sm:gap-2.5 px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-black rounded-xl transition-all whitespace-nowrap min-w-fit ${
               activeTab === tab.id 
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' 
-                : 'bg-white text-slate-600 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
+                ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200 scale-105' 
+                : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 hover:scale-105 shadow-md'
             }`}
           >
-            <i className={`fa-solid ${tab.icon} text-xs`}></i> 
-            <span className="uppercase tracking-wide font-black">{tab.label.split(' ')[0]}</span>
+            <i className={`fa-solid ${tab.icon} text-sm sm:text-base`}></i> 
+            <span className="uppercase tracking-wider font-black">{tab.label.split(' ')[0]}</span>
           </button>
         ))}
       </div>

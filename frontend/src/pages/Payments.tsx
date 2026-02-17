@@ -173,7 +173,9 @@ const Payments: React.FC = () => {
             }}
             className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-100/50 active:scale-95 transition-all uppercase text-[10px] tracking-widest"
           >
-            <i className="fa-solid fa-cash-register"></i> Nuevo Ingreso
+            <span className='m-auto'>
+              <i className="fa-solid fa-cash-register"></i> Nuevo Ingreso
+            </span>
           </button>
         </div>
       </div>

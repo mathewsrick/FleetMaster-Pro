@@ -184,9 +184,42 @@ const frontendPath = path.join(process.cwd(), 'dist');
 
 if (fs.existsSync(frontendPath)) {
 
+  // Servir robots.txt y sitemap.xml directamente desde el build
+  app.get('/robots.txt', (req, res) => {
+    const robotsPath = path.join(frontendPath, 'robots.txt');
+    if (fs.existsSync(robotsPath)) {
+      res.type('text/plain');
+      res.sendFile(robotsPath);
+    } else {
+      res.status(404).end();
+    }
+  });
+
+  app.get('/sitemap.xml', (req, res) => {
+    const sitemapPath = path.join(frontendPath, 'sitemap.xml');
+    if (fs.existsSync(sitemapPath)) {
+      res.type('application/xml');
+      res.sendFile(sitemapPath);
+    } else {
+      res.status(404).end();
+    }
+  });
+
+  // Servir archivos estáticos con cache headers
   app.use(express.static(frontendPath, {
-    index: false,   // 👈 importante
-    fallthrough: true
+    index: false,
+    fallthrough: true,
+    maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
+    setHeaders: (res, filepath) => {
+      // Cache agresivo para assets con hash
+      if (filepath.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp)$/)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+      // No cache para HTML
+      if (filepath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
+    }
   }));
 
   app.get('*', (req, res) => {
@@ -194,6 +227,9 @@ if (fs.existsSync(frontendPath)) {
       return res.status(404).end();
     }
 
+    // Headers SEO para el HTML principal
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
     res.sendFile(path.join(frontendPath, 'index.html'));
   });
 

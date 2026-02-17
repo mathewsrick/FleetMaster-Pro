@@ -144,7 +144,6 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
             {/* Mobile Menu Button */}
             <button
               onClick={() => {
-                console.log('Menu button clicked!');
                 setIsMobileMenuOpen(true);
               }}
               className="lg:hidden flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 active:bg-indigo-50 transition-all rounded-xl"

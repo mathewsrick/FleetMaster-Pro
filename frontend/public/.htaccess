@@ -1,0 +1,69 @@
+# .htaccess para FleetMaster Hub (Apache)
+# Si usas Apache en lugar de Nginx
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # Servir robots.txt y sitemap.xml sin redirección
+  RewriteRule ^robots\.txt$ - [L]
+  RewriteRule ^sitemap\.xml$ - [L]
+  
+  # No reescribir archivos o directorios existentes
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  
+  # Redirigir todo a index.html para SPA
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# Seguridad
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set X-XSS-Protection "1; mode=block"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Compresión
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Cache Control
+<IfModule mod_expires.c>
+  ExpiresActive On
+  
+  # Imágenes
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/x-icon "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  
+  # CSS y JavaScript
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType text/javascript "access plus 1 month"
+  
+  # Fuentes
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+  ExpiresByType font/ttf "access plus 1 year"
+  
+  # HTML - sin cache
+  ExpiresByType text/html "access plus 0 seconds"
+  
+  # Manifest y robots
+  ExpiresByType application/manifest+json "access plus 1 week"
+  ExpiresByType text/plain "access plus 1 week"
+  ExpiresByType application/xml "access plus 1 week"
+</IfModule>
+
+# Permitir acceso a robots.txt y sitemap.xml
+<FilesMatch "^(robots\.txt|sitemap\.xml)$">
+  Order allow,deny
+  Allow from all
+</FilesMatch>

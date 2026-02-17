@@ -150,7 +150,7 @@ const Vehicles: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Vehículos</h1>
           <div className="flex items-center gap-2 mt-1">
