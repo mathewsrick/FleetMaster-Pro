@@ -108,42 +108,46 @@ const Reports: React.FC = () => {
   const totalPages = Math.ceil(filteredData.total / itemsPerPage);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Reportes Administrativos</h1>
-          <p className="text-slate-500 text-sm">Análisis consolidado — Plan {plan?.toUpperCase()}</p>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">Reportes</h1>
+          <p className="text-slate-500 text-xs sm:text-sm font-medium">Plan {plan?.toUpperCase()}</p>
         </div>
         
         {canExportExcel && (
           <button 
             onClick={() => exportToExcel('report-table', `reporte_${activeTab}`)} 
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-black flex items-center gap-2 shadow-lg shadow-emerald-100 active:scale-95 transition-all text-xs uppercase tracking-widest"
+            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-100 active:scale-95 transition-all text-[10px] sm:text-xs uppercase tracking-widest"
           >
-            <i className="fa-solid fa-file-excel"></i> Exportar a Excel
+            <i className="fa-solid fa-file-excel"></i> 
+            <span className="hidden sm:inline">Exportar Excel</span>
+            <span className="sm:hidden">Excel</span>
           </button>
         )}
       </div>
 
-      <div className="flex border-b border-slate-200 overflow-x-auto no-scrollbar bg-white rounded-t-xl">
+      {/* Tabs - Pills style con scroll horizontal */}
+      <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 sm:pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar">
         {availableTabs.map(tab => (
           <button 
             key={tab.id} 
             onClick={() => setActiveTab(tab.id as any)} 
-            className={`flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 text-[10px] sm:text-xs font-black rounded-xl transition-all whitespace-nowrap shadow-sm ${
               activeTab === tab.id 
-                ? 'border-indigo-600 text-indigo-600 bg-indigo-50/30' 
-                : 'border-transparent text-slate-400 hover:text-slate-600'
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' 
+                : 'bg-white text-slate-600 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
             }`}
           >
-            <i className={`fa-solid ${tab.icon}`}></i> {tab.label}
+            <i className={`fa-solid ${tab.icon} text-xs`}></i> 
+            <span className="uppercase tracking-wide font-black">{tab.label.split(' ')[0]}</span>
           </button>
         ))}
       </div>
 
       {/* Filtros dinámicos según pestaña */}
       {(activeTab === 'income' || activeTab === 'expenses' || (activeTab === 'drivers' && hasAdvancedReports)) && (
-        <div className="bg-white px-6 py-4 border-x border-slate-200 flex flex-wrap gap-4 items-center animate-in fade-in duration-300">
+        <div className="bg-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center animate-in fade-in duration-300">
           {(activeTab === 'income' || activeTab === 'expenses') && (
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vehículo:</span>
@@ -173,8 +177,9 @@ const Reports: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-b-xl shadow-sm border border-slate-200 border-t-0 overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        {/* Vista Desktop - Tabla tradicional */}
+        <div className="hidden md:block overflow-x-auto">
           <table id="report-table" className="w-full text-left">
             {activeTab === 'general' && (
               <>
@@ -330,25 +335,198 @@ const Reports: React.FC = () => {
           </table>
         </div>
 
+        {/* Vista Móvil - Cards */}
+        <div className="md:hidden">
+          {activeTab === 'general' && (
+            <div className="space-y-3 p-3">
+              {data.vehicles.map(v => {
+                const driver = data.drivers.find(d => d.id === v.driverId);
+                const vPayments = data.payments.filter(p => p.vehicleId === v.id).reduce((sum, p) => sum + Number(p.amount), 0);
+                const vDebt = data.arrears.filter(a => a.vehicleId === v.id && a.status === 'pending').reduce((sum, a) => sum + Number(a.amountOwed), 0);
+                return (
+                  <div key={v.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                      <div>
+                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Vehículo</div>
+                        <div className="font-black text-indigo-600 font-mono text-sm uppercase">{v.licensePlate}</div>
+                        <div className="text-[10px] text-slate-500 font-medium mt-0.5">{v.model}</div>
+                      </div>
+                      <div className="text-[8px] font-black bg-slate-50 text-slate-600 px-2 py-1 rounded-lg border border-slate-200 uppercase tracking-wider">
+                        Renta: ${v.rentaValue.toLocaleString()}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Conductor</span>
+                        <span className="text-xs font-bold text-slate-700">
+                          {driver ? `${driver.firstName} ${driver.lastName}` : <span className="text-slate-300 italic">Sin asignar</span>}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Recaudado</span>
+                        <span className="text-sm font-black text-emerald-600">${vPayments.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Mora</span>
+                        <span className="text-sm font-black text-rose-600">${vDebt.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {activeTab === 'drivers' && hasAdvancedReports && (
+            <div className="space-y-3 p-3">
+              {filteredData.list.map((d: any) => {
+                const vehicle = data.vehicles.find(v => v.driverId === d.id);
+                const dPayments = data.payments.filter(p => p.driverId === d.id).reduce((sum, p) => sum + Number(p.amount), 0);
+                const dDebt = data.arrears.filter(a => a.driverId === d.id && a.status === 'pending').reduce((sum, a) => sum + Number(a.amountOwed), 0);
+                return (
+                  <div key={d.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                      <div className="flex-1">
+                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Conductor</div>
+                        <div className="font-bold text-slate-800 text-sm">{d.firstName} {d.lastName}</div>
+                      </div>
+                      {dDebt > 0 ? (
+                        <span className="text-[8px] font-black bg-rose-50 text-rose-600 px-2 py-1 rounded-full border border-rose-100">MOROSO</span>
+                      ) : (
+                        <span className="text-[8px] font-black bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full border border-emerald-100">AL DÍA</span>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Vehículo</span>
+                        {vehicle ? (
+                          <span className="text-[9px] font-black bg-indigo-50 text-indigo-600 px-2 py-1 rounded-lg border border-indigo-100 uppercase">{vehicle.licensePlate}</span>
+                        ) : (
+                          <span className="text-[9px] text-slate-300 italic">Ninguno</span>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Pagado</span>
+                        <span className="text-sm font-black text-emerald-600">${dPayments.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Mora Pendiente</span>
+                        <span className="text-sm font-black text-rose-600">${dDebt.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {activeTab === 'income' && !isRestricted && (
+            <div className="space-y-3 p-3">
+              {filteredData.list.map((p: any) => (
+                <div key={p.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <div>
+                      <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Ingreso</div>
+                      <div className="font-mono text-[10px] text-slate-500">{formatDateDisplay(p.date)}</div>
+                    </div>
+                    <div className="text-lg font-black text-emerald-600">${p.amount.toLocaleString()}</div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Vehículo</span>
+                      <span className="text-xs font-bold text-indigo-600 uppercase font-mono">
+                        {data.vehicles.find(v => v.id === p.vehicleId)?.licensePlate}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tipo</span>
+                      <span className="text-[9px] font-black uppercase tracking-wider">
+                        {p.type === 'renta' ? '🏠 Renta' : '⚠️ Mora'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'expenses' && !isRestricted && (
+            <div className="space-y-3 p-3">
+              {filteredData.list.map((e: any) => (
+                <div key={e.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Gasto</div>
+                      <div className="font-bold text-slate-800 text-sm truncate">{e.description}</div>
+                      <div className="font-mono text-[10px] text-slate-500 mt-0.5">{formatDateDisplay(e.date)}</div>
+                    </div>
+                    <div className="text-lg font-black text-rose-600 ml-2">-${e.amount.toLocaleString()}</div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Vehículo</span>
+                    <span className="text-xs font-bold text-indigo-600 uppercase font-mono">
+                      {data.vehicles.find(v => v.id === e.vehicleId)?.licensePlate || 'General'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'consolidated' && (
+            <div className="p-4 space-y-4">
+              <div className="bg-slate-900 text-white p-4 rounded-xl">
+                <h3 className="font-black text-sm uppercase tracking-wider">Balance General P&L</h3>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
+                  <div className="text-[9px] font-black text-emerald-700 uppercase tracking-widest mb-2">Ingresos Totales</div>
+                  <div className="text-2xl font-black text-emerald-600">${consolidatedStats.totalIncome.toLocaleString()}</div>
+                </div>
+                
+                <div className="bg-rose-50 border border-rose-100 p-4 rounded-xl">
+                  <div className="text-[9px] font-black text-rose-700 uppercase tracking-widest mb-2">Gastos Operativos</div>
+                  <div className="text-2xl font-black text-rose-600">-${consolidatedStats.totalExpenses.toLocaleString()}</div>
+                </div>
+                
+                <div className="bg-indigo-600 text-white p-5 rounded-xl shadow-lg">
+                  <div className="text-[9px] font-black uppercase tracking-widest mb-2 opacity-80">Utilidad Neta Disponible</div>
+                  <div className="text-3xl font-black">${consolidatedStats.balance.toLocaleString()}</div>
+                </div>
+                
+                <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl">
+                  <div className="text-[9px] font-black text-amber-700 uppercase tracking-widest mb-2">Cartera Pendiente (Moras)</div>
+                  <div className="text-xl font-black text-amber-600">${consolidatedStats.totalDebt.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Paginación */}
         {(activeTab === 'income' || activeTab === 'expenses' || (activeTab === 'drivers' && hasAdvancedReports)) && (
-          <div className="px-6 py-4 bg-slate-50 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs font-bold text-slate-400 tracking-tight">
-              Mostrando página <span className="text-slate-900">{currentPage}</span> de <span className="text-slate-900">{totalPages || 1}</span> 
-              <span className="mx-2 opacity-30">•</span> {filteredData.total} registros encontrados
+          <div className="px-4 sm:px-6 py-3 sm:py-4 bg-slate-50 border-t flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+            <div className="text-[10px] sm:text-xs font-bold text-slate-400 tracking-tight text-center sm:text-left">
+              Página <span className="text-slate-900">{currentPage}</span> de <span className="text-slate-900">{totalPages || 1}</span> 
+              <span className="mx-2 opacity-30">•</span> {filteredData.total} registros
             </div>
             <div className="flex gap-2">
               <button 
                 disabled={currentPage === 1} 
                 onClick={() => setCurrentPage(p => p - 1)} 
-                className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all shadow-sm"
+                className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all shadow-sm active:scale-95"
               >
                 <i className="fa-solid fa-chevron-left text-xs"></i>
               </button>
               <button 
                 disabled={currentPage === totalPages || filteredData.total === 0} 
                 onClick={() => setCurrentPage(p => p + 1)} 
-                className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all shadow-sm"
+                className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all shadow-sm active:scale-95"
               >
                 <i className="fa-solid fa-chevron-right text-xs"></i>
               </button>
@@ -358,13 +536,13 @@ const Reports: React.FC = () => {
       </div>
 
       {isRestricted && (
-        <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex items-center gap-4 animate-in slide-in-from-bottom duration-500">
+        <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex flex-col sm:flex-row items-center gap-3 sm:gap-4 animate-in slide-in-from-bottom duration-500">
           <div className="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
             <i className="fa-solid fa-lock text-sm"></i>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-indigo-900">Libro de Gastos e Ingresos Bloqueado</p>
-            <p className="text-xs text-indigo-600">Sube a un plan <span className="font-black uppercase">Pro</span> para ver desgloses detallados y habilitar exportación a Excel.</p>
+          <div className="flex-1 text-center sm:text-left">
+            <p className="text-xs sm:text-sm font-bold text-indigo-900">Libro de Gastos e Ingresos Bloqueado</p>
+            <p className="text-[10px] sm:text-xs text-indigo-600 mt-1">Sube a plan <span className="font-black uppercase">Pro</span> para desgloses detallados y Excel.</p>
           </div>
         </div>
       )}
