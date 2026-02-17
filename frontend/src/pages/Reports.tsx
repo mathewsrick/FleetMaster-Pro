@@ -127,19 +127,36 @@ const Reports: React.FC = () => {
         )}
       </div>
 
-      {/* Tabs - Pills style con scroll horizontal */}
-      <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar">
+      {/* Tabs - Desktop: estilo clásico, Mobile: Pills */}
+      <div className="hidden sm:flex border-b border-slate-200 overflow-x-auto no-scrollbar bg-white rounded-t-xl">
         {availableTabs.map(tab => (
           <button 
             key={tab.id} 
             onClick={() => setActiveTab(tab.id as any)} 
-            className={`flex items-center gap-2 sm:gap-2.5 px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-black rounded-xl transition-all whitespace-nowrap min-w-fit ${
+            className={`flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${
+              activeTab === tab.id 
+                ? 'border-indigo-600 text-indigo-600 bg-indigo-50/30' 
+                : 'border-transparent text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <i className={`fa-solid ${tab.icon}`}></i> {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tabs Mobile - Pills style con scroll horizontal */}
+      <div className="flex sm:hidden gap-3 overflow-x-auto pb-3 -mx-4 px-4 hide-scrollbar">
+        {availableTabs.map(tab => (
+          <button 
+            key={tab.id} 
+            onClick={() => setActiveTab(tab.id as any)} 
+            className={`flex items-center gap-2 px-5 py-3 text-xs font-black rounded-xl transition-all whitespace-nowrap min-w-fit ${
               activeTab === tab.id 
                 ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200 scale-105' 
                 : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 hover:scale-105 shadow-md'
             }`}
           >
-            <i className={`fa-solid ${tab.icon} text-sm sm:text-base`}></i> 
+            <i className={`fa-solid ${tab.icon} text-sm`}></i> 
             <span className="uppercase tracking-wider font-black">{tab.label.split(' ')[0]}</span>
           </button>
         ))}
@@ -147,7 +164,7 @@ const Reports: React.FC = () => {
 
       {/* Filtros dinámicos según pestaña */}
       {(activeTab === 'income' || activeTab === 'expenses' || (activeTab === 'drivers' && hasAdvancedReports)) && (
-        <div className="bg-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center animate-in fade-in duration-300">
+        <div className="bg-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-t-none border border-slate-200 sm:border-t-0 flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center animate-in fade-in duration-300">
           {(activeTab === 'income' || activeTab === 'expenses') && (
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vehículo:</span>
@@ -177,7 +194,7 @@ const Reports: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl sm:rounded-t-none sm:rounded-b-xl shadow-sm border border-slate-200 sm:border-t-0 overflow-hidden">
         {/* Vista Desktop - Tabla tradicional */}
         <div className="hidden md:block overflow-x-auto">
           <table id="report-table" className="w-full text-left">
@@ -512,21 +529,21 @@ const Reports: React.FC = () => {
         {(activeTab === 'income' || activeTab === 'expenses' || (activeTab === 'drivers' && hasAdvancedReports)) && (
           <div className="px-4 sm:px-6 py-3 sm:py-4 bg-slate-50 border-t flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
             <div className="text-[10px] sm:text-xs font-bold text-slate-400 tracking-tight text-center sm:text-left">
-              Página <span className="text-slate-900">{currentPage}</span> de <span className="text-slate-900">{totalPages || 1}</span> 
-              <span className="mx-2 opacity-30">•</span> {filteredData.total} registros
+              Mostrando página <span className="text-slate-900">{currentPage}</span> de <span className="text-slate-900">{totalPages || 1}</span> 
+              <span className="mx-2 opacity-30">•</span> {filteredData.total} registros encontrados
             </div>
             <div className="flex gap-2">
               <button 
                 disabled={currentPage === 1} 
                 onClick={() => setCurrentPage(p => p - 1)} 
-                className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all shadow-sm active:scale-95"
+                className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all shadow-sm active:scale-95"
               >
                 <i className="fa-solid fa-chevron-left text-xs"></i>
               </button>
               <button 
                 disabled={currentPage === totalPages || filteredData.total === 0} 
                 onClick={() => setCurrentPage(p => p + 1)} 
-                className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all shadow-sm active:scale-95"
+                className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all shadow-sm active:scale-95"
               >
                 <i className="fa-solid fa-chevron-right text-xs"></i>
               </button>
@@ -542,7 +559,7 @@ const Reports: React.FC = () => {
           </div>
           <div className="flex-1 text-center sm:text-left">
             <p className="text-xs sm:text-sm font-bold text-indigo-900">Libro de Gastos e Ingresos Bloqueado</p>
-            <p className="text-[10px] sm:text-xs text-indigo-600 mt-1">Sube a plan <span className="font-black uppercase">Pro</span> para desgloses detallados y Excel.</p>
+            <p className="text-[10px] sm:text-xs text-indigo-600 mt-1">Sube a un plan <span className="font-black uppercase">Pro</span> para ver desgloses detallados y habilitar exportación a Excel.</p>
           </div>
         </div>
       )}
