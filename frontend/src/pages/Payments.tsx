@@ -3,6 +3,8 @@ import { db, formatDateDisplay } from '@/services/db';
 import { Payment, Driver, Vehicle, Arrear } from '@/types/types';
 import Swal from 'sweetalert2';
 import ResponsiveTable from '@/components/ResponsiveTable';
+import ResponsiveModal from '@/components/ResponsiveModal';
+import ModalFooter from '@/components/ModalFooter';
 
 const Payments: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -290,207 +292,183 @@ const Payments: React.FC = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-[40px] w-full max-w-lg shadow-2xl p-6 md:p-8 my-auto transform animate-in fade-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Registrar Ingreso</h2>
-              <button 
-                onClick={() => !saving && setIsModalOpen(false)}
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors"
-                disabled={saving}
-              >
-                <i className="fa-solid fa-xmark text-xl"></i>
-              </button>
+        <ResponsiveModal
+          isOpen={isModalOpen}
+          onClose={() => !saving && setIsModalOpen(false)}
+          title="Registrar Ingreso"
+          maxWidth="lg"
+          fullScreenOnMobile={true}
+        >
+          <form onSubmit={handleSubmit} className={`space-y-6 transition-opacity ${saving ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Seleccionar Conductor</label>
+              <div className="relative">
+                <select
+                  required
+                  disabled={saving}
+                  value={formData.driverId || ''}
+                  onChange={e => handleDriverChange(e.target.value)}
+                  className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-3xl outline-none font-bold text-base sm:text-sm transition-all appearance-none"
+                >
+                  <option value="">Buscar conductor...</option>
+                  {drivers.map(d => (
+                    <option key={d.id} value={d.id}>
+                      {d.firstName} {d.lastName}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <i className="fa-solid fa-chevron-down text-xs"></i>
+                </div>
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className={`space-y-6 transition-opacity ${saving ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Seleccionar Conductor</label>
+            {formData.driverId && (
+              <div className={`rounded-3xl border-2 overflow-hidden transition-all ${totalOwed > 0 ? 'bg-rose-50/50 border-rose-100' : 'bg-emerald-50/50 border-emerald-100'}`}>
+                <div className="p-5 flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">Saldo Acumulado</span>
+                    <span className={`text-xs font-black uppercase tracking-tight ${totalOwed > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      {totalOwed > 0 ? 'Mora Pendiente' : 'Sin Deudas'}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-2xl font-black ${totalOwed > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      ${totalOwed.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                
+                {driverPendingArrears.length > 0 && (
+                  <div className="border-t border-rose-100/50 bg-white/50 max-h-32 overflow-y-auto">
+                    <table className="w-full text-left">
+                      <tbody className="divide-y divide-rose-100/30">
+                        {driverPendingArrears.map(a => (
+                          <tr key={a.id} className="text-[11px] font-bold">
+                            <td className="px-5 py-2 text-slate-500 font-mono">{formatDateDisplay(a.dueDate)}</td>
+                            <td className="px-5 py-2 text-right text-rose-600">${a.amountOwed.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Tipo de Ingreso</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => setFormData({ ...formData, type: 'renta', arrearId: null, amount: formData.vehicleId ? (vehicles.find(v => v.id === formData.vehicleId)?.rentaValue || 0) : 0 })}
+                  className={`py-4 px-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                    formData.type === 'renta'
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-100'
+                      : 'bg-slate-50 text-slate-400 border-transparent hover:border-slate-200 hover:text-slate-600'
+                  }`}
+                >
+                  Renta
+                </button>
+                <button
+                  type="button"
+                  disabled={saving || driverPendingArrears.length === 0}
+                  onClick={() =>
+                    setFormData({ ...formData, type: 'arrear_payment', amount: 0 })
+                  }
+                  className={`py-4 px-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                    formData.type === 'arrear_payment'
+                      ? 'bg-amber-500 text-white border-amber-500 shadow-xl shadow-amber-100'
+                      : 'bg-slate-50 text-slate-400 border-transparent hover:border-slate-200 hover:text-slate-600'
+                  } disabled:opacity-20`}
+                >
+                  Abono a Mora
+                </button>
+              </div>
+            </div>
+
+            {formData.type === 'arrear_payment' && (
+              <div className="animate-in slide-in-from-top-2 duration-300">
+                <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1 mb-2 block">
+                  Seleccionar Fecha Específica
+                </label>
                 <div className="relative">
                   <select
                     required
                     disabled={saving}
-                    value={formData.driverId || ''}
-                    onChange={e => handleDriverChange(e.target.value)}
-                    className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-3xl outline-none font-bold text-base sm:text-sm transition-all appearance-none"
+                    value={formData.arrearId || ''}
+                    onChange={e => {
+                      const selected = arrears.find(a => a.id === e.target.value);
+                      setFormData({
+                        ...formData,
+                        arrearId: e.target.value,
+                        amount: selected?.amountOwed || 0,
+                      });
+                    }}
+                    className="w-full px-6 py-4 border-2 border-amber-200 rounded-3xl bg-amber-50 font-bold text-amber-900 text-base sm:text-sm outline-none focus:bg-white transition-all appearance-none"
                   >
-                    <option value="">Buscar conductor...</option>
-                    {drivers.map(d => (
-                      <option key={d.id} value={d.id}>
-                        {d.firstName} {d.lastName}
+                    <option value="">Seleccione la mora...</option>
+                    {driverPendingArrears.map(a => (
+                      <option key={a.id} value={a.id}>
+                        {formatDateDisplay(a.dueDate)} — ${a.amountOwed.toLocaleString()}
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-amber-500">
                     <i className="fa-solid fa-chevron-down text-xs"></i>
                   </div>
                 </div>
               </div>
+            )}
 
-              {formData.driverId && (
-                 <div className={`rounded-3xl border-2 overflow-hidden transition-all ${totalOwed > 0 ? 'bg-rose-50/50 border-rose-100' : 'bg-emerald-50/50 border-emerald-100'}`}>
-                   <div className="p-5 flex justify-between items-start">
-                     <div>
-                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">Saldo Acumulado</span>
-                       <span className={`text-xs font-black uppercase tracking-tight ${totalOwed > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                         {totalOwed > 0 ? 'Mora Pendiente' : 'Sin Deudas'}
-                       </span>
-                     </div>
-                     <div className="text-right">
-                       <span className={`text-2xl font-black ${totalOwed > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                         ${totalOwed.toLocaleString()}
-                       </span>
-                     </div>
-                   </div>
-                   
-                   {driverPendingArrears.length > 0 && (
-                     <div className="border-t border-rose-100/50 bg-white/50 max-h-32 overflow-y-auto">
-                       <table className="w-full text-left">
-                         <tbody className="divide-y divide-rose-100/30">
-                           {driverPendingArrears.map(a => (
-                             <tr key={a.id} className="text-[11px] font-bold">
-                               <td className="px-5 py-2 text-slate-500 font-mono">{formatDateDisplay(a.dueDate)}</td>
-                               <td className="px-5 py-2 text-right text-rose-600">${a.amountOwed.toLocaleString()}</td>
-                             </tr>
-                           ))}
-                         </tbody>
-                       </table>
-                     </div>
-                   )}
-                 </div>
-              )}
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Tipo de Ingreso</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    disabled={saving}
-                    onClick={() => setFormData({ ...formData, type: 'renta', arrearId: null, amount: formData.vehicleId ? (vehicles.find(v => v.id === formData.vehicleId)?.rentaValue || 0) : 0 })}
-                    className={`py-4 px-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
-                      formData.type === 'renta'
-                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-100'
-                        : 'bg-slate-50 text-slate-400 border-transparent hover:border-slate-200 hover:text-slate-600'
-                    }`}
-                  >
-                    Renta
-                  </button>
-                  <button
-                    type="button"
-                    disabled={saving || driverPendingArrears.length === 0}
-                    onClick={() =>
-                      setFormData({ ...formData, type: 'arrear_payment', amount: 0 })
-                    }
-                    className={`py-4 px-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
-                      formData.type === 'arrear_payment'
-                        ? 'bg-amber-500 text-white border-amber-500 shadow-xl shadow-amber-100'
-                        : 'bg-slate-50 text-slate-400 border-transparent hover:border-slate-200 hover:text-slate-600'
-                    } disabled:opacity-20`}
-                  >
-                    Abono a Mora
-                  </button>
-                </div>
-              </div>
-
-              {formData.type === 'arrear_payment' && (
-                <div className="animate-in slide-in-from-top-2 duration-300">
-                  <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1 mb-2 block">
-                    Seleccionar Fecha Específica
-                  </label>
-                  <div className="relative">
-                    <select
-                      required
-                      disabled={saving}
-                      value={formData.arrearId || ''}
-                      onChange={e => {
-                        const selected = arrears.find(a => a.id === e.target.value);
-                        setFormData({
-                          ...formData,
-                          arrearId: e.target.value,
-                          amount: selected?.amountOwed || 0,
-                        });
-                      }}
-                      className="w-full px-6 py-4 border-2 border-amber-200 rounded-3xl bg-amber-50 font-bold text-amber-900 text-base sm:text-sm outline-none focus:bg-white transition-all appearance-none"
-                    >
-                      <option value="">Seleccione la mora...</option>
-                      {driverPendingArrears.map(a => (
-                        <option key={a.id} value={a.id}>
-                          {formatDateDisplay(a.dueDate)} — ${a.amountOwed.toLocaleString()}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-amber-500">
-                      <i className="fa-solid fa-chevron-down text-xs"></i>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Monto a Recibir ($)</label>
-                  <input
-                    type="number"
-                    required
-                    disabled={saving}
-                    value={formData.amount}
-                    onChange={e =>
-                      setFormData({ ...formData, amount: Number(e.target.value) })
-                    }
-                    className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-3xl outline-none font-black text-base sm:text-sm transition-all"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Fecha de Pago</label>
-                  <input
-                    type="date"
-                    required
-                    disabled={saving}
-                    value={formData.date}
-                    onChange={e =>
-                      setFormData({ ...formData, date: e.target.value })
-                    }
-                    className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-3xl outline-none font-bold text-base sm:text-sm transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-100">
-                <button
-                  type="button"
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Monto a Recibir ($)</label>
+                <input
+                  type="number"
+                  required
                   disabled={saving}
-                  onClick={() => setIsModalOpen(false)}
-                  className="w-full sm:flex-1 px-6 py-5 rounded-2xl font-black text-slate-400 hover:bg-slate-50 transition-all disabled:opacity-50 uppercase text-[10px] tracking-widest"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving || isInvalidAmount}
-                  className={`w-full sm:flex-[2] px-6 py-5 rounded-3xl font-black flex items-center justify-center gap-3 transition-all shadow-xl uppercase text-[10px] tracking-widest ${
-                    saving
-                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                      : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200/50 active:scale-95'
-                    } ${isInvalidAmount && !saving ? 'opacity-50 cursor-not-allowed' : ''}
-                  `}
-                >
-                  {saving ? (
-                    <>
-                      <i className="fa-solid fa-circle-notch fa-spin"></i>
-                      Procesando...
-                    </>
-                  ) : (
-                    <>
-                      <i className="fa-solid fa-cloud-upload"></i>
-                      Confirmar Ingreso
-                    </>
-                  )}
-                </button>
+                  value={formData.amount}
+                  onChange={e =>
+                    setFormData({ ...formData, amount: Number(e.target.value) })
+                  }
+                  className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-3xl outline-none font-black text-base sm:text-sm transition-all"
+                  placeholder="0.00"
+                />
               </div>
-            </form>
-          </div>
-        </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Fecha de Pago</label>
+                <input
+                  type="date"
+                  required
+                  disabled={saving}
+                  value={formData.date}
+                  onChange={e =>
+                    setFormData({ ...formData, date: e.target.value })
+                  }
+                  className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-3xl outline-none font-bold text-base sm:text-sm transition-all"
+                />
+              </div>
+            </div>
+
+            <ModalFooter
+              primaryButton={{
+                label: saving ? 'Procesando...' : 'Confirmar Ingreso',
+                onClick: () => {}, // Form submit handled by form onSubmit
+                variant: 'success',
+                loading: saving,
+                disabled: saving || isInvalidAmount,
+                icon: 'fa-cloud-upload'
+              }}
+              secondaryButton={{
+                label: 'Cancelar',
+                onClick: () => setIsModalOpen(false),
+                disabled: saving
+              }}
+            />
+          </form>
+        </ResponsiveModal>
       )}
     </div>
   );

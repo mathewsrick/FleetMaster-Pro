@@ -4,6 +4,8 @@ import { db, formatDateDisplay } from '@/services/db';
 import { Vehicle, Payment, Expense } from '@/types/types';
 import Swal from 'sweetalert2';
 import ResponsiveTable from '@/components/ResponsiveTable';
+import ResponsiveModal from '@/components/ResponsiveModal';
+import ModalFooter from '@/components/ModalFooter';
 
 const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
@@ -272,155 +274,239 @@ const Vehicles: React.FC = () => {
       </div>
 
       {/* Modal Detalle Operativo */}
-      {isDetailOpen && selectedVehicle && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-           <div className="bg-white rounded-[40px] w-full max-w-5xl shadow-2xl p-8 my-8 transform animate-in fade-in zoom-in duration-300">
-              <div className="flex justify-between items-center mb-8">
-                 <div>
-                    <h2 className="text-3xl font-black text-slate-900">Vehículo: {selectedVehicle.licensePlate}</h2>
-                    <p className="text-indigo-600 font-bold uppercase tracking-widest text-[10px] mt-1">{selectedVehicle.model} ({selectedVehicle.year}) — {selectedVehicle.driverName || 'Sin Conductor'}</p>
-                 </div>
-                 <button onClick={() => setIsDetailOpen(false)} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"><i className="fa-solid fa-xmark"></i></button>
+      <ResponsiveModal
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        title={`Vehículo: ${selectedVehicle?.licensePlate}`}
+        subtitle={selectedVehicle ? `${selectedVehicle.model} (${selectedVehicle.year}) — ${selectedVehicle.driverName || 'Sin Conductor'}` : ''}
+        maxWidth="5xl"
+      >
+        {selectedVehicle && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+            <div className="space-y-4 sm:space-y-6">
+              <h3 className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2">
+                Fotos de Inspección
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                {selectedVehicle.photos && selectedVehicle.photos.length > 0 ? selectedVehicle.photos.map((src, idx) => (
+                  <div key={idx} className="aspect-square bg-slate-100 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 hover:scale-105 transition-transform">
+                    <img src={`${API_URL}${src}`} className="w-full h-full object-cover" alt={`Foto ${idx + 1}`} />
+                  </div>
+                )) : (
+                  <div className="col-span-2 sm:col-span-3 py-8 sm:py-12 text-center text-slate-300 italic text-xs sm:text-sm">
+                    No hay fotos registradas.
+                  </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                 <div className="space-y-6">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2">Fotos de Inspección</h3>
-                    <div className="grid grid-cols-3 gap-3">
-                       {selectedVehicle.photos && selectedVehicle.photos.length > 0 ? selectedVehicle.photos.map((src, idx) => (
-                         <div key={idx} className="aspect-square bg-slate-100 rounded-2xl overflow-hidden border border-slate-200">
-                            <img src={`${API_URL}${src}`} className="w-full h-full object-cover" />
-                          </div>
-                       )) : (
-                          <div className="col-span-3 py-12 text-center text-slate-300 italic text-sm">No hay fotos registradas.</div>
-                       )}
-                    </div>
-
-                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 shadow-inner">
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estatus Legal y Seguro</h4>
-                      <div className="flex justify-between text-sm">
-                        <span className="font-bold text-slate-500">Vencimiento SOAT:</span>
-                        <span className={`font-black ${new Date(selectedVehicle.soatExpiration) < new Date() ? 'text-rose-500' : 'text-emerald-500'}`}>
-                          {selectedVehicle.soatExpiration ? formatDateDisplay(selectedVehicle.soatExpiration).split(' ')[0].replace(',', '') : 'N/A'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="font-bold text-slate-500">Vencimiento Técnico:</span>
-                        <span className="font-black text-indigo-500">{selectedVehicle.techExpiration ? formatDateDisplay(selectedVehicle.techExpiration).split(' ')[0].replace(',', '') : 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between text-sm pt-2 border-t"><span className="font-bold text-slate-500">
-                        Renta:
-                        </span>
-                        <span className="font-black text-slate-900">${Number(selectedVehicle.rentaValue).toLocaleString()}</span>
-                      </div>
-                    </div>
-                 </div>
-
-                 <div className="space-y-6">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2">Resumen de Movimientos</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100 text-center">
-                          <p className="text-[10px] font-black text-emerald-400 uppercase mb-2">Ingresos (Pagos)</p>
-                          <p className="text-2xl font-black text-emerald-600">${vehicleHistory.payments.reduce((s,p) => s+Number(p.amount), 0).toLocaleString()}</p>
-                       </div>
-                       <div className="p-6 bg-rose-50 rounded-3xl border border-rose-100 text-center">
-                          <p className="text-[10px] font-black text-rose-400 uppercase mb-2">Egresos (Gastos)</p>
-                          <p className="text-2xl font-black text-rose-600">-${vehicleHistory.expenses.reduce((s,e) => s+Number(e.amount), 0).toLocaleString()}</p>
-                       </div>
-                    </div>
-
-                    <div>
-                       <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2 mb-4">Últimos Gastos Operativos</h3>
-                       <div className="max-h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                          {vehicleHistory.expenses.length > 0 ? vehicleHistory.expenses.map(e => (
-                             <div key={e.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                <div>
-                                   <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{e.description}</p>
-                                   <p className="text-[10px] font-bold text-slate-400">{formatDateDisplay(e.date).split(' ')[0].replace(',', '')}</p>
-                                </div>
-                                <p className="font-black text-rose-600">-${Number(e.amount).toLocaleString()}</p>
-                             </div>
-                          )) : <p className="text-center py-8 text-slate-300 italic text-sm">Sin gastos registrados.</p>}
-                       </div>
-                    </div>
-                 </div>
-              </div>
-           </div>
-        </div>
-      )}
-
-      {/* Modal Registro */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-[40px] w-full max-w-2xl p-8 shadow-2xl my-8 transform animate-in fade-in zoom-in duration-300">
-            <h2 className="text-2xl font-black mb-6">{editingId ? 'Editar' : 'Nuevo'} Vehículo</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Modelo</label>
-                  <input required placeholder='Ej: Nissan March' value={formData.model || ''} onChange={e => setFormData({...formData, model: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold focus:ring-2 focus:ring-indigo-500" />
+              <div className="p-4 sm:p-6 bg-slate-50 rounded-2xl sm:rounded-3xl border border-slate-100 space-y-3 sm:space-y-4 shadow-inner">
+                <h4 className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Estatus Legal y Seguro
+                </h4>
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="font-bold text-slate-500">Vencimiento SOAT:</span>
+                  <span className={`font-black ${new Date(selectedVehicle.soatExpiration) < new Date() ? 'text-rose-500' : 'text-emerald-500'}`}>
+                    {selectedVehicle.soatExpiration ? formatDateDisplay(selectedVehicle.soatExpiration).split(' ')[0].replace(',', '') : 'N/A'}
+                  </span>
                 </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Placa</label>
-                  <input required placeholder="ABC-123" value={formData.licensePlate || ''} onChange={e => setFormData({...formData, licensePlate: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none uppercase focus:ring-2 focus:ring-indigo-500" />
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="font-bold text-slate-500">Vencimiento Técnico:</span>
+                  <span className="font-black text-indigo-500">
+                    {selectedVehicle.techExpiration ? formatDateDisplay(selectedVehicle.techExpiration).split(' ')[0].replace(',', '') : 'N/A'}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs sm:text-sm pt-2 border-t">
+                  <span className="font-bold text-slate-500">Renta:</span>
+                  <span className="font-black text-slate-900">${Number(selectedVehicle.rentaValue).toLocaleString()}</span>
                 </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Vencimiento SOAT</label>
-                  <input type="date" required value={formData.soatExpiration || ''} onChange={e => setFormData({...formData, soatExpiration: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />
+            <div className="space-y-4 sm:space-y-6">
+              <h3 className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2">
+                Resumen de Movimientos
+              </h3>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="p-4 sm:p-6 bg-emerald-50 rounded-2xl sm:rounded-3xl border border-emerald-100 text-center">
+                  <p className="text-[9px] sm:text-[10px] font-black text-emerald-400 uppercase mb-2">Ingresos (Pagos)</p>
+                  <p className="text-xl sm:text-2xl font-black text-emerald-600">
+                    ${vehicleHistory.payments.reduce((s,p) => s+Number(p.amount), 0).toLocaleString()}
+                  </p>
                 </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Vencimiento Técnico</label>
-                  <input type="date" required value={formData.techExpiration || ''} onChange={e => setFormData({...formData, techExpiration: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Año</label>
-                  <input type="number" required value={formData.year || ''} onChange={e => setFormData({...formData, year: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Color</label>
-                  <input required value={formData.color || ''} onChange={e => setFormData({...formData, color: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" placeholder="Ej: Blanco" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Renta ($)</label>
-                  <input type="number" required value={formData.rentaValue || ''} onChange={e => setFormData({...formData, rentaValue: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none" placeholder="0.00" />
+                <div className="p-4 sm:p-6 bg-rose-50 rounded-2xl sm:rounded-3xl border border-rose-100 text-center">
+                  <p className="text-[9px] sm:text-[10px] font-black text-rose-400 uppercase mb-2">Egresos (Gastos)</p>
+                  <p className="text-xl sm:text-2xl font-black text-rose-600">
+                    -${vehicleHistory.expenses.reduce((s,e) => s+Number(e.amount), 0).toLocaleString()}
+                  </p>
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Fotos de Inspección (Máx. 5)</label>
-                <div className="flex flex-wrap gap-3">
-                  {previews.map((url, idx) => (
-                    <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden group border border-slate-200">
-                      <img src={url.startsWith('blob:') ? url : `${API_URL}${url}`} className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => removePreview(idx)} className="absolute top-1 right-1 bg-rose-500 text-white w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><i className="fa-solid fa-times text-[10px]"></i></button>
+                <h3 className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2 mb-3 sm:mb-4">
+                  Últimos Gastos Operativos
+                </h3>
+                <div className="max-h-48 sm:max-h-64 overflow-y-auto space-y-2 pr-1 sm:pr-2 custom-scrollbar">
+                  {vehicleHistory.expenses.length > 0 ? vehicleHistory.expenses.map(e => (
+                    <div key={e.id} className="flex justify-between items-center p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100 hover:bg-slate-100 transition-colors">
+                      <div className="min-w-0 flex-1 pr-2">
+                        <p className="text-xs font-black text-slate-800 uppercase tracking-tight truncate">{e.description}</p>
+                        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400">
+                          {formatDateDisplay(e.date).split(' ')[0].replace(',', '')}
+                        </p>
+                      </div>
+                      <p className="font-black text-rose-600 text-sm sm:text-base whitespace-nowrap">
+                        -${Number(e.amount).toLocaleString()}
+                      </p>
                     </div>
-                  ))}
-                  {previews.length < 5 && (
-                    <label className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:border-indigo-600 hover:text-indigo-600 cursor-pointer transition-all">
-                      <i className="fa-solid fa-plus text-xl mb-1"></i>
-                      <span className="text-[8px] font-black uppercase tracking-tighter">Añadir</span>
-                      <input type="file" multiple accept="image/*" className="hidden" onChange={handleFileChange} />
-                    </label>
+                  )) : (
+                    <p className="text-center py-6 sm:py-8 text-slate-300 italic text-xs sm:text-sm">
+                      Sin gastos registrados.
+                    </p>
                   )}
                 </div>
               </div>
-
-              <div className="flex gap-4 pt-6">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 font-black text-slate-400 uppercase text-[10px] tracking-widest">Cancelar</button>
-                <button type="submit" disabled={saving} className="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg hover:bg-indigo-700 active:scale-95 transition-all">
-                  {saving ? 'Guardando...' : 'Confirmar Registro'}
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </ResponsiveModal>
+
+      {/* Modal Registro */}
+      <ResponsiveModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={`${editingId ? 'Editar' : 'Nuevo'} Vehículo`}
+        subtitle="Información del vehículo y documentos"
+        maxWidth="2xl"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div>
+              <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 block">Modelo</label>
+              <input 
+                required 
+                placeholder='Ej: Nissan March' 
+                value={formData.model || ''} 
+                onChange={e => setFormData({...formData, model: e.target.value})} 
+                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl border-none outline-none font-bold text-sm sm:text-base focus:ring-2 focus:ring-indigo-500" 
+              />
+            </div>
+            <div>
+              <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 block">Placa</label>
+              <input 
+                required 
+                placeholder="ABC-123" 
+                value={formData.licensePlate || ''} 
+                onChange={e => setFormData({...formData, licensePlate: e.target.value})} 
+                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-black outline-none uppercase text-sm sm:text-base focus:ring-2 focus:ring-indigo-500" 
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div>
+              <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 block">Vencimiento SOAT</label>
+              <input 
+                type="date" 
+                required 
+                value={formData.soatExpiration || ''} 
+                onChange={e => setFormData({...formData, soatExpiration: e.target.value})} 
+                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base" 
+              />
+            </div>
+            <div>
+              <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 block">Vencimiento Técnico</label>
+              <input 
+                type="date" 
+                required 
+                value={formData.techExpiration || ''} 
+                onChange={e => setFormData({...formData, techExpiration: e.target.value})} 
+                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base" 
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+            <div>
+              <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 block">Año</label>
+              <input 
+                type="number" 
+                required 
+                value={formData.year || ''} 
+                onChange={e => setFormData({...formData, year: Number(e.target.value)})} 
+                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base" 
+              />
+            </div>
+            <div>
+              <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 block">Color</label>
+              <input 
+                required 
+                value={formData.color || ''} 
+                onChange={e => setFormData({...formData, color: e.target.value})} 
+                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base" 
+                placeholder="Blanco" 
+              />
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 block">Renta ($)</label>
+              <input 
+                type="number" 
+                required 
+                value={formData.rentaValue || ''} 
+                onChange={e => setFormData({...formData, rentaValue: Number(e.target.value)})} 
+                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-black outline-none text-sm sm:text-base" 
+                placeholder="0.00" 
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
+              Fotos de Inspección (Máx. 5)
+            </label>
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3">
+              {previews.map((url, idx) => (
+                <div key={idx} className="relative aspect-square rounded-lg sm:rounded-xl overflow-hidden group border border-slate-200">
+                  <img 
+                    src={url.startsWith('blob:') ? url : `${API_URL}${url}`} 
+                    className="w-full h-full object-cover" 
+                    alt={`Preview ${idx + 1}`}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => removePreview(idx)} 
+                    className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 bg-rose-500 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg active:scale-90"
+                  >
+                    <i className="fa-solid fa-times text-[10px] sm:text-xs"></i>
+                  </button>
+                </div>
+              ))}
+              {previews.length < 5 && (
+                <label className="aspect-square rounded-lg sm:rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:border-indigo-600 hover:text-indigo-600 cursor-pointer transition-all active:scale-95">
+                  <i className="fa-solid fa-plus text-base sm:text-xl mb-0.5 sm:mb-1"></i>
+                  <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-tighter">Añadir</span>
+                  <input type="file" multiple accept="image/*" className="hidden" onChange={handleFileChange} />
+                </label>
+              )}
+            </div>
+          </div>
+
+          <ModalFooter
+            primaryButton={{
+              label: saving ? 'Guardando...' : 'Confirmar Registro',
+              onClick: () => {},
+              loading: saving,
+              disabled: saving,
+              icon: 'fa-check',
+              variant: 'primary'
+            }}
+            secondaryButton={{
+              label: 'Cancelar',
+              onClick: () => setIsModalOpen(false),
+              disabled: saving
+            }}
+          />
+        </form>
+      </ResponsiveModal>
     </div>
   );
 };

@@ -3,6 +3,8 @@ import { db, formatDateDisplay } from '@/services/db';
 import { Expense, Vehicle } from '@/types/types';
 import Swal from 'sweetalert2';
 import ResponsiveTable from '@/components/ResponsiveTable';
+import ResponsiveModal from '@/components/ResponsiveModal';
+import ModalFooter from '@/components/ModalFooter';
 
 const Expenses: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -198,43 +200,45 @@ const Expenses: React.FC = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl p-8 transform animate-in fade-in zoom-in duration-300">
-            <h2 className="text-2xl font-black text-slate-900 mb-6">Nuevo Gasto</h2>
-            <form onSubmit={handleSubmit} className={`space-y-4 transition-opacity ${saving ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Vehículo</label>
-                <select required value={formData.vehicleId} onChange={e => setFormData({...formData, vehicleId: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm">
-                  <option value="">Seleccione...</option>
-                  {vehicles.map(v => <option key={v.id} value={v.id}>{v.licensePlate} ({v.model})</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Descripción</label>
-                <input required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none text-sm" placeholder="Mantenimiento, repuestos, etc." />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <input type="number" required placeholder="Costo" value={formData.amount || ''} onChange={e => setFormData({...formData, amount: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none" />
-                <input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none text-sm" />
-              </div>
-              <div className="flex gap-4 pt-6">
-                <button type="button" disabled={saving} onClick={() => setIsModalOpen(false)} className="flex-1 py-4 font-black text-slate-400 uppercase text-[10px] tracking-widest disabled:opacity-30">Cerrar</button>
-                <button 
-                  type="submit" 
-                  disabled={saving} 
-                  className={`flex-[2] py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl transition-all flex items-center justify-center gap-2 ${
-                    saving 
-                      ? 'bg-rose-400 text-white cursor-not-allowed' 
-                      : 'bg-rose-600 text-white shadow-rose-100 hover:bg-rose-700 active:scale-95'
-                  }`}
-                >
-                  {saving ? <i className="fa-solid fa-circle-notch fa-spin text-sm"></i> : null}
-                  {saving ? 'Registrando...' : 'Registrar'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <ResponsiveModal
+          isOpen={isModalOpen}
+          onClose={() => !saving && setIsModalOpen(false)}
+          title="Nuevo Gasto"
+          maxWidth="lg"
+          fullScreenOnMobile={true}
+        >
+          <form onSubmit={handleSubmit} className={`space-y-4 transition-opacity ${saving ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Vehículo</label>
+              <select required value={formData.vehicleId} onChange={e => setFormData({...formData, vehicleId: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm">
+                <option value="">Seleccione...</option>
+                {vehicles.map(v => <option key={v.id} value={v.id}>{v.licensePlate} ({v.model})</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Descripción</label>
+              <input required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none text-sm" placeholder="Mantenimiento, repuestos, etc." />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <input type="number" required placeholder="Costo" value={formData.amount || ''} onChange={e => setFormData({...formData, amount: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none" />
+              <input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none text-sm" />
+            </div>
+            <ModalFooter
+              primaryButton={{
+                label: saving ? 'Registrando...' : 'Registrar',
+                onClick: () => {}, // Form submit handled by form onSubmit
+                variant: 'danger',
+                loading: saving,
+                disabled: saving
+              }}
+              secondaryButton={{
+                label: 'Cerrar',
+                onClick: () => setIsModalOpen(false),
+                disabled: saving
+              }}
+            />
+          </form>
+        </ResponsiveModal>
       )}
     </div>
   );

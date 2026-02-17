@@ -3,6 +3,8 @@ import { db, formatDateDisplay } from '@/services/db';
 import { Driver, Vehicle, Payment, Arrear } from '@/types/types';
 import Swal from 'sweetalert2';
 import ResponsiveTable from '@/components/ResponsiveTable';
+import ResponsiveModal from '@/components/ResponsiveModal';
+import ModalFooter from '@/components/ModalFooter';
 
 const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
@@ -268,205 +270,208 @@ const Drivers: React.FC = () => {
       </div>
 
       {/* Modal Detalle Integral */}
-      {isDetailOpen && selectedDriver && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-[40px] w-full max-w-4xl shadow-2xl p-8 my-8 transform animate-in fade-in zoom-in duration-300">
-             <div className="flex justify-between items-start mb-8">
+      <ResponsiveModal
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        title={selectedDriver ? `${selectedDriver.firstName} ${selectedDriver.lastName}` : ''}
+        subtitle={selectedDriver ? `Ficha de Conductor — ${selectedDriver.vehiclePlate || 'Sin Vehículo Activo'}` : ''}
+        maxWidth="4xl"
+        fullScreenOnMobile={true}
+      >
+        {selectedDriver && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Panel Documentación */}
+            <div className="space-y-6">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Documentos Legales</h3>
+              <div className="space-y-4">
                 <div>
-                   <h2 className="text-3xl font-black text-slate-900 tracking-tight">{selectedDriver.firstName} {selectedDriver.lastName}</h2>
-                   <p className="text-indigo-600 font-bold tracking-widest text-[10px] uppercase mt-1 flex items-center gap-2">
-                     <i className="fa-solid fa-address-card"></i> Ficha de Conductor — {selectedDriver.vehiclePlate || 'Sin Vehículo Activo'}
-                   </p>
+                  <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-tighter">Licencia de Conducción</p>
+                  <div className="aspect-[3/2] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner group">
+                    {selectedDriver.licensePhoto ? (
+                      <img
+                        src={`${API_URL}${selectedDriver.licensePhoto}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
+                        onClick={() => window.open(`${API_URL}${selectedDriver.licensePhoto}`, '_blank')}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
+                        <i className="fa-solid fa-id-card text-3xl"></i>
+                        <span className="text-[9px] font-black uppercase tracking-widest">Imagen no disponible</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <button onClick={() => setIsDetailOpen(false)} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"><i className="fa-solid fa-xmark"></i></button>
-             </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-tighter">Documento Identidad (Cédula)</p>
+                  <div className="aspect-[3/2] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner group">
+                    {selectedDriver.idPhoto ? (
+                      <img
+                        src={`${API_URL}${selectedDriver.idPhoto}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
+                        onClick={() => window.open(`${API_URL}${selectedDriver.idPhoto}`, '_blank')}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
+                        <i className="fa-solid fa-address-card text-3xl"></i>
+                        <span className="text-[9px] font-black uppercase tracking-widest">Imagen no disponible</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
 
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Panel Documentación */}
-                <div className="space-y-6">
-                   <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Documentos Legales</h3>
-                   <div className="space-y-4">
+            {/* Panel Historial y Deuda */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm text-center">
+                  <p className="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Total Recaudado</p>
+                  <p className="text-2xl font-black text-emerald-600">${driverHistory.payments.reduce((s,p) => s+Number(p.amount), 0).toLocaleString()}</p>
+                  <p className="text-[9px] font-bold text-slate-400 mt-1 italic">Basado en historial de pagos</p>
+                </div>
+                <div className={`p-6 rounded-3xl border text-center shadow-sm ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'}`}>
+                  <p className={`text-[10px] font-black uppercase mb-2 tracking-widest ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>Deuda Pendiente</p>
+                  <p className={`text-2xl font-black ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>${(Number(selectedDriver.totalDebt) || 0).toLocaleString()}</p>
+                  <p className={`text-[9px] font-bold mt-1 uppercase tracking-widest ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                    {selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'En Mora' : 'Cuenta al día'}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Cronología de Pagos Recientes</h3>
+                <div className="max-h-72 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                  {driverHistory.payments.length > 0 ? driverHistory.payments.map(p => (
+                    <div key={p.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                       <div>
-                         <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-tighter">Licencia de Conducción</p>
-                         <div className="aspect-[3/2] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner group">
-                            {selectedDriver.licensePhoto ? (
-                                <img
-                                  src={`${API_URL}${selectedDriver.licensePhoto}`}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
-                                  onClick={() => window.open(`${API_URL}${selectedDriver.licensePhoto}`, '_blank')}
-                                />
-                            ) : (
-                               <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
-                                  <i className="fa-solid fa-id-card text-3xl"></i>
-                                  <span className="text-[9px] font-black uppercase tracking-widest">Imagen no disponible</span>
-                               </div>
-                            )}
-                         </div>
+                        <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{p.type === 'renta' ? 'Pago de Renta' : 'Abono a Mora'}</p>
+                        <p className="text-[10px] font-bold text-slate-400"><i className="fa-solid fa-calendar-day mr-1"></i> {formatDateDisplay(p.date)}</p>
                       </div>
-                      <div>
-                         <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-tighter">Documento Identidad (Cédula)</p>
-                         <div className="aspect-[3/2] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner group">
-                            {selectedDriver.idPhoto ? (
-                              <img
-                                src={`${API_URL}${selectedDriver.idPhoto}`}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
-                                onClick={() => window.open(`${API_URL}${selectedDriver.idPhoto}`, '_blank')}
-                              />
-                            ) : (
-                               <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
-                                  <i className="fa-solid fa-address-card text-3xl"></i>
-                                  <span className="text-[9px] font-black uppercase tracking-widest">Imagen no disponible</span>
-                               </div>
-                            )}
-                         </div>
+                      <div className="text-right">
+                        <p className="font-black text-indigo-600">${Number(p.amount).toLocaleString()}</p>
+                        <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Efectivo/Ref</span>
                       </div>
-                   </div>
+                    </div>
+                  )) : <div className="text-center py-12 bg-slate-50 rounded-3xl border border-dashed border-slate-200 text-slate-400 italic text-sm">No se registran transacciones.</div>}
                 </div>
-
-                {/* Panel Historial y Deuda */}
-                <div className="lg:col-span-2 space-y-6">
-                   <div className="grid grid-cols-2 gap-4">
-                      <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm text-center">
-                         <p className="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Total Recaudado</p>
-                         <p className="text-2xl font-black text-emerald-600">${driverHistory.payments.reduce((s,p) => s+Number(p.amount), 0).toLocaleString()}</p>
-                         <p className="text-[9px] font-bold text-slate-400 mt-1 italic">Basado en historial de pagos</p>
-                      </div>
-                      <div className={`p-6 rounded-3xl border text-center shadow-sm ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'}`}>
-                         <p className={`text-[10px] font-black uppercase mb-2 tracking-widest ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>Deuda Pendiente</p>
-                         <p className={`text-2xl font-black ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>${(Number(selectedDriver.totalDebt) || 0).toLocaleString()}</p>
-                         <p className={`text-[9px] font-bold mt-1 uppercase tracking-widest ${selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                           {selectedDriver.totalDebt && selectedDriver.totalDebt > 0 ? 'En Mora' : 'Cuenta al día'}
-                         </p>
-                      </div>
-                   </div>
-
-                   <div>
-                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Cronología de Pagos Recientes</h3>
-                      <div className="max-h-72 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                         {driverHistory.payments.length > 0 ? driverHistory.payments.map(p => (
-                            <div key={p.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                               <div>
-                                  <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{p.type === 'renta' ? 'Pago de Renta' : 'Abono a Mora'}</p>
-                                  <p className="text-[10px] font-bold text-slate-400"><i className="fa-solid fa-calendar-day mr-1"></i> {formatDateDisplay(p.date)}</p>
-                               </div>
-                               <div className="text-right">
-                                  <p className="font-black text-indigo-600">${Number(p.amount).toLocaleString()}</p>
-                                  <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Efectivo/Ref</span>
-                               </div>
-                            </div>
-                         )) : <div className="text-center py-12 bg-slate-50 rounded-3xl border border-dashed border-slate-200 text-slate-400 italic text-sm">No se registran transacciones.</div>}
-                      </div>
-                   </div>
-                </div>
-             </div>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </ResponsiveModal>
 
       {/* Modal Registro/Edición */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-[40px] w-full max-w-2xl p-8 shadow-2xl my-8 transform animate-in fade-in zoom-in duration-300">
-            <h2 className="text-2xl font-black mb-6 tracking-tight">{editingId ? 'Editar' : 'Nuevo'} Conductor</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Nombres</label>
-                  <input required placeholder="Ej: Juan" value={formData.firstName || ''} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Apellidos</label>
-                  <input required placeholder="Ej: Pérez" value={formData.lastName || ''} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Correo Electrónico</label>
-                  <input type="email" required placeholder="conductor@correo.com" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Número de Teléfono</label>
-                  <input required placeholder="Ej: 3001234567" value={formData.phone || ''} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Número de Cédula</label>
-                   <input required placeholder="Sin puntos ni comas" value={formData.idNumber || ''} onChange={e => setFormData({ ...formData, idNumber: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold shadow-inner" />
-                </div>
-                <div>
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Asignar a Vehículo</label>
-                   <select value={formData.vehicleId || ''} onChange={e => setFormData({ ...formData, vehicleId: e.target.value || null })} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none appearance-none cursor-pointer shadow-inner">
-                      <option value="">Sin vehículo asignado</option>
-                      {vehicles.filter(v => !v.driverId || v.driverId === editingId).map(v => (
-                        <option key={v.id} value={v.id}>{v.licensePlate} — {v.model}</option>
-                      ))}
-                   </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Licencia de Conducción</label>
-                  <div className="flex flex-col gap-3">
-                    {previews.license && (
-                      <div className="w-full aspect-[2/1] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-                        <img
-                          src={previews.license.startsWith('blob:')
-                            ? previews.license
-                            : `${API_URL}${previews.license}`
-                          }
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <label className="w-full p-4 bg-slate-50 border-2 border-dashed rounded-2xl text-center text-[10px] font-black text-slate-400 cursor-pointer hover:border-indigo-600 hover:text-indigo-600 uppercase transition-all shadow-inner">
-                      <i className="fa-solid fa-camera mr-2"></i> {previews.license ? 'Cambiar Foto Licencia' : 'Cargar Foto Licencia'}
-                      <input type="file" accept="image/*" className="hidden" onChange={e => {
-                        const file = e.target.files?.[0];
-                        if (file) { setPendingLicense(file); setPreviews(prev => ({...prev, license: URL.createObjectURL(file)})); }
-                      }} />
-                    </label>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Cédula Ciudadanía</label>
-                  <div className="flex flex-col gap-3">
-                    {previews.idCard && (
-                      <div className="w-full aspect-[2/1] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-                        <img
-                          src={previews.idCard.startsWith('blob:')
-                            ? previews.idCard
-                            : `${API_URL}${previews.idCard}`
-                          }
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <label className="w-full p-4 bg-slate-50 border-2 border-dashed rounded-2xl text-center text-[10px] font-black text-slate-400 cursor-pointer hover:border-indigo-600 hover:text-indigo-600 uppercase transition-all shadow-inner">
-                      <i className="fa-solid fa-address-card mr-2"></i> {previews.idCard ? 'Cambiar Foto Cédula' : 'Cargar Foto Cédula'}
-                      <input type="file" accept="image/*" className="hidden" onChange={e => {
-                        const file = e.target.files?.[0];
-                        if (file) { setPendingIdCard(file); setPreviews(prev => ({...prev, idCard: URL.createObjectURL(file)})); }
-                      }} />
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-4 pt-6">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 font-black text-slate-400 uppercase text-[10px] tracking-widest">Cerrar</button>
-                <button type="submit" disabled={saving} className="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg hover:bg-indigo-700 active:scale-95 transition-all shadow-indigo-100">
-                  {saving ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : null}
-                  {saving ? 'Procesando Guardado...' : 'Guardar Ficha del Conductor'}
-                </button>
-              </div>
-            </form>
+      <ResponsiveModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={`${editingId ? 'Editar' : 'Nuevo'} Conductor`}
+        maxWidth="2xl"
+        fullScreenOnMobile={true}
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Nombres</label>
+              <input required placeholder="Ej: Juan" value={formData.firstName || ''} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Apellidos</label>
+              <input required placeholder="Ej: Pérez" value={formData.lastName || ''} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Correo Electrónico</label>
+              <input type="email" required placeholder="conductor@correo.com" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Número de Teléfono</label>
+              <input required placeholder="Ej: 3001234567" value={formData.phone || ''} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Número de Cédula</label>
+              <input required placeholder="Sin puntos ni comas" value={formData.idNumber || ''} onChange={e => setFormData({ ...formData, idNumber: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold shadow-inner" />
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Asignar a Vehículo</label>
+              <select value={formData.vehicleId || ''} onChange={e => setFormData({ ...formData, vehicleId: e.target.value || null })} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none appearance-none cursor-pointer shadow-inner">
+                <option value="">Sin vehículo asignado</option>
+                {vehicles.filter(v => !v.driverId || v.driverId === editingId).map(v => (
+                  <option key={v.id} value={v.id}>{v.licensePlate} — {v.model}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Licencia de Conducción</label>
+              <div className="flex flex-col gap-3">
+                {previews.license && (
+                  <div className="w-full aspect-[2/1] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+                    <img
+                      src={previews.license.startsWith('blob:')
+                        ? previews.license
+                        : `${API_URL}${previews.license}`
+                      }
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <label className="w-full p-4 bg-slate-50 border-2 border-dashed rounded-2xl text-center text-[10px] font-black text-slate-400 cursor-pointer hover:border-indigo-600 hover:text-indigo-600 uppercase transition-all shadow-inner">
+                  <i className="fa-solid fa-camera mr-2"></i> {previews.license ? 'Cambiar Foto Licencia' : 'Cargar Foto Licencia'}
+                  <input type="file" accept="image/*" className="hidden" onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) { setPendingLicense(file); setPreviews(prev => ({...prev, license: URL.createObjectURL(file)})); }
+                  }} />
+                </label>
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Cédula Ciudadanía</label>
+              <div className="flex flex-col gap-3">
+                {previews.idCard && (
+                  <div className="w-full aspect-[2/1] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+                    <img
+                      src={previews.idCard.startsWith('blob:')
+                        ? previews.idCard
+                        : `${API_URL}${previews.idCard}`
+                      }
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <label className="w-full p-4 bg-slate-50 border-2 border-dashed rounded-2xl text-center text-[10px] font-black text-slate-400 cursor-pointer hover:border-indigo-600 hover:text-indigo-600 uppercase transition-all shadow-inner">
+                  <i className="fa-solid fa-address-card mr-2"></i> {previews.idCard ? 'Cambiar Foto Cédula' : 'Cargar Foto Cédula'}
+                  <input type="file" accept="image/*" className="hidden" onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) { setPendingIdCard(file); setPreviews(prev => ({...prev, idCard: URL.createObjectURL(file)})); }
+                  }} />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <ModalFooter
+            primaryButton={{
+              label: saving ? 'Procesando Guardado...' : 'Guardar Ficha del Conductor',
+              onClick: () => {}, // Form submit handled by form onSubmit
+              variant: 'primary',
+              loading: saving,
+              disabled: saving
+            }}
+            secondaryButton={{
+              label: 'Cerrar',
+              onClick: () => setIsModalOpen(false),
+              disabled: saving
+            }}
+          />
+        </form>
+      </ResponsiveModal>
     </div>
   );
 };

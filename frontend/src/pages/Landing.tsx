@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { db } from '@/services/db';
+import ResponsiveModal from '@/components/ResponsiveModal';
+import ModalFooter from '@/components/ModalFooter';
 
 const Landing: React.FC = () => {
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -480,29 +482,26 @@ const PriceCard = ({ plan, price, features, featured, desc }: any) => (
 );
 
 const LegalModal = ({ isOpen, onClose, title, content }: any) => {
-  if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
+    <ResponsiveModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      maxWidth="2xl"
+      fullScreenOnMobile={true}
+    >
       <div 
-        className="bg-white rounded-3xl sm:rounded-[40px] w-full max-w-2xl p-6 sm:p-8 md:p-12 shadow-2xl relative my-8 animate-in fade-in zoom-in duration-300"
-        onClick={e => e.stopPropagation()}
-      >
-        <button onClick={onClose} className="absolute top-6 right-6 sm:top-8 sm:right-8 text-slate-400 hover:text-slate-600 transition-colors">
-          <i className="fa-solid fa-xmark text-xl"></i>
-        </button>
-        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-6 sm:mb-8 tracking-tight pr-8">{title}</h2>
-        <div 
-          className="prose prose-slate prose-sm sm:prose-base max-w-none text-slate-500 font-medium leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: content }}
-        ></div>
-        <button 
-          onClick={onClose}
-          className="mt-8 sm:mt-12 w-full py-3 sm:py-4 bg-slate-900 text-white rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest shadow-xl hover:bg-indigo-600 transition-all"
-        >
-          Entendido
-        </button>
-      </div>
-    </div>
+        className="prose prose-slate prose-sm sm:prose-base max-w-none text-slate-500 font-medium leading-relaxed"
+        dangerouslySetInnerHTML={{ __html: content }}
+      ></div>
+      <ModalFooter
+        primaryButton={{
+          label: 'Entendido',
+          onClick: onClose,
+          variant: 'primary'
+        }}
+      />
+    </ResponsiveModal>
   );
 };
 
