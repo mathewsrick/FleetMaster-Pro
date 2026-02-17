@@ -88,15 +88,28 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <TrialBanner status={status} />
 
-      {/* Mobile Sidebar Overlay */}
-      <div
-        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-      >
-        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeMenu}></div>
-        <aside className={`absolute top-0 left-0 bottom-0 w-72 bg-slate-900 flex flex-col transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <SidebarContent />
-        </aside>
-      </div>
+      {/* Mobile Sidebar Overlay - SIEMPRE renderizado pero oculto */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-[9999] lg:hidden"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+        >
+          {/* Overlay oscuro */}
+          <div 
+            className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" 
+            onClick={closeMenu}
+            style={{ position: 'absolute', width: '100%', height: '100%' }}
+          ></div>
+          
+          {/* Menú lateral */}
+          <aside 
+            className="absolute top-0 left-0 bottom-0 w-72 bg-slate-900 flex flex-col shadow-2xl"
+            style={{ position: 'absolute', height: '100%', maxWidth: '80%' }}
+          >
+            <SidebarContent />
+          </aside>
+        </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Sidebar */}
@@ -105,30 +118,44 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
         </aside>
 
         <main className="flex-1 overflow-auto">
-          <header className="bg-white h-20 border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-40">
-            {/* Mobile Menu Button */}
+          <header className="bg-white h-16 sm:h-20 border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+            {/* Mobile Menu Button - MÁS VISIBLE */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden text-slate-700 hover:text-indigo-600 transition-colors p-2"
+              className="lg:hidden flex items-center justify-center w-12 h-12 -ml-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 active:bg-slate-200 transition-all rounded-lg"
               aria-label="Abrir menú"
+              type="button"
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+                display: 'flex'
+              }}
             >
               <i className="fa-solid fa-bars text-2xl"></i>
             </button>
 
+            {/* Logo móvil (opcional) */}
+            <div className="lg:hidden flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
+              <div className="bg-indigo-600 p-1.5 rounded-lg text-white">
+                <i className="fa-solid fa-truck-fast text-sm"></i>
+              </div>
+              <span className="font-black text-base tracking-tight text-slate-900">Fleet</span>
+            </div>
+
             {/* User Info */}
-            <div className="flex items-center gap-3 sm:gap-4 ml-auto">
-              <div className="text-right">
+            <div className="flex items-center gap-2 sm:gap-4 ml-auto">
+              <div className="text-right hidden sm:block">
                 <p className="text-sm font-black text-slate-900">{username}</p>
                 <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
                   {role === 'SUPERADMIN' ? 'Control Maestro' : (status?.plan.replace('_', ' ') || 'Free Trial')}
                 </p>
               </div>
-              <div className="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-black border border-slate-200 uppercase">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-black border border-slate-200 uppercase text-sm">
                 {username[0]}
               </div>
             </div>
           </header>
-          <div className="p-8">
+          <div className="p-4 sm:p-8">
             {children}
           </div>
         </main>
