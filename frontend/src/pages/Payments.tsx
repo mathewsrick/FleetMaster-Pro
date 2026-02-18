@@ -426,20 +426,20 @@ const Payments: React.FC = () => {
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+                <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Monto a Recibir ($)</label>
                 <input
                   type="number"
                   required
                   disabled={saving}
-                  value={formData.amount}
+                  value={formData.amount || ''}
                   onChange={e =>
-                    setFormData({ ...formData, amount: Number(e.target.value) })
+                  setFormData({ ...formData, amount: Number(e.target.value) })
                   }
                   className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-3xl outline-none font-black text-base sm:text-sm transition-all"
                   placeholder="0.00"
                 />
-              </div>
+                </div>
               <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Fecha de Pago</label>
                 <DateInput

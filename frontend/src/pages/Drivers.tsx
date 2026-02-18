@@ -94,9 +94,8 @@ const Drivers: React.FC = () => {
 
       await db.saveDriver(driver, isEdit);
 
-      if (formData.vehicleId) {
-        await db.assignDriver(driver.id, formData.vehicleId);
-      }
+      // ✅ No es necesario llamar assignDriver - el vehículo ya se asigna en saveDriver
+      // El backend maneja la asignación de vehículo en create() y update()
 
       Swal.fire({ icon: 'success', title: 'Completado', text: 'Conductor guardado con éxito.', timer: 1500, showConfirmButton: false });
 
@@ -108,7 +107,30 @@ const Drivers: React.FC = () => {
       setIsModalOpen(false);
       loadData();
     } catch (err: any) {
-      Swal.fire({ icon: 'error', title: 'Error', text: err?.data?.message || 'Error al guardar.' });
+      const errorCode = err?.data?.code;
+      const errorMessage = err?.data?.message || 'Error al guardar.';
+
+      if (errorCode === 'DUPLICATE_DRIVER') {
+        Swal.fire({ 
+          icon: 'warning', 
+          title: 'Conductor Duplicado', 
+          text: errorMessage,
+          confirmButtonColor: '#4f46e5'
+        });
+      } else if (errorCode === 'PLAN_LIMIT_DRIVERS') {
+        Swal.fire({ 
+          icon: 'info', 
+          title: 'Límite de Plan Alcanzado', 
+          text: errorMessage + ' Considera actualizar tu plan.',
+          confirmButtonColor: '#4f46e5'
+        });
+      } else {
+        Swal.fire({ 
+          icon: 'error', 
+          title: 'Error', 
+          text: errorMessage 
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -126,9 +148,18 @@ const Drivers: React.FC = () => {
       cancelButtonText: 'Cancelar'
     });
     if (res.isConfirmed) {
-      await db.deleteDriver(id);
-      loadData();
-      Swal.fire('Eliminado', 'El conductor ha sido removido.', 'success');
+      try {
+        await db.deleteDriver(id);
+        await loadData();
+        Swal.fire('Eliminado', 'El conductor ha sido removido.', 'success');
+      } catch (err: any) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al eliminar',
+          text: err?.data?.message || 'No se pudo eliminar el conductor. Puede tener registros asociados.',
+          confirmButtonColor: '#4f46e5'
+        });
+      }
     }
   };
 
@@ -382,8 +413,10 @@ const Drivers: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Correo Electrónico</label>
-              <input type="email" required placeholder="conductor@correo.com" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
+                Correo Electrónico <span className="text-slate-300 font-normal">(Opcional)</span>
+              </label>
+              <input type="email" placeholder="conductor@correo.com" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner" />
             </div>
             <div>
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Número de Teléfono</label>

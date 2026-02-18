@@ -17,6 +17,45 @@ export const getAll = async (userId: string, query: any) => {
 };
 
 export const create = async (userId: string, data: any) => {
+  // 1️⃣ Verificar si existe un conductor con el mismo idNumber (incluyendo soft-deleted)
+  const existingDriver = await repo.findByIdNumber(userId, data.idNumber);
+
+  if (existingDriver) {
+    if (!existingDriver.deletedAt) {
+      // Conductor activo con mismo idNumber - ERROR
+      throw {
+        code: 'DUPLICATE_DRIVER',
+        message: `Ya existe un conductor activo con cédula ${data.idNumber}`,
+      };
+    }
+
+    // 2️⃣ Conductor existe pero está eliminado (soft delete) - RESTAURAR
+    console.log(`🔄 Restaurando conductor eliminado: ${existingDriver.firstName} ${existingDriver.lastName} (ID: ${existingDriver.id})`);
+    
+    // Desasignar vehículo si se está asignando a otro conductor
+    if (data.vehicleId) {
+      const driverWithVehicle = await repo.findByVehicleId(data.vehicleId);
+      if (driverWithVehicle && driverWithVehicle.id !== existingDriver.id) {
+        await repo.update(userId, driverWithVehicle.id, { vehicleId: null });
+      }
+    }
+
+    // Restaurar conductor con nuevos datos
+    const restoredDriver = await repo.restore(userId, existingDriver.id, data);
+
+    // Enviar email de bienvenida si tiene email
+    if (restoredDriver.email) {
+      await emailService.sendEmail({
+        to: restoredDriver.email,
+        subject: `¡Bienvenido nuevamente! - Términos y Condiciones FleetMaster Hub`,
+        html: emailService.templates.driverWelcome(`${restoredDriver.firstName} ${restoredDriver.lastName}`)
+      });
+    }
+
+    return restoredDriver;
+  }
+
+  // 3️⃣ Conductor no existe - CREAR NUEVO (lógica original)
   const { total } = await repo.findAll(userId, { page: 1, limit: 1 });
   const subscription = await authRepo.getActiveSubscription(userId);
   const plan = subscription ? subscription.plan : 'free_trial';
@@ -45,6 +84,17 @@ export const create = async (userId: string, data: any) => {
 };
 
 export const update = async (userId: string, id: string, data: any) => {
+  // Si se está cambiando el vehículo, primero desasignar el vehículo del conductor anterior
+  if (data.vehicleId) {
+    // Buscar si hay otro conductor con este vehículo
+    const existingDriver = await repo.findByVehicleId(data.vehicleId);
+    
+    // Si existe y no es el mismo conductor que estamos editando, desasignarlo
+    if (existingDriver && existingDriver.id !== id) {
+      await repo.update(userId, existingDriver.id, { vehicleId: null });
+    }
+  }
+  
   await repo.update(userId, id, data);
 };
 

@@ -195,7 +195,6 @@ const PricingCheckout: React.FC = () => {
               { text: "Reportes avanzados", included: true },
               { text: "Exportar a Excel", included: true },
               { text: "Dashboard personalizado", included: true },
-
               { text: "API personalizada", included: true }
             ]}
             onSelect={() => handlePurchase('enterprise')}

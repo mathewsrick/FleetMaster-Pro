@@ -104,9 +104,9 @@ model Transaction {
 }
 
 model Driver {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   firstName    String
   lastName     String
   email        String?
@@ -114,6 +114,7 @@ model Driver {
   idNumber     String
   licensePhoto String?
   idPhoto      String?
+  deletedAt    DateTime?
 
   vehicleId    String?   @unique
   vehicle      Vehicle?  @relation(fields: [vehicleId], references: [id])
@@ -121,6 +122,7 @@ model Driver {
   arrears      Arrear[]
 
   @@index([userId, idNumber])
+  @@index([userId, deletedAt])
 }
 
 model Vehicle {
@@ -156,10 +158,10 @@ model Payment {
   date      DateTime    @default(now())
   
   driverId  String
-  driver    Driver      @relation(fields: [driverId], references: [id])
+  driver    Driver      @relation(fields: [driverId], references: [id], onDelete: Cascade)
   
   vehicleId String
-  vehicle   Vehicle     @relation(fields: [vehicleId], references: [id])
+  vehicle   Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   
   type      PaymentType @default(renta)
   arrearId  String?
@@ -176,10 +178,10 @@ model Arrear {
   status          ArrearStatus @default(pending)
   
   driverId        String
-  driver          Driver       @relation(fields: [driverId], references: [id])
+  driver          Driver       @relation(fields: [driverId], references: [id], onDelete: Cascade)
   
   vehicleId       String
-  vehicle         Vehicle      @relation(fields: [vehicleId], references: [id])
+  vehicle         Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   
   dueDate         DateTime
   originPaymentId String?

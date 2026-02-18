@@ -31,6 +31,13 @@ export const formatDateToISO = (dateStr: string): string => {
 export const formatDateToDisplay = (dateStr: string): string => {
   if (!dateStr) return '';
   
+  // Si está en formato ISO (yyyy-mm-dd), parsear directamente sin timezone
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
+  }
+  
+  // Fallback para otros formatos
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
   
@@ -53,14 +60,16 @@ export const getTodayDateDisplay = (): string => {
 // Formato para mostrar en reportes (incluye hora)
 export const formatDateDisplay = (dateStr: string) => {
   if (!dateStr) return 'N/A';
+  
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
   
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = d.getFullYear();
-  const hour = String(d.getHours()).padStart(2, '0');
-  const minute = String(d.getMinutes()).padStart(2, '0');
+  // Usar UTC para evitar problemas de timezone con la fecha
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const year = d.getUTCFullYear();
+  const hour = String(d.getUTCHours()).padStart(2, '0');
+  const minute = String(d.getUTCMinutes()).padStart(2, '0');
   
   return `${day}/${month}/${year} ${hour}:${minute}`;
 };
