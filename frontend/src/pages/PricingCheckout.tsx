@@ -134,7 +134,20 @@ const PricingCheckout: React.FC = () => {
             price={getPrice(59900)} 
             duration={duration}
             limits="3 Vehículos | 5 Conductores"
-            desc="Soporte por email y visualización de historial de 30 días."
+            features={[
+              { text: "Hasta 3 vehículos", included: true },
+              { text: "Hasta 5 conductores", included: true },
+              { text: "Gestión de pagos", included: true },
+              { text: "Control de gastos", included: true },
+              { text: "Historial de 30 días", included: true },
+              { text: "Alertas de vencimientos", included: true },
+              { text: "Soporte por email", included: true },
+              { text: "Reportes básicos", included: true },
+              { text: "Exportar a Excel", included: false },
+              { text: "Reportes avanzados", included: false },
+              { text: "Soporte prioritario", included: false },
+              { text: "API personalizada", included: false }
+            ]}
             onSelect={() => handlePurchase('basico')}
             loading={loading === 'basico'}
             isCurrent={currentPlan === 'basico'}
@@ -147,7 +160,19 @@ const PricingCheckout: React.FC = () => {
             duration={duration}
             recommended
             limits="6 Vehículos | 10 Conductores"
-            desc="Reportes de Excel, soporte prioritario y búsqueda de 90 días."
+            features={[
+              { text: "Hasta 6 vehículos", included: true },
+              { text: "Hasta 10 conductores", included: true },
+              { text: "Gestión de pagos", included: true },
+              { text: "Control de gastos", included: true },
+              { text: "Historial de 90 días", included: true },
+              { text: "Alertas de vencimientos", included: true },
+              { text: "Soporte prioritario", included: true },
+              { text: "Reportes avanzados", included: true },
+              { text: "Exportar a Excel", included: true },
+              { text: "Dashboard personalizado", included: true },
+              { text: "API personalizada", included: false }
+            ]}
             onSelect={() => handlePurchase('pro')}
             loading={loading === 'pro'}
             isCurrent={currentPlan === 'pro'}
@@ -159,7 +184,20 @@ const PricingCheckout: React.FC = () => {
             price={getPrice(145900)} 
             duration={duration}
             limits="Vehículos Ilimitados"
-            desc="Reportes semanales automáticos y acceso a API personalizada."
+            features={[
+              { text: "Vehículos ilimitados", included: true },
+              { text: "Conductores ilimitados", included: true },
+              { text: "Gestión de pagos", included: true },
+              { text: "Control de gastos", included: true },
+              { text: "Historial ilimitado", included: true },
+              { text: "Alertas personalizadas", included: true },
+              { text: "Soporte 24/7", included: true },
+              { text: "Reportes avanzados", included: true },
+              { text: "Exportar a Excel", included: true },
+              { text: "Dashboard personalizado", included: true },
+
+              { text: "API personalizada", included: true }
+            ]}
             onSelect={() => handlePurchase('enterprise')}
             loading={loading === 'enterprise'}
             isCurrent={currentPlan === 'enterprise'}
@@ -172,7 +210,7 @@ const PricingCheckout: React.FC = () => {
   );
 };
 
-const PlanOption = ({ name, price, limits, recommended, desc, duration, onSelect, loading, isCurrent, isDisabled, restrictionMsg }: any) => {
+const PlanOption = ({ name, price, limits, recommended, features, duration, onSelect, loading, isCurrent, isDisabled, restrictionMsg }: any) => {
   const durationLabel = {
     monthly: 'mes',
     semiannual: 'semestre',
@@ -180,21 +218,31 @@ const PlanOption = ({ name, price, limits, recommended, desc, duration, onSelect
   };
 
   return (
-    <div className={`p-10 rounded-[40px] bg-white border-2 transition-all flex flex-col relative ${
+    <div className={`p-8 rounded-[40px] bg-white border-2 transition-all flex flex-col relative ${
       recommended ? 'border-indigo-600 shadow-2xl scale-105 z-10' : 'border-slate-100 shadow-sm'
     } ${isDisabled && !isCurrent ? 'opacity-40 grayscale-[0.5]' : ''}`}>
       {recommended && <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] font-black px-6 py-2 rounded-full uppercase tracking-[0.2em] shadow-xl">Más Recomendado</span>}
       {isCurrent && <span className="absolute top-6 right-6 text-indigo-600 text-[8px] font-black uppercase bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100 shadow-sm">Plan Actual</span>}
       
       <h3 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">{name}</h3>
-      <p className="text-indigo-600 font-black text-[10px] uppercase tracking-widest mb-4 flex items-center gap-2">
+      <p className="text-indigo-600 font-black text-[10px] uppercase tracking-widest mb-6 flex items-center gap-2">
          <i className="fa-solid fa-check-double text-[8px]"></i> {limits}
       </p>
-      <p className="text-slate-400 text-sm font-medium mb-10 leading-relaxed">{desc}</p>
       
-      <div className="text-5xl font-black text-slate-900 mb-10 mt-auto flex items-baseline gap-1">
+      <div className="text-5xl font-black text-slate-900 mb-6 flex items-baseline gap-1">
         <span className="text-2xl opacity-40">$</span>{price.toLocaleString()}
         <span className="text-xs font-bold text-slate-300">/{durationLabel[duration as keyof typeof durationLabel]}</span>
+      </div>
+
+      <div className="flex-1 mb-6">
+        <ul className="space-y-3">
+          {features.map((feature: any, idx: number) => (
+            <li key={idx} className={`flex items-start gap-3 text-sm ${feature.included ? 'text-slate-700' : 'text-slate-300'}`}>
+              <i className={`fa-solid ${feature.included ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-slate-300'} text-base mt-0.5 flex-shrink-0`}></i>
+              <span className={`${feature.included ? 'font-medium' : 'font-normal line-through'}`}>{feature.text}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <button 
