@@ -15,7 +15,7 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
   const [data, total] = await Promise.all([
     prisma.payment.findMany({
       where,
-      orderBy: { date: 'desc' },
+      orderBy: { createdAt: 'desc' },
       skip,
       take: limit
     }),
@@ -31,7 +31,7 @@ export const findById = async (userId: string, id: string) =>
 export const findByDriver = async (userId: string, driverId: string) =>
   prisma.payment.findMany({
     where: { userId, driverId },
-    orderBy: { date: 'desc' }
+    orderBy: { createdAt: 'desc' }
   });
 
 export const create = async (data: any) => {

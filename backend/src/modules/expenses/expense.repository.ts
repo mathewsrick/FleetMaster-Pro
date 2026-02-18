@@ -15,7 +15,7 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
   const [data, total] = await Promise.all([
     prisma.expense.findMany({
       where,
-      orderBy: { date: 'desc' },
+      orderBy: { createdAt: 'desc' },
       skip,
       take: limit
     }),
