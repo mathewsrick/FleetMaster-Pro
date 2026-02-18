@@ -70,6 +70,33 @@ const Vehicles: React.FC = () => {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    const res = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Se eliminará permanentemente el vehículo.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#4f46e5',
+      cancelButtonColor: '#f43f5e',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+    if (res.isConfirmed) {
+      try {
+        await db.deleteVehicle(id);
+        await loadData();
+        Swal.fire('Eliminado', 'El vehículo ha sido removido.', 'success');
+      } catch (err: any) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al eliminar',
+          text: err?.data?.message || 'No se pudo eliminar el vehículo. Puede tener registros asociados.',
+          confirmButtonColor: '#4f46e5'
+        });
+      }
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
@@ -139,11 +166,30 @@ const Vehicles: React.FC = () => {
       setIsModalOpen(false);
       loadData();
     } catch (err: any) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err.data?.error || 'No se pudo guardar.'
-      });
+      const errorCode = err?.data?.code;
+      const errorMessage = err?.data?.message || err.data?.error || 'No se pudo guardar.';
+
+      if (errorCode === 'DUPLICATE_VEHICLE') {
+        Swal.fire({ 
+          icon: 'warning', 
+          title: 'Vehículo Duplicado', 
+          text: errorMessage,
+          confirmButtonColor: '#4f46e5'
+        });
+      } else if (errorCode === 'PLAN_LIMIT_VEHICLES') {
+        Swal.fire({ 
+          icon: 'info', 
+          title: 'Límite de Plan Alcanzado', 
+          text: errorMessage + ' Considera actualizar tu plan.',
+          confirmButtonColor: '#4f46e5'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: errorMessage
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -263,6 +309,15 @@ const Vehicles: React.FC = () => {
                     className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(v.id);
+                    }}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                  >
+                    <i className="fa-solid fa-trash"></i>
                   </button>
                 </div>
               )

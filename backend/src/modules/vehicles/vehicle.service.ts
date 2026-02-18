@@ -18,22 +18,42 @@ export const save = async (userId: string, data: any) => {
   const existing = await repo.findById(data.id);
   
   if (!existing) {
+    // 1️⃣ Verificar si existe un vehículo con la misma placa (incluyendo soft-deleted)
+    const existingVehicle = await repo.findByLicensePlate(userId, data.licensePlate);
+
+    if (existingVehicle) {
+      if (!existingVehicle.deletedAt) {
+        // Vehículo activo con misma placa - ERROR
+        throw {
+          code: 'DUPLICATE_VEHICLE',
+          message: `Ya existe un vehículo activo con placa ${data.licensePlate}`,
+        };
+      }
+
+      // 2️⃣ Vehículo existe pero está eliminado (soft delete) - RESTAURAR
+      console.log(`🔄 Restaurando vehículo eliminado: ${existingVehicle.licensePlate} (ID: ${existingVehicle.id})`);
+      
+      const restoredVehicle = await repo.restore(userId, existingVehicle.id, data);
+      return restoredVehicle;
+    }
+
+    // 3️⃣ Vehículo no existe - CREAR NUEVO (validar límite)
     const { total } = await repo.findAll(userId, { page: 1, limit: 1 });
     const subscription = await authRepo.getActiveSubscription(userId);
     const plan = subscription ? subscription.plan : 'free_trial';
     const limit = PLAN_MAX_VEHICLES[plan] || 1;
 
     if (total >= limit) {
-      throw new Error(`Límite alcanzado para el plan ${plan.toUpperCase()}. Máximo: ${limit} vehículos.`);
+      throw {
+        code: 'PLAN_LIMIT_VEHICLES',
+        message: `Límite alcanzado para el plan ${plan.toUpperCase()}. Máximo: ${limit} vehículos.`,
+      };
     }
-  }
 
-  const vehicle = { ...data, userId };
-  if (existing) {
-    await repo.update(userId, vehicle);
+    await repo.create(userId, data);
   } else {
-    // Fix: Pass userId as the first argument to repo.create
-    await repo.create(userId, vehicle);
+    // Actualizar vehículo existente
+    await repo.update(userId, data);
   }
 };
 

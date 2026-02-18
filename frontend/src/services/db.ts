@@ -138,6 +138,7 @@ export const db = {
 
   getVehicles: (page = 1, limit = 100) => request<PaginatedResponse<Vehicle>>(`/vehicles?page=${page}&limit=${limit}`),
   saveVehicle: (v: Vehicle) => request('/vehicles', 'POST', v),
+  deleteVehicle: (id: string) => request(`/vehicles/${id}`, 'DELETE'),
   getDrivers: (page = 1, limit = 100) => request<PaginatedResponse<Driver>>(`/drivers?page=${page}&limit=${limit}`),
   saveDriver: (d: Driver, isEdit: boolean) => isEdit ? request(`/drivers/${d.id}`, 'PUT', d) : request('/drivers', 'POST', d),
   deleteDriver: (id: string) => request(`/drivers/${id}`, 'DELETE'),

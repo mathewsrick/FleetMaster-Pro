@@ -139,6 +139,7 @@ model Vehicle {
   soatExpiration   DateTime?
   techExpiration   DateTime?
   rentaValue       Decimal   @db.Decimal(12, 2)
+  deletedAt        DateTime?
   driver           Driver?
 
   photos           String[]
@@ -148,6 +149,7 @@ model Vehicle {
   arrears          Arrear[]
 
   @@unique([userId, licensePlate])
+  @@index([userId, deletedAt])
 }
 
 model Payment {

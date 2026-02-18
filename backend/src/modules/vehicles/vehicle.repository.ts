@@ -6,13 +6,21 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
 
   const [data, total] = await Promise.all([
     prisma.vehicle.findMany({
-      where: { userId },
+      where: { 
+        userId,
+        deletedAt: null // Solo vehículos activos
+      },
       include: { driver: true },
       orderBy: { licensePlate: 'asc' },
       skip,
       take: limit
     }),
-    prisma.vehicle.count({ where: { userId } })
+    prisma.vehicle.count({ 
+      where: { 
+        userId,
+        deletedAt: null // Solo contar vehículos activos
+      } 
+    })
   ]);
 
   const transformed = data.map((v: typeof data[0]) => ({
@@ -26,37 +34,75 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
 export const findById = async (id: string) =>
   prisma.vehicle.findUnique({ where: { id } });
 
+export const findByLicensePlate = async (userId: string, licensePlate: string) =>
+  prisma.vehicle.findFirst({
+    where: { 
+      userId,
+      licensePlate
+      // ⚠️ Busca tanto activos como eliminados
+    },
+    include: {
+      driver: { select: { id: true, firstName: true, lastName: true } }
+    }
+  });
+
+export const restore = async (userId: string, id: string, newData: any) => {
+  // Restaurar vehículo y actualizar sus datos
+  const updated = await prisma.vehicle.update({
+    where: { id },
+    data: {
+      year: Number(newData.year),
+      licensePlate: newData.licensePlate,
+      model: newData.model,
+      color: newData.color,
+      purchaseDate: newData.purchaseDate ? new Date(newData.purchaseDate) : null,
+      insurance: newData.insurance || null,
+      insuranceNumber: newData.insuranceNumber || null,
+      soatExpiration: newData.soatExpiration ? new Date(newData.soatExpiration) : null,
+      techExpiration: newData.techExpiration ? new Date(newData.techExpiration) : null,
+      rentaValue: Number(newData.rentaValue),
+      photos: Array.isArray(newData.photos) ? newData.photos : [],
+      deletedAt: null // 🔑 Restaurar
+    },
+    include: {
+      driver: true
+    }
+  });
+
+  // Transformar para que coincida con el formato esperado
+  return {
+    ...updated,
+    driverName: updated.driver ? `${updated.driver.firstName} ${updated.driver.lastName}` : null
+  };
+};
+
 export const create = async (userId: string, data: any) => {
-  return prisma.vehicle.create({
+  const created = await prisma.vehicle.create({
     data: {
       id: data.id,
       userId,
-
       year: Number(data.year),
       licensePlate: data.licensePlate,
       model: data.model,
       color: data.color,
-
-      purchaseDate: data.purchaseDate
-        ? new Date(data.purchaseDate)
-        : null,
-
+      purchaseDate: data.purchaseDate ? new Date(data.purchaseDate) : null,
       insurance: data.insurance || null,
       insuranceNumber: data.insuranceNumber || null,
-
-      soatExpiration: data.soatExpiration
-        ? new Date(data.soatExpiration)
-        : null,
-
-      techExpiration: data.techExpiration
-        ? new Date(data.techExpiration)
-        : null,
-
+      soatExpiration: data.soatExpiration ? new Date(data.soatExpiration) : null,
+      techExpiration: data.techExpiration ? new Date(data.techExpiration) : null,
       rentaValue: Number(data.rentaValue),
-
       photos: Array.isArray(data.photos) ? data.photos : []
+    },
+    include: {
+      driver: true
     }
   });
+
+  // Transformar para que coincida con el formato esperado
+  return {
+    ...created,
+    driverName: created.driver ? `${created.driver.firstName} ${created.driver.lastName}` : null
+  };
 };
 
 export const update = async (userId: string, payload: any) => {
@@ -75,47 +121,55 @@ export const update = async (userId: string, payload: any) => {
     throw new Error('Vehículo no encontrado');
   }
 
-  return prisma.vehicle.update({
+  const updated = await prisma.vehicle.update({
     where: { id: payload.id },
     data: {
       year: Number(payload.year),
       licensePlate: payload.licensePlate,
       model: payload.model,
       color: payload.color,
-
-      purchaseDate: payload.purchaseDate
-        ? new Date(payload.purchaseDate)
-        : null,
-
+      purchaseDate: payload.purchaseDate ? new Date(payload.purchaseDate) : null,
       insurance: payload.insurance || null,
       insuranceNumber: payload.insuranceNumber || null,
-
-      soatExpiration: payload.soatExpiration
-        ? new Date(payload.soatExpiration)
-        : null,
-
-      techExpiration: payload.techExpiration
-        ? new Date(payload.techExpiration)
-        : null,
-
+      soatExpiration: payload.soatExpiration ? new Date(payload.soatExpiration) : null,
+      techExpiration: payload.techExpiration ? new Date(payload.techExpiration) : null,
       rentaValue: Number(payload.rentaValue),
-
-      photos: Array.isArray(payload.photos)
-        ? payload.photos
-        : []
+      photos: Array.isArray(payload.photos) ? payload.photos : []
+    },
+    include: {
+      driver: true
     }
   });
+
+  // Transformar para que coincida con el formato esperado
+  return {
+    ...updated,
+    driverName: updated.driver ? `${updated.driver.firstName} ${updated.driver.lastName}` : null
+  };
 };
 
 export const remove = async (userId: string, id: string) => {
   // Validar pertenencia al tenant
   const vehicle = await prisma.vehicle.findFirst({
-    where: { id, userId }
+    where: { id, userId },
+    include: { driver: true }
   });
 
   if (!vehicle) {
     throw new Error('Vehículo no encontrado');
   }
 
-  return prisma.vehicle.delete({ where: { id } });
+  // Si el vehículo tiene un conductor asignado, desvincularlo
+  if (vehicle.driver) {
+    await prisma.driver.update({
+      where: { id: vehicle.driver.id },
+      data: { vehicleId: null }
+    });
+  }
+
+  // Soft delete
+  return prisma.vehicle.update({ 
+    where: { id },
+    data: { deletedAt: new Date() }
+  });
 };
