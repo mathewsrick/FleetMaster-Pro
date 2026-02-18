@@ -12,7 +12,7 @@ const getApiBase = () => {
 
 const API_BASE = getApiBase();
 
-// Convertir fecha de dd/mm/yyyy a yyyy-mm-dd (ISO format para backend)
+// Convertir fecha de dd/mm/yyyy a yyyy-mm-dd (ISO format para backend en UTC)
 export const formatDateToISO = (dateStr: string): string => {
   if (!dateStr) return '';
   // Si ya está en formato ISO (yyyy-mm-dd), retornar tal cual

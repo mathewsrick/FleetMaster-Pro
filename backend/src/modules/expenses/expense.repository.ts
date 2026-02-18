@@ -6,7 +6,14 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
 
   const where: any = { userId };
   if (startDate && endDate) {
-    where.date = { gte: new Date(startDate), lte: new Date(endDate) };
+    // Usar UTC explícitamente con TIMESTAMPTZ
+    const startDateObj = new Date(startDate + 'T00:00:00.000Z');
+    const endDateObj = new Date(endDate + 'T23:59:59.999Z');
+    
+    where.date = { 
+      gte: startDateObj, 
+      lte: endDateObj 
+    };
   }
   if (search) {
     where.description = { contains: search, mode: 'insensitive' };
@@ -32,7 +39,10 @@ export const create = async (data: any) =>
   prisma.expense.create({
     data: {
       ...data,
-      date: new Date(data.date)
+      // Convertir a UTC si viene como string
+      date: data.date instanceof Date 
+        ? data.date 
+        : new Date(data.date + (data.date.includes('T') ? '' : 'T00:00:00.000Z'))
     }
   });
 
@@ -41,7 +51,10 @@ export const update = async (userId: string, data: any) =>
     where: { id: data.id },
     data: {
       ...data,
-      date: new Date(data.date)
+      // Convertir a UTC si viene como string
+      date: data.date instanceof Date 
+        ? data.date 
+        : new Date(data.date + (data.date.includes('T') ? '' : 'T00:00:00.000Z'))
     }
   });
 

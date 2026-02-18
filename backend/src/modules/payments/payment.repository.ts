@@ -6,9 +6,13 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
 
   const where: any = { userId };
   if (startDate && endDate) {
+    // Usar UTC explícitamente con TIMESTAMPTZ
+    const startDateObj = new Date(startDate + 'T00:00:00.000Z');
+    const endDateObj = new Date(endDate + 'T23:59:59.999Z');
+    
     where.date = {
-      gte: new Date(startDate),
-      lte: new Date(endDate)
+      gte: startDateObj,
+      lte: endDateObj
     };
   }
 
@@ -40,7 +44,10 @@ export const create = async (data: any) => {
   return prisma.payment.create({
     data: {
       ...paymentData,
-      date: new Date(paymentData.date)
+      // Convertir a UTC si viene como string
+      date: paymentData.date instanceof Date 
+        ? paymentData.date 
+        : new Date(paymentData.date + (paymentData.date.includes('T') ? '' : 'T00:00:00.000Z'))
     }
   });
 };
