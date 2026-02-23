@@ -24,26 +24,30 @@ export const checkExpirationsAndNotify = async () => {
   for (const v of expiringVehicles) {
     try {
       if (v.soatExpiration && v.soatExpiration <= alertDate && v.soatExpiration >= now) {
+        const daysRemaining = Math.ceil((new Date(v.soatExpiration).getTime() - now.getTime()) / (1000 * 3600 * 24));
         await emailService.sendEmail({
           to: v.user.email,
           subject: `⚠️ Vencimiento SOAT: ${v.licensePlate}`,
           html: emailService.templates.documentExpirationAlert({
-            vehiclePlate: v.licensePlate,
-            type: 'SOAT',
-            daysRemaining: Math.ceil((new Date(v.soatExpiration).getTime() - now.getTime()) / (1000 * 3600 * 24)),
-            expirationDate: v.soatExpiration.toLocaleDateString()
+            documentType: 'SOAT',
+            entityName: v.licensePlate,
+            daysRemaining,
+            expirationDate: v.soatExpiration.toLocaleDateString('es-CO'),
+            isExpired: daysRemaining <= 0
           })
         });
       }
       if (v.techExpiration && v.techExpiration <= alertDate && v.techExpiration >= now) {
+        const daysRemaining = Math.ceil((new Date(v.techExpiration).getTime() - now.getTime()) / (1000 * 3600 * 24));
         await emailService.sendEmail({
           to: v.user.email,
           subject: `⚠️ Vencimiento Tecnomecánica: ${v.licensePlate}`,
           html: emailService.templates.documentExpirationAlert({
-            vehiclePlate: v.licensePlate,
-            type: 'Revisión Tecnomecánica',
-            daysRemaining: Math.ceil((new Date(v.techExpiration).getTime() - now.getTime()) / (1000 * 3600 * 24)),
-            expirationDate: v.techExpiration.toLocaleDateString()
+            documentType: 'Revisión Tecnomecánica',
+            entityName: v.licensePlate,
+            daysRemaining,
+            expirationDate: v.techExpiration.toLocaleDateString('es-CO'),
+            isExpired: daysRemaining <= 0
           })
         });
       }
