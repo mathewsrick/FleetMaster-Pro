@@ -39,7 +39,7 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
     { path: '/dashboard', label: 'Dashboard', icon: 'fa-chart-pie' },
     { path: '/vehicles', label: 'Vehículos', icon: 'fa-car' },
     { path: '/drivers', label: 'Conductores', icon: 'fa-users' },
-    { path: '/payments', label: 'Pagos', icon: 'fa-money-bill-transfer' },
+    { path: '/payments', label: 'Recaudos', icon: 'fa-money-bill-transfer' },
     { path: '/expenses', label: 'Gastos', icon: 'fa-file-invoice-dollar' },
     { path: '/reports', label: 'Reportes', icon: 'fa-file-lines' },
   ];
