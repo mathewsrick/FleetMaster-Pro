@@ -15,6 +15,7 @@ const Dashboard: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
+  const [expenseTypeFilter, setExpenseTypeFilter] = useState<string>('');
 
   const authData = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
   const accountStatus: AccountStatus | undefined = authData.accountStatus;
@@ -94,6 +95,15 @@ const Dashboard: React.FC = () => {
     const daysToTecno = Math.ceil((tecno.getTime() - today.getTime()) / (1000 * 3600 * 24));
     return { totalRev, totalExp, net: totalRev - totalExp, daysToSoat, daysToTecno, paymentCount: vPayments.length };
   }, [selectedVehicle, data]);
+
+  const filteredVehicleExpenses = useMemo(() => {
+    if (!selectedVehicle) return [];
+    let expenses = data.expenses.filter(e => e.vehicleId === selectedVehicle.id);
+    if (expenseTypeFilter) {
+      expenses = expenses.filter(e => e.type === expenseTypeFilter);
+    }
+    return expenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [selectedVehicle, data.expenses, expenseTypeFilter]);
 
   const chartData = useMemo(() => {
     return Array.from({ length: 7 }).map((_, i) => {
@@ -219,6 +229,94 @@ const Dashboard: React.FC = () => {
                  <p className="text-[9px] sm:text-[10px] font-bold opacity-60 uppercase tracking-wider sm:tracking-widest italic">Ocupación Actual de la Flota</p>
               </div>
             </div>
+          </div>
+
+          {/* Historial de Gastos */}
+          <div className="p-4 sm:p-6 md:p-8 border-t border-slate-100">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2">
+                <i className="fa-solid fa-receipt text-rose-500 text-sm sm:text-base"></i>
+                <span className="truncate">Historial de Gastos</span>
+              </h3>
+              <select 
+                value={expenseTypeFilter} 
+                onChange={(e) => setExpenseTypeFilter(e.target.value)}
+                className="w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-rose-500 text-xs sm:text-sm font-bold shadow-sm"
+              >
+                <option value="">Todos los tipos</option>
+                <option value="reparacion">🔧 Reparación</option>
+                <option value="repuesto">⚙️ Repuesto</option>
+                <option value="combustible">⛽ Combustible</option>
+                <option value="mantenimiento">🛠️ Mantenimiento</option>
+                <option value="seguro">🛡️ Seguro</option>
+                <option value="impuesto">📋 Impuesto</option>
+                <option value="multa">🚨 Multa</option>
+                <option value="lavado">🧼 Lavado</option>
+                <option value="otro">📦 Otro</option>
+              </select>
+            </div>
+
+            {filteredVehicleExpenses.length > 0 ? (
+              <div className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
+                {filteredVehicleExpenses.map((expense) => {
+                  const typeColors: Record<string, string> = {
+                    reparacion: 'bg-orange-50 text-orange-600 border-orange-100',
+                    repuesto: 'bg-blue-50 text-blue-600 border-blue-100',
+                    combustible: 'bg-amber-50 text-amber-600 border-amber-100',
+                    mantenimiento: 'bg-purple-50 text-purple-600 border-purple-100',
+                    seguro: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                    impuesto: 'bg-red-50 text-red-600 border-red-100',
+                    multa: 'bg-rose-50 text-rose-600 border-rose-100',
+                    lavado: 'bg-cyan-50 text-cyan-600 border-cyan-100',
+                    otro: 'bg-slate-50 text-slate-600 border-slate-100'
+                  };
+                  const typeLabels: Record<string, string> = {
+                    reparacion: 'Reparación',
+                    repuesto: 'Repuesto',
+                    combustible: 'Combustible',
+                    mantenimiento: 'Mantenimiento',
+                    seguro: 'Seguro',
+                    impuesto: 'Impuesto',
+                    multa: 'Multa',
+                    lavado: 'Lavado',
+                    otro: 'Otro'
+                  };
+                  
+                  return (
+                    <div key={expense.id} className="flex items-center justify-between p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100 hover:shadow-sm transition-shadow">
+                      <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                        <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-rose-100 flex items-center justify-center">
+                          <i className="fa-solid fa-receipt text-rose-600 text-xs sm:text-sm"></i>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start gap-2 mb-1">
+                            <span className={`text-[8px] sm:text-[9px] font-black px-2 py-0.5 sm:px-2 sm:py-1 rounded-lg border uppercase tracking-wider ${typeColors[expense.type] || typeColors.otro}`}>
+                              {typeLabels[expense.type] || expense.type}
+                            </span>
+                            <span className="text-[9px] sm:text-[10px] font-mono text-slate-400">
+                              {new Date(expense.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-xs sm:text-sm font-bold text-slate-900 line-clamp-1">
+                            {expense.description || <span className="text-slate-400 italic">Sin descripción</span>}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0 ml-2 sm:ml-4">
+                        <p className="text-sm sm:text-base font-black text-rose-600">-${Number(expense.amount).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 sm:py-12 text-slate-400">
+                <i className="fa-solid fa-inbox text-3xl sm:text-4xl mb-2 sm:mb-3 opacity-20"></i>
+                <p className="text-xs sm:text-sm font-bold">
+                  {expenseTypeFilter ? 'No hay gastos de este tipo' : 'Sin gastos registrados'}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

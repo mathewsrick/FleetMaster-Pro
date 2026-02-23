@@ -12,6 +12,8 @@ export const getAll = async (userId: string, query: any, plan: string) => {
   const limit = Math.min(parseInt(query.limit) || 10, 100); // 🔒 Límite máximo de 100
   let startDate = query.startDate;
   let endDate = query.endDate;
+  const vehicleId = query.vehicleId || '';
+  const type = query.type || '';
   // 🔒 Sanitizar búsqueda (max 100 caracteres, remover caracteres especiales)
   const search = query.search 
     ? String(query.search).trim().slice(0, 100).replace(/[<>]/g, '')
@@ -35,7 +37,7 @@ export const getAll = async (userId: string, query: any, plan: string) => {
     }
   }
 
-  const result = await repo.findAll(userId, { page, limit, startDate, endDate, search });
+  const result = await repo.findAll(userId, { page, limit, startDate, endDate, search, vehicleId, type });
   return { ...result, page, limit };
 };
 

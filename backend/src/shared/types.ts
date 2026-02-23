@@ -112,10 +112,11 @@ export interface Payment {
 export interface Expense {
   id: string;
   userId: string;
-  description: string;
+  description?: string;
   amount: number;
   date: string;
   vehicleId: string;
+  type: 'reparacion' | 'repuesto' | 'combustible' | 'mantenimiento' | 'seguro' | 'impuesto' | 'multa' | 'lavado' | 'otro';
 }
 
 export interface Arrear {

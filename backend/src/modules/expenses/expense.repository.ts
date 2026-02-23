@@ -1,7 +1,7 @@
 import { prisma } from '../../shared/db.js';
 
-export const findAll = async (userId: string, options: { page: number, limit: number, startDate?: string, endDate?: string, search?: string }) => {
-  const { page, limit, startDate, endDate, search } = options;
+export const findAll = async (userId: string, options: { page: number, limit: number, startDate?: string, endDate?: string, search?: string, vehicleId?: string, type?: string }) => {
+  const { page, limit, startDate, endDate, search, vehicleId, type } = options;
   const skip = (page - 1) * limit;
 
   const where: any = { userId };
@@ -16,7 +16,17 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
     };
   }
   if (search) {
-    where.description = { contains: search, mode: 'insensitive' };
+    // Buscar en descripción O en tipo
+    where.OR = [
+      { description: { contains: search, mode: 'insensitive' } },
+      { type: { contains: search, mode: 'insensitive' } }
+    ];
+  }
+  if (vehicleId) {
+    where.vehicleId = vehicleId;
+  }
+  if (type) {
+    where.type = type;
   }
 
   const [data, total] = await Promise.all([

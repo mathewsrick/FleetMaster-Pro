@@ -22,7 +22,8 @@ const Expenses: React.FC = () => {
     description: '',
     amount: 0,
     date: formatDateToISO(getTodayDateDisplay()),
-    vehicleId: ''
+    vehicleId: '',
+    type: 'reparacion'
   });
 
   useEffect(() => { loadData(); }, [page, limit, search]);
@@ -73,7 +74,7 @@ const Expenses: React.FC = () => {
     try {
       await db.saveExpense({ ...formData, id: crypto.randomUUID() } as Expense);
       setIsModalOpen(false);
-      setFormData({ description: '', amount: 0, date: formatDateToISO(getTodayDateDisplay()), vehicleId: '' });
+      setFormData({ description: '', amount: 0, date: formatDateToISO(getTodayDateDisplay()), vehicleId: '', type: 'reparacion' });
       loadData();
     } catch (err: any) {
       alert('Error al guardar el gasto');
@@ -102,7 +103,7 @@ const Expenses: React.FC = () => {
         <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
         <input 
           type="text" 
-          placeholder="Buscar gasto por descripción..." 
+          placeholder="Buscar por descripción o tipo de gasto..." 
           value={search}
           onChange={(e) => {setSearch(e.target.value); setPage(1);}}
           className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-rose-500 transition-all font-medium shadow-sm"
@@ -136,12 +137,46 @@ const Expenses: React.FC = () => {
               }
             },
             {
+              key: 'type',
+              label: 'Tipo',
+              mobileOrder: 2,
+              render: (type: string) => {
+                const typeColors: Record<string, string> = {
+                  reparacion: 'bg-orange-50 text-orange-600 border-orange-100',
+                  repuesto: 'bg-blue-50 text-blue-600 border-blue-100',
+                  combustible: 'bg-amber-50 text-amber-600 border-amber-100',
+                  mantenimiento: 'bg-purple-50 text-purple-600 border-purple-100',
+                  seguro: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                  impuesto: 'bg-red-50 text-red-600 border-red-100',
+                  multa: 'bg-rose-50 text-rose-600 border-rose-100',
+                  lavado: 'bg-cyan-50 text-cyan-600 border-cyan-100',
+                  otro: 'bg-slate-50 text-slate-600 border-slate-100'
+                };
+                const typeLabels: Record<string, string> = {
+                  reparacion: 'Reparación',
+                  repuesto: 'Repuesto',
+                  combustible: 'Combustible',
+                  mantenimiento: 'Mantenimiento',
+                  seguro: 'Seguro',
+                  impuesto: 'Impuesto',
+                  multa: 'Multa',
+                  lavado: 'Lavado',
+                  otro: 'Otro'
+                };
+                return (
+                  <span className={`text-[9px] font-black px-2 py-1 rounded-lg border uppercase tracking-wider ${typeColors[type] || typeColors.otro}`}>
+                    {typeLabels[type] || type}
+                  </span>
+                );
+              }
+            },
+            {
               key: 'description',
               label: 'Descripción',
               mobileOrder: 0,
-              render: (desc: string) => (
+              render: (desc: string | undefined) => (
                 <span className="text-sm font-bold text-slate-900 line-clamp-2">
-                  {desc}
+                  {desc || <span className="text-slate-400 italic">Sin descripción</span>}
                 </span>
               )
             },
@@ -219,8 +254,22 @@ const Expenses: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Descripción</label>
-              <input required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none text-sm" placeholder="Mantenimiento, repuestos, etc." />
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Tipo de Gasto</label>
+              <select required value={formData.type} onChange={e => setFormData({...formData, type: e.target.value as any})} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm">
+                <option value="reparacion">🔧 Reparación</option>
+                <option value="repuesto">⚙️ Repuesto</option>
+                <option value="combustible">⛽ Combustible</option>
+                <option value="mantenimiento">🛠️ Mantenimiento</option>
+                <option value="seguro">🛡️ Seguro</option>
+                <option value="impuesto">📋 Impuesto</option>
+                <option value="multa">🚨 Multa</option>
+                <option value="lavado">🧼 Lavado</option>
+                <option value="otro">📦 Otro</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Descripción (Opcional)</label>
+              <input value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none text-sm" placeholder="Detalle del gasto..." />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <input type="number" required placeholder="Costo" value={formData.amount || ''} onChange={e => setFormData({...formData, amount: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none" />

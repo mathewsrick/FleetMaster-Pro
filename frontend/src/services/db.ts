@@ -153,7 +153,7 @@ export const db = {
   payArrear: (arrearId: string, data: { amount: number; date: string }) => request(`/arrears/${arrearId}/pay`, 'POST', data),
   getPaymentsByDriver: (driverId: string) => request<Payment[]>(`/payments/driver/${driverId}`),
   
-  getExpenses: (params: { page?: number, limit?: number, startDate?: string, endDate?: string, search?: string } = {}) => {
+  getExpenses: (params: { page?: number, limit?: number, startDate?: string, endDate?: string, search?: string, vehicleId?: string, type?: string } = {}) => {
     const q = new URLSearchParams(params as any).toString();
     return request<PaginatedResponse<Expense>>(`/expenses?${q}`);
   },

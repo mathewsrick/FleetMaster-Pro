@@ -17,6 +17,7 @@ const Reports: React.FC = () => {
   // Filtros y Paginación
   const [selectedVehicleId, setSelectedVehicleId] = useState('');
   const [selectedDriverId, setSelectedDriverId] = useState('');
+  const [selectedExpenseType, setSelectedExpenseType] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -50,7 +51,7 @@ const Reports: React.FC = () => {
   // Reset pagination when tab or filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, selectedVehicleId, selectedDriverId]);
+  }, [activeTab, selectedVehicleId, selectedDriverId, selectedExpenseType]);
 
   const exportToExcel = (tableId: string, fileName: string) => {
     if (!canExportExcel) return;
@@ -74,6 +75,7 @@ const Reports: React.FC = () => {
     if (activeTab === 'expenses') {
       let filtered = data.expenses;
       if (selectedVehicleId) filtered = filtered.filter(e => e.vehicleId === selectedVehicleId);
+      if (selectedExpenseType) filtered = filtered.filter(e => e.type === selectedExpenseType);
       const total = filtered.length;
       const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
       return { list: paginated, total };
@@ -86,7 +88,7 @@ const Reports: React.FC = () => {
       return { list: paginated, total };
     }
     return { list: [], total: 0 };
-  }, [activeTab, data, selectedVehicleId, selectedDriverId, currentPage]);
+  }, [activeTab, data, selectedVehicleId, selectedDriverId, selectedExpenseType, currentPage]);
 
   const consolidatedStats = useMemo(() => {
     const totalIncome = data.payments.reduce((sum, p) => sum + Number(p.amount), 0);
@@ -177,6 +179,27 @@ const Reports: React.FC = () => {
               >
                 <option value="">Todos</option>
                 {data.vehicles.map(v => <option key={v.id} value={v.id}>{v.licensePlate}</option>)}
+              </select>
+            </div>
+          )}
+          {activeTab === 'expenses' && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tipo:</span>
+              <select 
+                value={selectedExpenseType} 
+                onChange={(e) => setSelectedExpenseType(e.target.value)}
+                className="text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-rose-500"
+              >
+                <option value="">Todos los tipos</option>
+                <option value="reparacion">🔧 Reparación</option>
+                <option value="repuesto">⚙️ Repuesto</option>
+                <option value="combustible">⛽ Combustible</option>
+                <option value="mantenimiento">🛠️ Mantenimiento</option>
+                <option value="seguro">🛡️ Seguro</option>
+                <option value="impuesto">📋 Impuesto</option>
+                <option value="multa">🚨 Multa</option>
+                <option value="lavado">🧼 Lavado</option>
+                <option value="otro">📦 Otro</option>
               </select>
             </div>
           )}
@@ -292,7 +315,7 @@ const Reports: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {filteredData.list.map((p: any) => (
                     <tr key={p.id} className="hover:bg-slate-50">
-                      <td className="px-6 py-4 text-sm font-mono">{formatDateDisplay(p.date)}</td>
+                      <td className="px-6 py-4 text-sm font-mono">{new Date(p.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
                       <td className="px-6 py-4 text-sm font-bold text-indigo-600">
                         {data.vehicles.find(v => v.id === p.vehicleId)?.licensePlate}
                       </td>
@@ -312,21 +335,53 @@ const Reports: React.FC = () => {
                   <tr>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Fecha</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Vehículo</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Tipo</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Descripción</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-right">Monto</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filteredData.list.map((e: any) => (
-                    <tr key={e.id} className="hover:bg-slate-50">
-                      <td className="px-6 py-4 text-sm font-mono">{formatDateDisplay(e.date)}</td>
-                      <td className="px-6 py-4 text-sm font-bold text-indigo-600">
-                        {data.vehicles.find(v => v.id === e.vehicleId)?.licensePlate || 'General'}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold">{e.description}</td>
-                      <td className="px-6 py-4 text-right font-black text-rose-600 text-sm">-${e.amount.toLocaleString()}</td>
-                    </tr>
-                  ))}
+                  {filteredData.list.map((e: any) => {
+                    const typeColors: Record<string, string> = {
+                      reparacion: 'bg-orange-50 text-orange-600 border-orange-100',
+                      repuesto: 'bg-blue-50 text-blue-600 border-blue-100',
+                      combustible: 'bg-amber-50 text-amber-600 border-amber-100',
+                      mantenimiento: 'bg-purple-50 text-purple-600 border-purple-100',
+                      seguro: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                      impuesto: 'bg-red-50 text-red-600 border-red-100',
+                      multa: 'bg-rose-50 text-rose-600 border-rose-100',
+                      lavado: 'bg-cyan-50 text-cyan-600 border-cyan-100',
+                      otro: 'bg-slate-50 text-slate-600 border-slate-100'
+                    };
+                    const typeLabels: Record<string, string> = {
+                      reparacion: 'Reparación',
+                      repuesto: 'Repuesto',
+                      combustible: 'Combustible',
+                      mantenimiento: 'Mantenimiento',
+                      seguro: 'Seguro',
+                      impuesto: 'Impuesto',
+                      multa: 'Multa',
+                      lavado: 'Lavado',
+                      otro: 'Otro'
+                    };
+                    return (
+                      <tr key={e.id} className="hover:bg-slate-50">
+                        <td className="px-6 py-4 text-sm font-mono">{new Date(e.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-indigo-600">
+                          {data.vehicles.find(v => v.id === e.vehicleId)?.licensePlate || 'General'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`text-[9px] font-black px-2 py-1 rounded-lg border uppercase tracking-wider ${typeColors[e.type] || typeColors.otro}`}>
+                            {typeLabels[e.type] || e.type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm font-bold">
+                          {e.description || <span className="text-slate-400 italic">Sin descripción</span>}
+                        </td>
+                        <td className="px-6 py-4 text-right font-black text-rose-600 text-sm">-${e.amount.toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </>
             )}
@@ -488,25 +543,59 @@ const Reports: React.FC = () => {
 
           {activeTab === 'expenses' && !isRestricted && (
             <div className="space-y-3 p-3">
-              {filteredData.list.map((e: any) => (
-                <div key={e.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Gasto</div>
-                      <div className="font-bold text-slate-800 text-sm truncate">{e.description}</div>
-                      <div className="font-mono text-[10px] text-slate-500 mt-0.5">{formatDateDisplay(e.date)}</div>
+              {filteredData.list.map((e: any) => {
+                const typeColors: Record<string, string> = {
+                  reparacion: 'bg-orange-50 text-orange-600 border-orange-100',
+                  repuesto: 'bg-blue-50 text-blue-600 border-blue-100',
+                  combustible: 'bg-amber-50 text-amber-600 border-amber-100',
+                  mantenimiento: 'bg-purple-50 text-purple-600 border-purple-100',
+                  seguro: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                  impuesto: 'bg-red-50 text-red-600 border-red-100',
+                  multa: 'bg-rose-50 text-rose-600 border-rose-100',
+                  lavado: 'bg-cyan-50 text-cyan-600 border-cyan-100',
+                  otro: 'bg-slate-50 text-slate-600 border-slate-100'
+                };
+                const typeLabels: Record<string, string> = {
+                  reparacion: 'Reparación',
+                  repuesto: 'Repuesto',
+                  combustible: 'Combustible',
+                  mantenimiento: 'Mantenimiento',
+                  seguro: 'Seguro',
+                  impuesto: 'Impuesto',
+                  multa: 'Multa',
+                  lavado: 'Lavado',
+                  otro: 'Otro'
+                };
+                return (
+                  <div key={e.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-2">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Gasto</div>
+                        <div className="font-bold text-slate-800 text-sm truncate">
+                          {e.description || <span className="text-slate-400 italic">Sin descripción</span>}
+                        </div>
+                        <div className="font-mono text-[10px] text-slate-500 mt-0.5">{formatDateDisplay(e.date)}</div>
+                      </div>
+                      <div className="text-lg font-black text-rose-600 ml-2">-${e.amount.toLocaleString()}</div>
                     </div>
-                    <div className="text-lg font-black text-rose-600 ml-2">-${e.amount.toLocaleString()}</div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tipo</span>
+                        <span className={`text-[9px] font-black px-2 py-1 rounded-lg border uppercase tracking-wider ${typeColors[e.type] || typeColors.otro}`}>
+                          {typeLabels[e.type] || e.type}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Vehículo</span>
+                        <span className="text-xs font-bold text-indigo-600 uppercase font-mono">
+                          {data.vehicles.find(v => v.id === e.vehicleId)?.licensePlate || 'General'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Vehículo</span>
-                    <span className="text-xs font-bold text-indigo-600 uppercase font-mono">
-                      {data.vehicles.find(v => v.id === e.vehicleId)?.licensePlate || 'General'}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

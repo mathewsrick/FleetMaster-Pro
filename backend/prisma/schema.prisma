@@ -31,6 +31,18 @@ enum ArrearStatus {
   paid
 }
 
+enum ExpenseType {
+  reparacion
+  repuesto
+  combustible
+  mantenimiento
+  seguro
+  impuesto
+  multa
+  lavado
+  otro
+}
+
 // --- MODELOS ---
 
 model User {
@@ -197,16 +209,18 @@ model Arrear {
 }
 
 model Expense {
-  id          String   @id @default(uuid())
+  id          String      @id @default(uuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  description String
-  amount      Decimal  @db.Decimal(12, 2)
-  date        DateTime @default(now()) @db.Timestamptz(6)
-  createdAt   DateTime @default(now())
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  description String?
+  amount      Decimal     @db.Decimal(12, 2)
+  date        DateTime    @default(now()) @db.Timestamptz(6)
+  type        ExpenseType @default(reparacion)
+  createdAt   DateTime    @default(now())
 
   vehicleId String
   vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
 
   @@index([userId, date])
+  @@index([vehicleId, type])
 }
