@@ -39,8 +39,7 @@ export const save = async (userId: string, data: any) => {
 
     // 3️⃣ Vehículo no existe - CREAR NUEVO (validar límite)
     const { total } = await repo.findAll(userId, { page: 1, limit: 1 });
-    const subscription = await authRepo.getActiveSubscription(userId);
-    const plan = subscription ? subscription.plan : 'free_trial';
+    const plan = await authRepo.getUserPlan(userId);
     const limit = PLAN_MAX_VEHICLES[plan] || 1;
 
     if (total >= limit) {

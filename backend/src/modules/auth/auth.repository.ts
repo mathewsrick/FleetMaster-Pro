@@ -70,3 +70,25 @@ export const getActiveLicenseOverride = async (userId: string) => {
     orderBy: { createdAt: 'desc' }
   });
 };
+
+/**
+ * Obtiene el plan activo del usuario, verificando tanto subscriptionKey como licenseOverride
+ * @param userId - ID del usuario
+ * @returns El nombre del plan ('free_trial', 'basico', 'pro', 'enterprise') o 'free_trial' por defecto
+ */
+export const getUserPlan = async (userId: string): Promise<string> => {
+  // Primero verificar si tiene una licencia override activa
+  const licenseOverride = await getActiveLicenseOverride(userId);
+  if (licenseOverride) {
+    return licenseOverride.plan;
+  }
+
+  // Si no tiene override, verificar suscripción normal
+  const subscription = await getActiveSubscription(userId);
+  if (subscription) {
+    return subscription.plan;
+  }
+
+  // Por defecto, free_trial
+  return 'free_trial';
+};

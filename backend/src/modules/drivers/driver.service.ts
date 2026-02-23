@@ -57,8 +57,7 @@ export const create = async (userId: string, data: any) => {
 
   // 3️⃣ Conductor no existe - CREAR NUEVO (lógica original)
   const { total } = await repo.findAll(userId, { page: 1, limit: 1 });
-  const subscription = await authRepo.getActiveSubscription(userId);
-  const plan = subscription ? subscription.plan : 'free_trial';
+  const plan = await authRepo.getUserPlan(userId);
   const limit = PLAN_MAX_DRIVERS[plan] || 1;
 
   if (total >= limit) {

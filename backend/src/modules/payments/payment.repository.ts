@@ -9,7 +9,7 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
     // Usar UTC explícitamente con TIMESTAMPTZ
     const startDateObj = new Date(startDate + 'T00:00:00.000Z');
     const endDateObj = new Date(endDate + 'T23:59:59.999Z');
-    
+
     where.date = {
       gte: startDateObj,
       lte: endDateObj
