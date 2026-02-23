@@ -54,6 +54,8 @@ export interface Vehicle {
   insuranceNumber: string;
   soatExpiration: string;
   techExpiration: string;
+  hasFullCoverage?: boolean; // 🆕 Tiene seguro todo riesgo
+  fullCoverageExpiration?: string; // 🆕 Vencimiento seguro todo riesgo
   rentaValue: number;
   driverId: string | null;
   driverName?: string; 
@@ -71,6 +73,8 @@ export type VehiclePayload = {
   insuranceNumber?: string | null
   soatExpiration?: string | null
   techExpiration?: string | null
+  hasFullCoverage?: boolean | null // 🆕 Seguro todo riesgo
+  fullCoverageExpiration?: string | null // 🆕 Vencimiento seguro todo riesgo
   rentaValue: number
   driverId?: string | null
   photos: string[]
@@ -88,6 +92,7 @@ export interface Driver {
   vehiclePlate?: string; 
   licensePhoto?: string; 
   idPhoto?: string;
+  licenseExpiration?: string; // 🆕 Vencimiento de licencia de conducción
   totalDebt?: number; 
 }
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { db, formatDateDisplay, getTodayDateDisplay, formatDateToISO } from '@/services/db';
 import { Vehicle, Payment, Expense } from '@/types/types';
@@ -35,6 +34,7 @@ const Vehicles: React.FC = () => {
     year: new Date().getFullYear(), licensePlate: '', model: '', color: '',
     purchaseDate: formatDateToISO(getTodayDateDisplay()),
     insurance: '', insuranceNumber: '', soatExpiration: '', techExpiration: '',
+    hasFullCoverage: false, fullCoverageExpiration: '', // 🆕 Seguro todo riesgo
     rentaValue: 0, driverId: null, photos: []
   };
 
@@ -147,6 +147,8 @@ const Vehicles: React.FC = () => {
         insuranceNumber: formData.insuranceNumber || null,
         soatExpiration: formData.soatExpiration,
         techExpiration: formData.techExpiration,
+        hasFullCoverage: formData.hasFullCoverage || false, // 🆕 Seguro todo riesgo
+        fullCoverageExpiration: formData.hasFullCoverage ? formData.fullCoverageExpiration : null, // 🆕
         rentaValue: Number(formData.rentaValue),
         // Fix: Provide driverId to match Vehicle type expectations
         driverId: formData.driverId || null,
@@ -477,6 +479,38 @@ const Vehicles: React.FC = () => {
                 className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base focus:ring-2 focus:ring-indigo-500" 
               />
             </div>
+          </div>
+
+          {/* 🆕 Seguro Todo Riesgo */}
+          <div className="border-t border-slate-200 pt-4 sm:pt-6">
+            <div className="flex items-center gap-3 mb-4">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={formData.hasFullCoverage || false}
+                    onChange={(e) => setFormData({...formData, hasFullCoverage: e.target.checked, fullCoverageExpiration: e.target.checked ? formData.fullCoverageExpiration : ''})}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </div>
+                <span className="text-xs sm:text-sm font-black text-slate-700 group-hover:text-indigo-600 transition-colors">
+                  ¿Tiene seguro todo riesgo?
+                </span>
+              </label>
+            </div>
+            
+            {formData.hasFullCoverage && (
+              <div className="animate-in slide-in-from-top-2 duration-300">
+                <label className="text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1 sm:mb-2 block">Vencimiento Seguro Todo Riesgo</label>
+                <DateInput
+                  required={formData.hasFullCoverage}
+                  value={formData.fullCoverageExpiration || ''} 
+                  onChange={(isoDate) => setFormData({...formData, fullCoverageExpiration: isoDate})} 
+                  className="w-full p-3 sm:p-4 bg-indigo-50 border-2 border-indigo-200 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base focus:ring-2 focus:ring-indigo-500" 
+                />
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">

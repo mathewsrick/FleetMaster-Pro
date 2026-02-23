@@ -60,10 +60,12 @@ export const restore = async (userId: string, id: string, newData: any) => {
       insuranceNumber: newData.insuranceNumber || null,
       soatExpiration: newData.soatExpiration ? new Date(newData.soatExpiration) : null,
       techExpiration: newData.techExpiration ? new Date(newData.techExpiration) : null,
+      hasFullCoverage: newData.hasFullCoverage || false,
+      fullCoverageExpiration: newData.hasFullCoverage && newData.fullCoverageExpiration ? new Date(newData.fullCoverageExpiration) : null,
       rentaValue: Number(newData.rentaValue),
       photos: Array.isArray(newData.photos) ? newData.photos : [],
       deletedAt: null // 🔑 Restaurar
-    },
+    } as any,
     include: {
       driver: true
     }
@@ -72,7 +74,7 @@ export const restore = async (userId: string, id: string, newData: any) => {
   // Transformar para que coincida con el formato esperado
   return {
     ...updated,
-    driverName: updated.driver ? `${updated.driver.firstName} ${updated.driver.lastName}` : null
+    driverName: (updated as any).driver ? `${(updated as any).driver.firstName} ${(updated as any).driver.lastName}` : null
   };
 };
 
@@ -90,9 +92,11 @@ export const create = async (userId: string, data: any) => {
       insuranceNumber: data.insuranceNumber || null,
       soatExpiration: data.soatExpiration ? new Date(data.soatExpiration) : null,
       techExpiration: data.techExpiration ? new Date(data.techExpiration) : null,
+      hasFullCoverage: data.hasFullCoverage || false,
+      fullCoverageExpiration: data.hasFullCoverage && data.fullCoverageExpiration ? new Date(data.fullCoverageExpiration) : null,
       rentaValue: Number(data.rentaValue),
       photos: Array.isArray(data.photos) ? data.photos : []
-    },
+    } as any,
     include: {
       driver: true
     }
@@ -101,7 +105,7 @@ export const create = async (userId: string, data: any) => {
   // Transformar para que coincida con el formato esperado
   return {
     ...created,
-    driverName: created.driver ? `${created.driver.firstName} ${created.driver.lastName}` : null
+    driverName: (created as any).driver ? `${(created as any).driver.firstName} ${(created as any).driver.lastName}` : null
   };
 };
 
@@ -133,9 +137,11 @@ export const update = async (userId: string, payload: any) => {
       insuranceNumber: payload.insuranceNumber || null,
       soatExpiration: payload.soatExpiration ? new Date(payload.soatExpiration) : null,
       techExpiration: payload.techExpiration ? new Date(payload.techExpiration) : null,
+      hasFullCoverage: payload.hasFullCoverage || false,
+      fullCoverageExpiration: payload.hasFullCoverage && payload.fullCoverageExpiration ? new Date(payload.fullCoverageExpiration) : null,
       rentaValue: Number(payload.rentaValue),
       photos: Array.isArray(payload.photos) ? payload.photos : []
-    },
+    } as any,
     include: {
       driver: true
     }
@@ -144,7 +150,7 @@ export const update = async (userId: string, payload: any) => {
   // Transformar para que coincida con el formato esperado
   return {
     ...updated,
-    driverName: updated.driver ? `${updated.driver.firstName} ${updated.driver.lastName}` : null
+    driverName: (updated as any).driver ? `${(updated as any).driver.firstName} ${(updated as any).driver.lastName}` : null
   };
 };
 

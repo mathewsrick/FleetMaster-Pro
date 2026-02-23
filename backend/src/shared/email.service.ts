@@ -282,19 +282,119 @@ export const templates = {
   /* ================= ALERTAS ================= */
 
   documentExpirationAlert: (data: {
-    vehiclePlate: string;
-    type: string;
+    documentType: string;
+    entityName: string;
     daysRemaining: number;
     expirationDate: string;
+    isExpired: boolean;
   }) => `
-    <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;padding:48px;border:1px solid #e2e8f0;border-radius:24px;text-align:center;">
+    <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;max-width:600px;margin:auto;padding:48px;border:2px solid ${data.isExpired ? '#dc2626' : '#f59e0b'};border-radius:24px;background:${data.isExpired ? '#fef2f2' : '#fffbeb'};">
       ${LOGO_HTML}
-      <h2 style="color:#b45309;">Alerta de Vencimiento</h2>
-      <p>${data.type} del vehículo ${data.vehiclePlate}</p>
-      <h1>${data.daysRemaining} días</h1>
-      <p>Vence el ${data.expirationDate}</p>
+      <div style="text-align:center;margin-bottom:32px;">
+        <div style="font-size:48px;margin-bottom:16px;">${data.isExpired ? '🚨' : '⚠️'}</div>
+        <h2 style="color:${data.isExpired ? '#dc2626' : '#f59e0b'};font-size:24px;font-weight:900;margin:0 0 8px 0;">
+          ${data.isExpired ? '[URGENTE] DOCUMENTO VENCIDO' : 'ALERTA DE VENCIMIENTO'}
+        </h2>
+        <p style="color:#64748b;font-size:14px;margin:0;">
+          ${data.isExpired ? 'Requiere atención inmediata' : 'Acción requerida próximamente'}
+        </p>
+      </div>
+
+      <div style="background:white;border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid ${data.isExpired ? '#fecaca' : '#fed7aa'};">
+        <table style="width:100%;border-collapse:collapse;">
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:12px 0;color:#64748b;font-size:13px;font-weight:600;">Documento:</td>
+            <td style="padding:12px 0;text-align:right;color:#1e293b;font-weight:800;font-size:14px;">${data.documentType}</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:12px 0;color:#64748b;font-size:13px;font-weight:600;">${data.documentType.includes('Licencia') ? 'Conductor:' : 'Vehículo:'}</td>
+            <td style="padding:12px 0;text-align:right;color:#1e293b;font-weight:800;font-size:14px;">${data.entityName}</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:12px 0;color:#64748b;font-size:13px;font-weight:600;">Fecha Vencimiento:</td>
+            <td style="padding:12px 0;text-align:right;color:${data.isExpired ? '#dc2626' : '#f59e0b'};font-weight:900;font-size:14px;">${data.expirationDate}</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 0 0 0;color:#64748b;font-size:13px;font-weight:600;">Estado:</td>
+            <td style="padding:12px 0 0 0;text-align:right;">
+              <span style="background:${data.isExpired ? '#dc2626' : '#f59e0b'};color:white;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:900;text-transform:uppercase;">
+                ${data.isExpired ? `Vencido hace ${Math.abs(data.daysRemaining)} días` : `${data.daysRemaining} días restantes`}
+              </span>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background:${data.isExpired ? '#dc2626' : '#f59e0b'};color:white;border-radius:12px;padding:20px;text-align:center;">
+        <p style="margin:0;font-size:13px;font-weight:700;">
+          ${data.isExpired 
+            ? '⚠️ Este documento está vencido. Renuévelo inmediatamente para evitar sanciones y problemas legales.' 
+            : '⏰ Recuerde renovar este documento antes de su vencimiento para mantener su flota operativa.'}
+        </p>
+      </div>
+
+      <div style="margin-top:24px;text-align:center;border-top:1px solid #e2e8f0;padding-top:16px;">
+        <p style="font-size:11px;color:#94a3b8;margin:0;">Este es un recordatorio automático de FleetMaster Hub</p>
+        <p style="font-size:11px;color:#94a3b8;margin:4px 0 0 0;">${data.isExpired ? 'Recibirá este email diariamente hasta que el documento sea renovado' : 'Recibirá recordatorios a los 10, 5, 3, 1 días antes del vencimiento y diarios después del vencimiento'}</p>
+      </div>
     </div>
   `,
+
+  driverLicenseExpirationAlert: (data: {
+    driverName: string;
+    daysRemaining: number;
+    expirationDate: string;
+    isExpired: boolean;
+  }) => `
+    <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;max-width:600px;margin:auto;padding:48px;border:2px solid ${data.isExpired ? '#dc2626' : '#f59e0b'};border-radius:24px;background:${data.isExpired ? '#fef2f2' : '#fffbeb'};">
+      ${LOGO_HTML}
+      <div style="text-align:center;margin-bottom:32px;">
+        <div style="font-size:48px;margin-bottom:16px;">${data.isExpired ? '🚨' : '⚠️'}</div>
+        <h2 style="color:${data.isExpired ? '#dc2626' : '#f59e0b'};font-size:24px;font-weight:900;margin:0 0 8px 0;">
+          ${data.isExpired ? '[URGENTE] LICENCIA VENCIDA' : 'SU LICENCIA ESTÁ POR VENCER'}
+        </h2>
+        <p style="color:#1e293b;font-size:16px;font-weight:700;margin:0;">
+          Hola ${data.driverName}
+        </p>
+      </div>
+
+      <div style="background:white;border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid ${data.isExpired ? '#fecaca' : '#fed7aa'};">
+        <p style="color:#64748b;font-size:14px;line-height:1.6;margin:0 0 16px 0;">
+          ${data.isExpired 
+            ? '⚠️ Su licencia de conducción ha vencido. No está autorizado para conducir vehículos de la flota hasta que la renueve.' 
+            : '⏰ Le recordamos que su licencia de conducción está próxima a vencer.'}
+        </p>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:12px 0;color:#64748b;font-size:13px;font-weight:600;">Fecha Vencimiento:</td>
+            <td style="padding:12px 0;text-align:right;color:${data.isExpired ? '#dc2626' : '#f59e0b'};font-weight:900;font-size:16px;">${data.expirationDate}</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 0 0 0;color:#64748b;font-size:13px;font-weight:600;">Estado:</td>
+            <td style="padding:12px 0 0 0;text-align:right;">
+              <span style="background:${data.isExpired ? '#dc2626' : '#f59e0b'};color:white;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:900;text-transform:uppercase;">
+                ${data.isExpired ? `Vencida hace ${Math.abs(data.daysRemaining)} días` : `${data.daysRemaining} días restantes`}
+              </span>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background:${data.isExpired ? '#dc2626' : '#f59e0b'};color:white;border-radius:12px;padding:20px;text-align:center;">
+        <p style="margin:0;font-size:14px;font-weight:700;">
+          ${data.isExpired 
+            ? '🚫 Contacte a su administrador inmediatamente y proceda con la renovación.' 
+            : '📋 Por favor tramite la renovación con anticipación para evitar suspensión de operaciones.'}
+        </p>
+      </div>
+
+      <div style="margin-top:24px;text-align:center;border-top:1px solid #e2e8f0;padding-top:16px;">
+        <p style="font-size:11px;color:#94a3b8;margin:0;">Recordatorio automático de FleetMaster Hub</p>
+      </div>
+    </div>
+  `,
+
+  /* ================= REPORTES ================= */
   subscriptionExpirationAlert: (data: {
     plan: string;
     daysRemaining: number;

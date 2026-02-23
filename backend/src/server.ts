@@ -6,7 +6,7 @@ if (process.env.NODE_ENV !== 'production') {
 import app from './app.js';
 import { runSeeders } from './shared/db.js';
 import { generateAndSendWeeklyReports } from './modules/reports/automated-reports.service.js';
-import { checkExpirationsAndNotify } from './modules/notifications/cron-notifications.service.js';
+import { sendExpirationNotifications } from './modules/notifications/notification.service.js';
 
 const port = Number(process.env.PORT) || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -46,16 +46,20 @@ const bootstrap = async () => {
         }, {
           timezone: 'America/Bogota'
         });
-        // Notificaciones diarias de vencimientos (Diario 7:00 AM)
-        cron.schedule('0 7 * * *', async () => {
-          console.log('🔔 Ejecutando verificación de vencimientos diaria...');
+        // 🔔 Notificaciones diarias de vencimientos (Diario 8:00 AM)
+        cron.schedule('0 8 * * *', async () => {
+          log.info('🔔 Ejecutando verificación de vencimientos diaria...');
           try {
-            await checkExpirationsAndNotify();
+            await sendExpirationNotifications();
+            log.success('Verificación de vencimientos completada');
           } catch (error) {
-            console.error('❌ Error en verificación de vencimientos:', error);
+            log.error('Error en verificación de vencimientos:', error);
           }
         }, { timezone: 'America/Bogota' });
-        console.log('⏰ Tareas programadas: Reportes (Lunes) y Vencimientos (Diario)');
+        
+        log.info('⏰ Tareas programadas iniciadas:');
+        log.info('  📊 Reportes semanales: Lunes 8:00 AM');
+        log.info('  🔔 Notificaciones vencimientos: Diario 8:00 AM');
       });
     });
   } catch (error) {

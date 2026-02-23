@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { db, formatDateDisplay } from '@/services/db';
+import { db, formatDateDisplay, formatDateToISO } from '@/services/db';
 import { Driver, Vehicle, Payment, Arrear } from '@/types/types';
 import Swal from 'sweetalert2';
 import ResponsiveTable from '@/components/ResponsiveTable';
 import ResponsiveModal from '@/components/ResponsiveModal';
 import ModalFooter from '@/components/ModalFooter';
+import DateInput from '@/components/DateInput';
 
 const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
@@ -32,7 +33,7 @@ const Drivers: React.FC = () => {
   const limits = authData.accountStatus?.limits;
   const reachedLimit = limits ? total >= limits.maxDrivers : false;
 
-  const initialForm: Partial<Driver> = { firstName: '', lastName: '', email: '', phone: '', idNumber: '', vehicleId: null, licensePhoto: '', idPhoto: '' };
+  const initialForm: Partial<Driver> = { firstName: '', lastName: '', email: '', phone: '', idNumber: '', vehicleId: null, licensePhoto: '', idPhoto: '', licenseExpiration: '' };
   const [formData, setFormData] = useState<Partial<Driver>>(initialForm);
 
   useEffect(() => { loadData(); }, [page, limit]);
@@ -438,6 +439,20 @@ const Drivers: React.FC = () => {
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* 🆕 Vencimiento de Licencia */}
+          <div>
+            <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-2 block">
+              <i className="fa-solid fa-calendar-xmark mr-2"></i>
+              Vencimiento de Licencia de Conducción
+            </label>
+            <DateInput
+              value={formData.licenseExpiration || ''} 
+              onChange={(isoDate) => setFormData({...formData, licenseExpiration: isoDate})} 
+              className="w-full p-4 bg-amber-50 border-2 border-amber-200 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-amber-500 transition-all" 
+              placeholder="dd/mm/yyyy"
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
