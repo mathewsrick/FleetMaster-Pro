@@ -16,6 +16,10 @@ export const getAll = async (userId: string, query: any) => {
 
 export const save = async (userId: string, data: any) => {
   const existing = await repo.findById(data.id);
+  // Normalizar placa a mayúsculas
+  if (data.licensePlate) {
+    data.licensePlate = data.licensePlate.toUpperCase();
+  }
   
   if (!existing) {
     // 1️⃣ Verificar si existe un vehículo con la misma placa (incluyendo soft-deleted)

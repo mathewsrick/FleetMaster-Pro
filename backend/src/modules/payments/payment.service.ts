@@ -86,7 +86,9 @@ export const create = async (userId: string, data: any) => {
     const totalAccumulatedDebt = pendingArrears.reduce((sum: number, a: any) => sum + Number(a.amountOwed), 0);
 
     const driver: any = await driverRepo.findById(userId, payment.driverId);
-    if (driver && driver.email) {
+    
+    // 📧 Solo enviar email al conductor si tiene email registrado
+    if (driver?.email) {
         await emailService.sendEmail({
             to: driver.email,
             subject: `Recibo de Pago - FleetMaster Hub - $${payment.amount.toLocaleString()}`,
@@ -101,8 +103,9 @@ export const create = async (userId: string, data: any) => {
         });
     }
 
+    // 📧 Notificar al admin del recaudo
     const user = await authRepo.findUserById(userId);
-    if (user && user.email) {
+    if (user?.email) {
         await emailService.sendEmail({
             to: user.email,
             subject: `[ADMIN] Nuevo Recaudo - ${driver?.firstName || 'Conductor'} - $${payment.amount.toLocaleString()}`,

@@ -158,22 +158,37 @@ export const handleWebhook = async (req: any, res: any) => {
           reference
         );
 
-        // Notificar al SuperAdmin
+        // 📧 Notificar al Usuario - Pago Exitoso
+        await emailService.sendEmail({
+          to: localTx.user.email,
+          subject: `¡Pago Aprobado! - Plan ${localTx.plan.toUpperCase()} - FleetMaster Hub`,
+          html: emailService.templates.adminPaymentNotification({
+            user: localTx.user.username,
+            email: localTx.user.email,
+            plan: localTx.plan,
+            amount: Number(localTx.amount),
+            reference: localTx.reference,
+            date: new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' })
+          })
+        });
+
+        // 📧 Notificar al SuperAdmin - Template Especial
         const adminEmail = process.env.SUPPORT_EMAIL || 'contacto@fleetmasterhub.com';
         await emailService.sendEmail({
-            to: adminEmail,
-            subject: `[ALERTA] Nuevo Pago Aprobado - ${localTx.user.username}`,
-            html: emailService.templates.adminPaymentNotification({
-                user: localTx.user.username,
-                email: localTx.user.email,
-                plan: localTx.plan,
-                amount: Number(localTx.amount),
-                reference: localTx.reference,
-                date: new Date().toLocaleString()
-            })
+          to: adminEmail,
+          subject: `🔔 [SUPERADMIN] Nueva Suscripción - ${localTx.user.username} - Plan ${localTx.plan.toUpperCase()}`,
+          html: emailService.templates.superAdminSubscriptionNotification({
+            user: localTx.user.username,
+            email: localTx.user.email,
+            plan: localTx.plan,
+            amount: Number(localTx.amount),
+            reference: localTx.reference,
+            date: new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' }),
+            duration: localTx.duration
+          })
         });
       } else if (status === 'DECLINED' || status === 'ERROR') {
-        // Email al Usuario - Fallo
+        // 📧 Email al Usuario - Fallo
         await emailService.sendEmail({
           to: localTx.user.email,
           subject: `Pago Declinado - FleetMaster Hub`,

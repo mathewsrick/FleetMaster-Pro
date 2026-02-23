@@ -211,13 +211,72 @@ export const templates = {
         </tr>
         <tr style="border-bottom: 1px solid #f1f5f9;">
           <td style="padding: 12px 0; color: #64748b;">Referencia:</td>
-          <td style="padding: 12px 0; text-align: right; color: #1e293b; font-mono font-bold;">${data.reference}</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b; font-family: monospace; font-weight: bold;">${data.reference}</td>
         </tr>
         <tr>
           <td style="padding: 12px 0; color: #64748b;">Fecha:</td>
           <td style="padding: 12px 0; text-align: right; color: #1e293b;">${data.date}</td>
         </tr>
       </table>
+    </div>
+  `,
+  superAdminSubscriptionNotification: (data: { user: string; email: string; plan: string; amount: number; reference: string; date: string; duration: string }) => `
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #dc2626; padding: 48px; border-radius: 24px; color: #334155; background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%);">
+      ${LOGO_HTML}
+      <div style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); border-radius: 16px; padding: 24px; text-align: center; color: white; margin-bottom: 32px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);">
+        <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.9;">🔔 NOTIFICACIÓN SUPERADMIN</div>
+        <h2 style="margin: 8px 0 0 0; font-size: 22px; font-weight: 900;">Nueva Suscripción Activada</h2>
+        <p style="opacity: 0.9; font-size: 13px; margin: 8px 0 0 0;">Un administrador ha pagado o renovado su plan</p>
+      </div>
+
+      <div style="background: white; border: 2px solid #fecaca; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; color: #b91c1c; margin: 0 0 16px 0; letter-spacing: 0.05em; font-weight: 800;">📊 INFORMACIÓN DEL USUARIO</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <tr style="border-bottom: 1px solid #fee2e2;">
+            <td style="padding: 10px 0; color: #7f1d1d; font-weight: 600;">Usuario:</td>
+            <td style="padding: 10px 0; text-align: right; color: #1e293b; font-weight: 800;">${data.user}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #fee2e2;">
+            <td style="padding: 10px 0; color: #7f1d1d; font-weight: 600;">Email:</td>
+            <td style="padding: 10px 0; text-align: right; color: #1e293b; word-break: break-all;">${data.email}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0 0 0; color: #7f1d1d; font-weight: 600;">Plan:</td>
+            <td style="padding: 10px 0 0 0; text-align: right; color: #dc2626; font-weight: 900; text-transform: uppercase; font-size: 16px;">${data.plan}</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background: white; border: 2px solid #fecaca; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; color: #b91c1c; margin: 0 0 16px 0; letter-spacing: 0.05em; font-weight: 800;">💰 DETALLES DEL PAGO</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <tr style="border-bottom: 1px solid #fee2e2;">
+            <td style="padding: 10px 0; color: #7f1d1d; font-weight: 600;">Monto:</td>
+            <td style="padding: 10px 0; text-align: right; color: #15803d; font-weight: 900; font-size: 20px;">$${data.amount.toLocaleString()} COP</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #fee2e2;">
+            <td style="padding: 10px 0; color: #7f1d1d; font-weight: 600;">Duración:</td>
+            <td style="padding: 10px 0; text-align: right; color: #1e293b; font-weight: 700; text-transform: uppercase;">${data.duration}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #fee2e2;">
+            <td style="padding: 10px 0; color: #7f1d1d; font-weight: 600;">Referencia:</td>
+            <td style="padding: 10px 0; text-align: right; color: #1e293b; font-family: monospace; font-weight: bold; font-size: 12px;">${data.reference}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0 0 0; color: #7f1d1d; font-weight: 600;">Fecha:</td>
+            <td style="padding: 10px 0 0 0; text-align: right; color: #1e293b;">${data.date}</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 12px; padding: 16px; text-align: center;">
+        <p style="color: #15803d; font-size: 13px; font-weight: bold; margin: 0;">✅ La suscripción ha sido activada exitosamente</p>
+      </div>
+
+      <div style="margin-top: 32px; text-align: center; border-top: 2px solid #fecaca; padding-top: 16px;">
+        <p style="font-size: 11px; color: #991b1b; margin: 0; font-weight: 600;">🔐 Este email es exclusivo para SuperAdmin</p>
+        <p style="font-size: 11px; color: #94a3b8; margin: 4px 0 0 0;">© 2025 FleetMaster Hub System.</p>
+      </div>
     </div>
   `,
   /* ================= ALERTAS ================= */
