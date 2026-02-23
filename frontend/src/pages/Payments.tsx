@@ -34,6 +34,8 @@ const Payments: React.FC = () => {
     arrearId: null,
   });
 
+  const [generateArrear, setGenerateArrear] = useState(true);
+
   useEffect(() => {
     loadData();
   }, [page, limit, dateRange]);
@@ -111,6 +113,7 @@ const Payments: React.FC = () => {
         await db.savePayment({
           ...formData,
           id: editingId || crypto.randomUUID(),
+          generateArrear, // 🔑 Enviar flag al backend
         } as Payment);
       }
 
@@ -123,6 +126,7 @@ const Payments: React.FC = () => {
         type: 'renta',
         arrearId: null,
       });
+      setGenerateArrear(true); // Reset del toggle
       setIsModalOpen(false);
       setPage(1);
       await loadData();
@@ -450,6 +454,48 @@ const Payments: React.FC = () => {
                 />
               </div>
             </div>
+
+            {/* 🔑 Toggle para generar mora en pagos parciales */}
+            {formData.type === 'renta' && formData.vehicleId && formData.amount && formData.amount > 0 && (() => {
+              const vehicle = vehicles.find(v => v.id === formData.vehicleId);
+              const rentaValue = vehicle?.rentaValue || 0;
+              const isParcial = formData.amount < rentaValue;
+              const diferencia = rentaValue - (formData.amount || 0);
+              
+              if (!isParcial) return null;
+              
+              return (
+                <div className="animate-in slide-in-from-top-2 duration-300 rounded-3xl border-2 border-amber-200 bg-amber-50/50 p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
+                      <i className="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-xs font-black text-amber-900 uppercase tracking-tight mb-1">Pago Parcial Detectado</h4>
+                      <p className="text-[11px] text-amber-700 font-semibold mb-3">
+                        El monto ingresado es <span className="font-black">${diferencia.toLocaleString()}</span> menor que el valor de renta. 
+                        ¿Desea convertir esta diferencia en mora?
+                      </p>
+                      
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            checked={generateArrear}
+                            onChange={(e) => setGenerateArrear(e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                        </div>
+                        <span className="text-xs font-black text-amber-900 group-hover:text-amber-700 transition-colors">
+                          {generateArrear ? '✓ Generar mora automáticamente' : '✗ No generar mora (pago parcial definitivo)'}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             <ModalFooter
               primaryButton={{

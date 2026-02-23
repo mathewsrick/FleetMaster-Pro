@@ -101,6 +101,7 @@ export interface Payment {
   type: 'renta' | 'arrear_payment';
   arrearId?: string | null;
   isPartial?: boolean;
+  generateArrear?: boolean; // 🔑 Flag para generar mora en pagos parciales
 }
 
 export interface Expense {
