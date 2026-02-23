@@ -277,7 +277,7 @@ const Reports: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredData.list.map((d: any) => {
-                    const vehicle = data.vehicles.find(v => v.driverId === d.id);
+                    const vehicle = data.vehicles.find(v => v.driver?.id === d.id);
                     const dPayments = data.payments.filter(p => p.driverId === d.id).reduce((sum, p) => sum + Number(p.amount), 0);
                     const dDebt = data.arrears.filter(a => a.driverId === d.id && a.status === 'pending').reduce((sum, a) => sum + Number(a.amountOwed), 0);
                     return (
@@ -317,7 +317,9 @@ const Reports: React.FC = () => {
                     <tr key={p.id} className="hover:bg-slate-50">
                       <td className="px-6 py-4 text-sm font-mono">{new Date(p.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
                       <td className="px-6 py-4 text-sm font-bold text-indigo-600">
-                        {data.vehicles.find(v => v.id === p.vehicleId)?.licensePlate}
+                        <span className="text-[10px] font-black bg-indigo-50 text-indigo-600 px-2 py-1 rounded-lg border border-indigo-100">
+                          {data.vehicles.find(v => v.id === p.vehicleId)?.licensePlate}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-[10px] font-black uppercase">
                         {p.type === 'renta' ? 'Renta' : 'Mora'}
@@ -368,7 +370,9 @@ const Reports: React.FC = () => {
                       <tr key={e.id} className="hover:bg-slate-50">
                         <td className="px-6 py-4 text-sm font-mono">{new Date(e.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
                         <td className="px-6 py-4 text-sm font-bold text-indigo-600">
-                          {data.vehicles.find(v => v.id === e.vehicleId)?.licensePlate || 'General'}
+                          <span className="text-[10px] font-black bg-indigo-50 text-indigo-600 px-2 py-1 rounded-lg border border-indigo-100">
+                            {data.vehicles.find(v => v.id === e.vehicleId)?.licensePlate || 'General'}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`text-[9px] font-black px-2 py-1 rounded-lg border uppercase tracking-wider ${typeColors[e.type] || typeColors.otro}`}>
