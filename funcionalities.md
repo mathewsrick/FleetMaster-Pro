@@ -1,4 +1,4 @@
-📋 INVENTARIO COMPLETO DE FUNCIONALIDADES - FleetMaster-Pro
+📋 INVENTARIO COMPLETO DE FUNCIONALIDADES - FleetMaster Hub
 🔐 1. AUTENTICACIÓN Y GESTIÓN DE USUARIOS
 1.1 Registro y Login
 ✅ Registro de usuarios con email, username y contraseña
@@ -589,4 +589,4 @@ Multi-plan con restricciones
 Diseño responsive
 Seguridad robusta
 Deploy automatizado
-🚀 FleetMaster-Pro es un producto enterprise-ready!
+🚀 FleetMaster Hub es un producto enterprise-ready!

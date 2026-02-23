@@ -2,7 +2,7 @@
 
 ## 📝 Descripción
 
-Script interactivo para crear un usuario SuperAdmin en FleetMaster Pro. El script:
+Script interactivo para crear un usuario SuperAdmin en FleetMaster Hub. El script:
 
 - ✅ Solicita los datos necesarios de forma interactiva
 - ✅ Valida el formato de los datos (email, password, etc)
@@ -22,7 +22,7 @@ cd ~/fleetmasterhub
 ### En Desarrollo (Local)
 
 ```bash
-cd /path/to/FleetMaster-Pro
+cd /path/to/FleetMaster Hub
 ./create-superadmin.sh
 ```
 
@@ -52,7 +52,7 @@ $ ./create-superadmin.sh
 ╔══════════════════════════════════════════════════════════╗
 ║                                                          ║
 ║          🔐 Generador de SuperAdmin                     ║
-║             FleetMaster Pro v2.0                        ║
+║             FleetMaster Hub v2.0                        ║
 ║                                                          ║
 ╚══════════════════════════════════════════════════════════╝
 

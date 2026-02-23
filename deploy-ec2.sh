@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ================================================================
-# FleetMaster Pro - Advanced Deployment Script for AWS EC2
+# FleetMaster Hub - Advanced Deployment Script for AWS EC2
 # ================================================================
 
 set -e  # Exit on error
@@ -181,7 +181,7 @@ cleanup_images() {
 main() {
     echo -e "${GREEN}"
     echo "╔═══════════════════════════════════════════════════════╗"
-    echo "║       FleetMaster Pro - Deployment Script            ║"
+    echo "║       FleetMaster Hub - Deployment Script            ║"
     echo "║       AWS EC2 Production Deployment                   ║"
     echo "╚═══════════════════════════════════════════════════════╝"
     echo -e "${NC}"
