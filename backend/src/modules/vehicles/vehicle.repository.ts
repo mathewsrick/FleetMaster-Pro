@@ -6,7 +6,7 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
 
   const [data, total] = await Promise.all([
     prisma.vehicle.findMany({
-      where: { 
+      where: {
         userId,
         deletedAt: null // Solo vehículos activos
       },

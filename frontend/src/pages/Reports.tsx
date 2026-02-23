@@ -207,6 +207,7 @@ const Reports: React.FC = () => {
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Placa</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Modelo</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Conductor</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Estado</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Renta</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Recaudado</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Mora</th>
@@ -214,15 +215,21 @@ const Reports: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {data.vehicles.map(v => {
-                    const driver = data.drivers.find(d => d.id === v.driverId);
                     const vPayments = data.payments.filter(p => p.vehicleId === v.id).reduce((sum, p) => sum + Number(p.amount), 0);
                     const vDebt = data.arrears.filter(a => a.vehicleId === v.id && a.status === 'pending').reduce((sum, a) => sum + Number(a.amountOwed), 0);
                     return (
                       <tr key={v.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 font-bold text-indigo-600 font-mono uppercase text-sm">{v.licensePlate}</td>
                         <td className="px-6 py-4 text-sm">{v.model}</td>
-                        <td className="px-6 py-4 text-sm">
-                          {driver ? `${driver.firstName} ${driver.lastName}` : <span className="text-slate-300 italic">No asignado</span>}
+                        <td className="px-6 py-4 text-xs">
+                          {v.driverName ? `${v.driverName}` : <span className="text-slate-300 italic">No asignado</span>}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {v.driverName ? (
+                            <span className="text-[8px] font-black bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full border border-emerald-100">ASIGNADO</span>
+                          ) : (
+                            <span className="text-[8px] font-black bg-slate-50 text-slate-400 px-2 py-1 rounded-full border border-slate-200">DISPONIBLE</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-right font-medium text-sm">${v.rentaValue.toLocaleString()}</td>
                         <td className="px-6 py-4 text-right text-emerald-600 font-bold text-sm">${vPayments.toLocaleString()}</td>
@@ -370,8 +377,15 @@ const Reports: React.FC = () => {
                         <div className="font-black text-indigo-600 font-mono text-sm uppercase">{v.licensePlate}</div>
                         <div className="text-[10px] text-slate-500 font-medium mt-0.5">{v.model}</div>
                       </div>
-                      <div className="text-[8px] font-black bg-slate-50 text-slate-600 px-2 py-1 rounded-lg border border-slate-200 uppercase tracking-wider">
-                        Renta: ${v.rentaValue.toLocaleString()}
+                      <div className="flex flex-col items-end gap-1.5">
+                        {driver ? (
+                          <span className="text-[8px] font-black bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full border border-emerald-100 uppercase tracking-wider">Asignado</span>
+                        ) : (
+                          <span className="text-[8px] font-black bg-slate-50 text-slate-400 px-2 py-1 rounded-full border border-slate-200 uppercase tracking-wider">Disponible</span>
+                        )}
+                        <div className="text-[8px] font-black bg-slate-50 text-slate-600 px-2 py-1 rounded-lg border border-slate-200 uppercase tracking-wider">
+                          Renta: ${v.rentaValue.toLocaleString()}
+                        </div>
                       </div>
                     </div>
                     

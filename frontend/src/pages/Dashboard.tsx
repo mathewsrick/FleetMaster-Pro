@@ -62,10 +62,10 @@ const Dashboard: React.FC = () => {
       0
     );
 
-    const activeVehicles = data.vehicles.filter(v => v.driverId).length;
+    const activeVehicles = data.vehicles.filter(v => v.driverName).length;
 
     const totalPotentialRenta = data.vehicles.reduce(
-      (sum, v) => sum + (v.driverId ? Number(v.rentaValue) : 0),
+      (sum, v) => sum + (v.driverName ? Number(v.rentaValue) : 0),
       0
     );
 
