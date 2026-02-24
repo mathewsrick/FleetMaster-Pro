@@ -76,6 +76,7 @@ const Vehicles: React.FC = () => {
       text: "Se eliminará permanentemente el vehículo.",
       icon: 'warning',
       showCancelButton: true,
+      reverseButtons: true,
       confirmButtonColor: '#4f46e5',
       cancelButtonColor: '#f43f5e',
       confirmButtonText: 'Sí, eliminar',

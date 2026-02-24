@@ -80,7 +80,8 @@ const Payments: React.FC = () => {
       text: "Si este pago generó una mora, esta también será eliminada.",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#10b981',
+      reverseButtons: true,
+      confirmButtonColor: '#4f46e5',
       cancelButtonColor: '#f43f5e',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'

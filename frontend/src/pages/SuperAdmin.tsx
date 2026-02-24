@@ -74,6 +74,7 @@ const SuperAdmin: React.FC = () => {
       `,
       focusConfirm: false,
       showCancelButton: true,
+      reverseButtons: true,
       confirmButtonText: 'Generar Licencia Gratis',
       confirmButtonColor: '#4f46e5',
       cancelButtonText: 'Cancelar',

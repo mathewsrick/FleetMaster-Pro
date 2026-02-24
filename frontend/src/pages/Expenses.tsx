@@ -49,8 +49,9 @@ const Expenses: React.FC = () => {
       text: "Esta acción no se puede deshacer.",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#e11d48',
-      cancelButtonColor: '#94a3b8',
+      reverseButtons: true,
+      confirmButtonColor: '#4f46e5',
+      cancelButtonColor: '#f43f5e',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });

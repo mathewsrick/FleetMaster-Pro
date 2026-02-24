@@ -219,7 +219,7 @@ const Landing: React.FC = () => {
               desc="Almacena licencias y cédulas de conductores. Recibe alertas visuales cuando el SOAT o la Tecnomecánica van a vencer."
             />
             <FeatureCard 
-              icon="fa-chart-mixed" 
+              icon="fa-chart-column" 
               title="Rendimiento por Vehículo" 
               desc="Explora ingresos y gastos de forma individual para saber qué vehículo es realmente rentable."
             />

@@ -67,6 +67,15 @@ export const create = async (userId: string, data: any) => {
     };
   }
 
+  // Si se está asignando un vehículo, primero desasignarlo de cualquier otro conductor
+  if (data.vehicleId) {
+    const driverWithVehicle = await repo.findByVehicleId(data.vehicleId);
+    if (driverWithVehicle) {
+      console.log(`🔄 Desasignando vehículo ${data.vehicleId} del conductor ${driverWithVehicle.id} antes de crear nuevo conductor`);
+      await repo.update(userId, driverWithVehicle.id, { vehicleId: null });
+    }
+  }
+
   const driver = { id: uuid(), userId, ...data };
   await repo.create(driver);
 

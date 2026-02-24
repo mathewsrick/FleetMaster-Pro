@@ -109,7 +109,7 @@ const Drivers: React.FC = () => {
       loadData();
     } catch (err: any) {
       const errorCode = err?.data?.code;
-      const errorMessage = err?.data?.message || 'Error al guardar.';
+      const errorMessage = err?.data?.message || 'Error al guardar el conductor.';
 
       if (errorCode === 'DUPLICATE_DRIVER') {
         Swal.fire({ 
@@ -118,11 +118,32 @@ const Drivers: React.FC = () => {
           text: errorMessage,
           confirmButtonColor: '#4f46e5'
         });
+      } else if (errorCode === 'DUPLICATE_ENTRY') {
+        Swal.fire({ 
+          icon: 'warning', 
+          title: 'Datos Duplicados', 
+          text: errorMessage,
+          confirmButtonColor: '#4f46e5'
+        });
       } else if (errorCode === 'PLAN_LIMIT_DRIVERS') {
         Swal.fire({ 
           icon: 'info', 
           title: 'Límite de Plan Alcanzado', 
           text: errorMessage + ' Considera actualizar tu plan.',
+          confirmButtonColor: '#4f46e5'
+        });
+      } else if (errorCode === 'INVALID_REFERENCE') {
+        Swal.fire({ 
+          icon: 'error', 
+          title: 'Vehículo No Disponible', 
+          text: errorMessage,
+          confirmButtonColor: '#4f46e5'
+        });
+      } else if (errorCode === 'NOT_FOUND') {
+        Swal.fire({ 
+          icon: 'error', 
+          title: 'No Encontrado', 
+          text: errorMessage,
           confirmButtonColor: '#4f46e5'
         });
       } else {
@@ -143,6 +164,7 @@ const Drivers: React.FC = () => {
       text: "Se eliminará permanentemente la ficha del conductor.",
       icon: 'warning',
       showCancelButton: true,
+      reverseButtons: true,
       confirmButtonColor: '#4f46e5',
       cancelButtonColor: '#f43f5e',
       confirmButtonText: 'Sí, eliminar',

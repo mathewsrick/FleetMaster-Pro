@@ -35,6 +35,9 @@ export const sendEmail = async ({ to, subject, html }: EmailOptions) => {
   }
 };
 
+const formatDate = (date: string | Date) => {
+  return new Date(date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+};
 
 const LOGO_HTML = `
   <div style="text-align: center; margin-bottom: 24px;">
@@ -98,7 +101,7 @@ export const templates = {
       <div style="background: #f8fafc; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0;">
         <p><strong>Usuario:</strong> ${data.username}</p>
         <p><strong>Email:</strong> ${data.email}</p>
-        <p><strong>Fecha:</strong> ${data.date}</p>
+        <p><strong>Fecha:</strong> ${new Date(data.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
       </div>
     </div>
   `,
@@ -131,7 +134,7 @@ export const templates = {
         </tr>
         <tr>
           <td style="padding: 12px 0; color: #64748b; font-size: 14px;">Fecha de Registro:</td>
-          <td style="padding: 12px 0; text-align: right; color: #1e293b;">${date}</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b;">${new Date(date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
         </tr>
         ${createdArrear > 0 ? `
         <tr>
@@ -149,7 +152,7 @@ export const templates = {
         <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
           ${pendingArrears.map(a => `
             <tr>
-              <td style="padding: 6px 0; color: #9f1239;">Mora del ${a.dueDate}</td>
+              <td style="padding: 6px 0; color: #9f1239;">Mora del ${new Date(a.dueDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
               <td style="padding: 6px 0; text-align: right; color: #be123c; font-weight: bold;">$${a.amountOwed.toLocaleString()}</td>
             </tr>
           `).join('')}
@@ -215,7 +218,7 @@ export const templates = {
         </tr>
         <tr>
           <td style="padding: 12px 0; color: #64748b;">Fecha:</td>
-          <td style="padding: 12px 0; text-align: right; color: #1e293b;">${data.date}</td>
+          <td style="padding: 12px 0; text-align: right; color: #1e293b;">${new Date(data.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
         </tr>
       </table>
     </div>
@@ -264,7 +267,7 @@ export const templates = {
           </tr>
           <tr>
             <td style="padding: 10px 0 0 0; color: #7f1d1d; font-weight: 600;">Fecha:</td>
-            <td style="padding: 10px 0 0 0; text-align: right; color: #1e293b;">${data.date}</td>
+            <td style="padding: 10px 0 0 0; text-align: right; color: #1e293b;">${new Date(data.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
           </tr>
         </table>
       </div>
@@ -312,7 +315,7 @@ export const templates = {
           </tr>
           <tr style="border-bottom:1px solid #f1f5f9;">
             <td style="padding:12px 0;color:#64748b;font-size:13px;font-weight:600;">Fecha Vencimiento:</td>
-            <td style="padding:12px 0;text-align:right;color:${data.isExpired ? '#dc2626' : '#f59e0b'};font-weight:900;font-size:14px;">${data.expirationDate}</td>
+            <td style="padding:12px 0;text-align:right;color:${data.isExpired ? '#dc2626' : '#f59e0b'};font-weight:900;font-size:14px;">${new Date(data.expirationDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
           </tr>
           <tr>
             <td style="padding:12px 0 0 0;color:#64748b;font-size:13px;font-weight:600;">Estado:</td>
@@ -367,12 +370,12 @@ export const templates = {
         <table style="width:100%;border-collapse:collapse;">
           <tr style="border-bottom:1px solid #f1f5f9;">
             <td style="padding:12px 0;color:#64748b;font-size:13px;font-weight:600;">Fecha Vencimiento:</td>
-            <td style="padding:12px 0;text-align:right;color:${data.isExpired ? '#dc2626' : '#f59e0b'};font-weight:900;font-size:16px;">${data.expirationDate}</td>
+            <td style="padding:12px 0;text-align:right;color:${data.isExpired ? '#dc2626' : '#f59e0b'};font-weight:900;font-size:16px;">${new Date(data.expirationDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
           </tr>
           <tr>
             <td style="padding:12px 0 0 0;color:#64748b;font-size:13px;font-weight:600;">Estado:</td>
             <td style="padding:12px 0 0 0;text-align:right;">
-              <span style="background:${data.isExpired ? '#dc2626' : '#f59e0b'};color:white;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:900;text-transform:uppercase;">
+              <span style="background:${data.isExpired ? '#dc2626' : '#f59e0b'};color:white;padding:6px 12px;border-radius:8px;font-size:10px;font-weight:900;text-transform:uppercase;">
                 ${data.isExpired ? `Vencida hace ${Math.abs(data.daysRemaining)} días` : `${data.daysRemaining} días restantes`}
               </span>
             </td>
@@ -405,7 +408,7 @@ export const templates = {
       <h2>Tu plan está por expirar</h2>
       <p>Plan ${data.plan.toUpperCase()}</p>
       <h1>${data.daysRemaining} días</h1>
-      <p>Expira el ${data.expirationDate}</p>
+      <p>Expira el ${new Date(data.expirationDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
       <a href="${ENV.APP_URL}/#/pricing-checkout"
          style="background:#4f46e5;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;">
          Renovar ahora

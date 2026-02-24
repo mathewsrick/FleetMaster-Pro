@@ -109,6 +109,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 selection:bg-indigo-500 selection:text-white font-sans">
       <div className="w-full max-w-md bg-white rounded-[32px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         <div className="bg-indigo-600 p-10 text-center text-white relative">
+          <Link 
+            to="/" 
+            className="absolute top-6 left-6 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-all active:scale-95 group"
+            title="Volver al inicio"
+          >
+            <i className="fa-solid fa-arrow-left text-sm group-hover:scale-110 transition-transform"></i>
+          </Link>
           <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
             <i className="fa-solid fa-truck-fast"></i>
           </div>
