@@ -57,6 +57,10 @@ export interface Vehicle {
   hasFullCoverage?: boolean; // 🆕 Tiene seguro todo riesgo
   fullCoverageExpiration?: string; // 🆕 Vencimiento seguro todo riesgo
   rentaValue: number;
+  driver?: {
+    id: string;
+    name: string;
+  };
   driverId: string | null;
   driverName?: string; 
   photos?: string[];
