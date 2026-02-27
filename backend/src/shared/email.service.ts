@@ -39,11 +39,13 @@ const formatDate = (date: string | Date) => {
   return new Date(date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
+const LOGO_PATH = 'backend/public/assets/image.png';
+
 const LOGO_HTML = `
   <div style="text-align: center; margin-bottom: 24px;">
     <div style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 14px; border-radius: 16px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
        <img
-          src="data:image/png;base64,${LOGO_BASE64}"
+          src="${LOGO_PATH}"
           alt="FleetMaster Hub"
           width="32"
           height="32"

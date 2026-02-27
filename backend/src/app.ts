@@ -148,7 +148,7 @@ const adminLimiter = rateLimit({
 
 const publicPath = path.join((process as any).cwd(), 'backend/public');
 
-['uploads/vehicles', 'uploads/drivers'].forEach(dir => {
+['uploads/vehicles', 'uploads/drivers', 'assets'].forEach(dir => {
   const p = path.join(publicPath, dir);
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 });
