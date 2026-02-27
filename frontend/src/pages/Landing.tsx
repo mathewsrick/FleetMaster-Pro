@@ -177,19 +177,73 @@ const Landing: React.FC = () => {
             <i className="fa-solid fa-sparkles"></i> Gestión de Flotas 2.0
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black text-slate-900 leading-[1.1] mb-4 sm:mb-6 md:mb-8 px-2">
-            Control Total de tu Flota <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 italic">en un solo lugar.</span>
+            Deja el Excel y recupera el <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 italic">control real de tu flota.</span>
           </h1>
           <p className="text-slate-500 text-sm sm:text-base md:text-lg max-w-2xl mx-auto mb-8 sm:mb-10 md:mb-12 font-medium leading-relaxed px-4">
-            La plataforma definitiva para la administración de vehículos. Gestiona conductores, automatiza cobros de mora, guarda registros fotográficos y visualiza tu rentabilidad en tiempo real.
+            Deja de perder dinero por moras olvidadas y documentos vencidos. La herramienta diseñada para dueños de flotas que quieren orden, rentabilidad y menos estrés administrativo.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4">
             <Link to="/login" className="w-full sm:w-auto bg-indigo-600 text-white px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-black text-base sm:text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95">
-              Prueba Gratis (5 días)
+              Empezar Prueba Gratuita
             </Link>
             <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto bg-emerald-500 text-white px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-black text-base sm:text-lg hover:bg-emerald-600 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-100">
-              <i className="fa-brands fa-whatsapp"></i> Hablar por WhatsApp
+              <i className="fa-brands fa-whatsapp"></i> Asesoría por WhatsApp
             </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Before vs After Section */}
+      <section className="py-12 sm:py-16 bg-white border-y border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
+            <div className="bg-rose-50 p-6 sm:p-10 rounded-3xl border border-rose-100">
+              <h3 className="text-rose-600 font-black uppercase text-[10px] sm:text-xs tracking-widest mb-4 flex items-center gap-2">
+                <i className="fa-solid fa-circle-xmark"></i> El Caos Actual (Excel/WhatsApp)
+              </h3>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3 text-slate-600 text-sm sm:text-base font-medium">
+                  <i className="fa-solid fa-minus mt-1 text-rose-400"></i>
+                  <span>Moras perdidas en chats infinitos de WhatsApp.</span>
+                </li>
+                <li className="flex items-start gap-3 text-slate-600 text-sm sm:text-base font-medium">
+                  <i className="fa-solid fa-minus mt-1 text-rose-400"></i>
+                  <span>No sabes qué vehículo te está haciendo perder dinero.</span>
+                </li>
+                <li className="flex items-start gap-3 text-slate-600 text-sm sm:text-base font-medium">
+                  <i className="fa-solid fa-minus mt-1 text-rose-400"></i>
+                  <span>Multas costosas por SOAT o Tecno vencidos.</span>
+                </li>
+                <li className="flex items-start gap-3 text-slate-600 text-sm sm:text-base font-medium">
+                  <i className="fa-solid fa-minus mt-1 text-rose-400"></i>
+                  <span>Discusiones con conductores por daños sin pruebas.</span>
+                </li>
+              </ul>
+            </div>
+            <div className="bg-emerald-50 p-6 sm:p-10 rounded-3xl border border-emerald-100">
+              <h3 className="text-emerald-600 font-black uppercase text-[10px] sm:text-xs tracking-widest mb-4 flex items-center gap-2">
+                <i className="fa-solid fa-circle-check"></i> Con FleetMaster Hub
+              </h3>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3 text-slate-700 text-sm sm:text-base font-bold">
+                  <i className="fa-solid fa-plus mt-1 text-emerald-500"></i>
+                  <span>Cobros automatizados y saldos claros al instante.</span>
+                </li>
+                <li className="flex items-start gap-3 text-slate-700 text-sm sm:text-base font-bold">
+                  <i className="fa-solid fa-plus mt-1 text-emerald-500"></i>
+                  <span>Rentabilidad real calculada por cada placa.</span>
+                </li>
+                <li className="flex items-start gap-3 text-slate-700 text-sm sm:text-base font-bold">
+                  <i className="fa-solid fa-plus mt-1 text-emerald-500"></i>
+                  <span>Alertas preventivas automáticas a tu celular.</span>
+                </li>
+                <li className="flex items-start gap-3 text-slate-700 text-sm sm:text-base font-bold">
+                  <i className="fa-solid fa-plus mt-1 text-emerald-500"></i>
+                  <span>Fotos de inspección que respaldan tu negocio.</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -198,40 +252,40 @@ const Landing: React.FC = () => {
       <section id="features" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-slate-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 mb-3 sm:mb-4">Potencia tu Negocio</h2>
-            <p className="text-slate-500 font-medium text-sm sm:text-base">Diseñado específicamente para las necesidades de los propietarios de vehículos.</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 mb-3 sm:mb-4">Elimina el Caos Administrativo</h2>
+            <p className="text-slate-500 font-medium text-sm sm:text-base">Todo lo que necesitas para que tu flota sea un negocio rentable y no un dolor de cabeza.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             <FeatureCard 
               icon="fa-money-bill-transfer" 
-              title="Moras Automatizadas" 
-              desc="El sistema detecta pagos incompletos y genera saldos de mora automáticamente vinculados a cada conductor."
+              title="Cobra cada peso a tiempo" 
+              desc="El sistema detecta pagos incompletos y genera saldos de mora automáticamente. No más cuentas perdidas en cuadernos o chats."
             />
             <FeatureCard 
               icon="fa-camera-retro" 
-              title="Inspección Fotográfica" 
-              desc="Guarda hasta 5 fotos de alta resolución por vehículo para un control estricto de daños y estado de entrega."
+              title="Cero discusiones por daños" 
+              desc="Registros fotográficos obligatorios por vehículo. Ten pruebas claras del estado de entrega y evita pérdidas de dinero."
             />
             <FeatureCard 
               icon="fa-id-card" 
-              title="Documentación Digital" 
-              desc="Almacena licencias y cédulas de conductores. Recibe alertas visuales cuando el SOAT o la Tecnomecánica van a vencer."
+              title="Adiós a las multas" 
+              desc="Alertas inteligentes de vencimiento de SOAT y Tecnomecánica. Evita inmovilizaciones y gastos innecesarios por descuido."
             />
             <FeatureCard 
               icon="fa-chart-column" 
-              title="Rendimiento por Vehículo" 
-              desc="Explora ingresos y gastos de forma individual para saber qué vehículo es realmente rentable."
+              title="¿Qué vehículo te da dinero?" 
+              desc="Análisis de rentabilidad individual. Identifica qué vehículos son productivos y cuáles están consumiendo tus ganancias."
             />
             <FeatureCard 
               icon="fa-file-excel" 
-              title="Reportes Profesionales" 
-              desc="Exporta toda tu operación a Excel en segundos para auditorías o contabilidad externa (Planes Pro/Ent)."
+              title="Reportes en un clic" 
+              desc="Exporta toda tu operación a Excel. Ahorra horas de trabajo manual y ten tu contabilidad lista para auditorías."
             />
             <FeatureCard 
               icon="fa-envelope-open-text" 
-              title="Recibos Automáticos" 
-              desc="Envía comprobantes de pago detallados por correo electrónico con el saldo de mora actualizado al instante."
+              title="Profesionalismo total" 
+              desc="Envía recibos automáticos por correo. Dale confianza a tus conductores con cuentas claras y saldos actualizados."
             />
           </div>
         </div>
@@ -241,8 +295,8 @@ const Landing: React.FC = () => {
       <section id="pricing" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-3 sm:mb-4">Planes diseñados para crecer</h2>
-            <p className="text-slate-500 font-medium text-sm sm:text-base">Desde un solo vehículo hasta flotas corporativas ilimitadas.</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-3 sm:mb-4">Planes que se pagan solos</h2>
+            <p className="text-slate-500 font-medium text-sm sm:text-base">Recupera tu inversión evitando una sola mora olvidada o una multa por documentos.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
@@ -294,9 +348,9 @@ const Landing: React.FC = () => {
         <div className="absolute top-0 right-0 w-1/2 h-full bg-indigo-600/10 skew-x-12 translate-x-1/2 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
           <div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-4 sm:mb-6">Hablemos de tu flota</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-4 sm:mb-6">¿Listo para profesionalizar tu flota?</h2>
             <p className="text-slate-400 text-sm sm:text-base md:text-lg mb-8 sm:mb-10 leading-relaxed font-medium">
-              ¿Tienes dudas técnicas o necesitas una demostración personalizada? Nuestro equipo de expertos está listo para ayudarte a digitalizar tu operación hoy mismo.
+              Si estás cansado de las planillas de Excel y los mensajes perdidos en WhatsApp, es momento de dar el salto. Estamos aquí para ayudarte en la transición.
             </p>
             <div className="space-y-5 sm:space-y-6">
               <div className="flex items-center gap-3 sm:gap-4">
