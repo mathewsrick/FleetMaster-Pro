@@ -223,7 +223,7 @@ const Expenses: React.FC = () => {
             <select 
               value={limit} 
               onChange={(e) => {setLimit(Number(e.target.value)); setPage(1);}} 
-              className="px-3 py-2 bg-white border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-600"
+              className="px-3 py-2 bg-white border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-600 w-36 sm:w-auto"
             >
               <option value={5}>5 por pág.</option>
               <option value={10}>10 por pág.</option>

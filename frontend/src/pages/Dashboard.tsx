@@ -106,12 +106,19 @@ const Dashboard: React.FC = () => {
   }, [selectedVehicle, data.expenses, expenseTypeFilter]);
 
   const chartData = useMemo(() => {
+    // Normaliza la fecha a yyyy-mm-dd para comparar solo el día
+    const normalizeDate = (date: string) => {
+      if (!date) return '';
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return date;
+      return d.toISOString().split('T')[0];
+    };
     return Array.from({ length: 7 }).map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
       const dateStr = d.toISOString().split('T')[0];
-      const dayPayments = data.payments.filter(p => p.date === dateStr).reduce((sum, p) => sum + Number(p.amount), 0);
-      const dayExpenses = data.expenses.filter(e => e.date === dateStr).reduce((sum, e) => sum + Number(e.amount), 0);
+      const dayPayments = data.payments.filter(p => normalizeDate(p.date) === dateStr).reduce((sum, p) => sum + Number(p.amount), 0);
+      const dayExpenses = data.expenses.filter(e => normalizeDate(e.date) === dateStr).reduce((sum, e) => sum + Number(e.amount), 0);
       return { name: d.toLocaleDateString('es-ES', { weekday: 'short' }), payments: dayPayments, expenses: dayExpenses };
     });
   }, [data]);
@@ -381,8 +388,8 @@ const Dashboard: React.FC = () => {
                       <span className="text-[10px] sm:text-xs font-mono font-bold text-slate-600 block">
                         {new Date(selectedVehicle.soatExpiration).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '-')}
                       </span>
-                      <span className={`text-[9px] sm:text-[10px] font-bold ${vehicleStats.daysToSoat < 10 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                        ({vehicleStats.daysToSoat}d)
+                      <span className={`text-[9px] sm:text-[10px] font-bold ${vehicleStats.daysToSoat < 0 ? 'text-rose-600' : vehicleStats.daysToSoat < 10 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                        {vehicleStats.daysToSoat < 0 ? 'Documento vencido' : `(${vehicleStats.daysToSoat}d)`}
                       </span>
                     </div>
                   </div>
@@ -397,7 +404,7 @@ const Dashboard: React.FC = () => {
                         {new Date(selectedVehicle.techExpiration).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '-')}
                       </span>
                       <span className={`text-[9px] sm:text-[10px] font-bold ${vehicleStats.daysToTecno < 0 ? 'text-rose-600' : vehicleStats.daysToTecno < 10 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                        {vehicleStats.daysToTecno < 0 ? 'Vencido' : `(${vehicleStats.daysToTecno}d)`}
+                        {vehicleStats.daysToTecno < 0 ? 'Documento vencido' : `(${vehicleStats.daysToTecno}d)`}
                       </span>
                     </div>
                   </div>

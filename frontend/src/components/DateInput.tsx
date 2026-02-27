@@ -12,10 +12,10 @@ interface DateInputProps {
   disabled?: boolean;
 }
 
-export const DateInput: React.FC<DateInputProps> = ({ 
-  value, 
-  onChange, 
-  required = false, 
+export const DateInput: React.FC<DateInputProps> = ({
+  value,
+  onChange,
+  required = false,
   className = '',
   placeholder = 'dd/mm/yyyy',
   min,
@@ -24,7 +24,6 @@ export const DateInput: React.FC<DateInputProps> = ({
 }) => {
   const dateInputRef = useRef<HTMLInputElement>(null);
 
-  // Manejar el cambio desde el date picker nativo
   const handleDatePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isoDate = e.target.value;
     if (isoDate) {
@@ -32,37 +31,31 @@ export const DateInput: React.FC<DateInputProps> = ({
     }
   };
 
-  // Abrir el date picker nativo al hacer clic en cualquier parte
   const handleClick = () => {
     if (dateInputRef.current && !disabled) {
       dateInputRef.current.showPicker?.();
     }
   };
 
-  // Convertir el valor ISO a display si existe
   const displayValue = value ? formatDateToDisplay(value) : '';
 
   return (
     <div className="relative cursor-pointer" onClick={handleClick}>
-      {/* Input visible con formato dd/mm/yyyy */}
-      <div className="relative">
+      <div className="relative flex items-center">
         <input
           type="text"
           value={displayValue}
           placeholder={placeholder}
           required={required}
           disabled={disabled}
-          className={`${className} cursor-pointer`}
+          className={`${className} cursor-pointer pr-10`} // padding right for icon
           readOnly
           tabIndex={-1}
         />
-        {/* Icono de calendario */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+        <div className="absolute -right-12 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
           <i className="fa-solid fa-calendar text-sm"></i>
         </div>
       </div>
-      
-      {/* Input nativo oculto para el date picker */}
       <input
         ref={dateInputRef}
         type="date"

@@ -6,6 +6,7 @@ import ResponsiveTable from '@/components/ResponsiveTable';
 import ResponsiveModal from '@/components/ResponsiveModal';
 import ModalFooter from '@/components/ModalFooter';
 import DateInput from '@/components/DateInput';
+import DateRangePicker from '@/components/DateRangePicker';
 
 const Payments: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -155,22 +156,12 @@ const Payments: React.FC = () => {
         </div>
         
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <div className="flex bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm w-full md:w-auto">
-            <div className="flex items-center px-3 bg-slate-50 border-r border-slate-200 text-slate-400 text-[10px] font-black tracking-widest uppercase">Desde</div>
-            <DateInput
-              value={dateRange.startDate} 
-              onChange={(isoDate) => {setDateRange({ ...dateRange, startDate: isoDate }); setPage(1);}}
-              className="px-3 py-2 text-xs font-bold outline-none flex-1 min-w-[120px]"
-              placeholder="dd/mm/yyyy"
-            />
-            <div className="flex items-center px-3 bg-slate-50 border-x border-slate-200 text-slate-400 text-[10px] font-black tracking-widest uppercase">Hasta</div>
-            <DateInput
-              value={dateRange.endDate} 
-              onChange={(isoDate) => {setDateRange({ ...dateRange, endDate: isoDate }); setPage(1);}}
-              className="px-3 py-2 text-xs font-bold outline-none flex-1 min-w-[120px]"
-              placeholder="dd/mm/yyyy"
-            />
-          </div>
+          <DateRangePicker
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
+            onChange={(range) => { setDateRange(range); setPage(1); }}
+            className="w-full md:w-auto"
+          />
 
           <button
             onClick={() => {
@@ -285,7 +276,7 @@ const Payments: React.FC = () => {
             <select 
               value={limit} 
               onChange={(e) => {setLimit(Number(e.target.value)); setPage(1);}}
-              className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-600 shadow-sm"
+              className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-600 shadow-sm w-36 sm:w-auto"
             >
               <option value={5}>5 por pág.</option>
               <option value={10}>10 por pág.</option>

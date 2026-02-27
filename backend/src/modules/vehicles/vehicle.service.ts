@@ -36,7 +36,7 @@ export const save = async (userId: string, data: any) => {
 
       // 2️⃣ Vehículo existe pero está eliminado (soft delete) - RESTAURAR
       console.log(`🔄 Restaurando vehículo eliminado: ${existingVehicle.licensePlate} (ID: ${existingVehicle.id})`);
-      
+
       const restoredVehicle = await repo.restore(userId, existingVehicle.id, data);
       return restoredVehicle;
     }
