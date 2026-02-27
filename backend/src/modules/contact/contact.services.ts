@@ -1,5 +1,6 @@
 import * as emailService from '../../shared/email.service.js';
 import { ENV } from '../../config/env.js';
+import { prisma } from '../../shared/db.js';
 
 // 🔒 Validación de email robusta
 const isValidEmail = (email: string): boolean => {
@@ -32,11 +33,19 @@ export const sendContactEmail = async (name: string, email: string, message: str
     throw new Error('El mensaje debe tener al menos 10 caracteres');
   }
 
-  // Notificamos al administrador (o al correo de soporte configurado)
-  const supportEmail = process.env.SUPPORT_EMAIL || ENV.SMTP_FROM.match(/<(.*)>/)?.[1] || ENV.SMTP_USER;
+  // Buscar todos los superadmins confirmados
+  const superadmins = await prisma.user.findMany({
+    where: { role: 'SUPERADMIN', isConfirmed: true },
+    select: { email: true }
+  });
+  const superadminEmails = superadmins.map(u => u.email);
+  if (superadminEmails.length === 0) {
+    throw new Error('No hay superadmins confirmados para notificar');
+  }
 
+  // Enviar a todos los superadmins
   return await emailService.sendEmail({
-    to: supportEmail,
+    to: superadminEmails.join(','),
     subject: `Nuevo interesado en FleetMaster Hub: ${sanitizedName}`,
     html: emailService.templates.contactNotification(sanitizedName, email, sanitizedMessage)
   });

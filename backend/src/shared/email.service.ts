@@ -108,11 +108,17 @@ export const templates = {
     </div>
   `,
   passwordReset: (token: string) => `
-    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155; background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);">
       ${LOGO_HTML}
-      <h2 style="color: #1e293b; text-align: center; font-size: 24px; margin-bottom: 24px;">Recuperación de Acceso</h2>
-      <div style="background: #f8fafc; padding: 32px; text-align: center; border-radius: 16px; margin: 32px 0; border: 1px dashed #cbd5e1;">
-        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5;">${token}</span>
+      <div style="background: #f1f5f9; border-radius: 16px; padding: 32px; text-align: center; margin: 32px 0; border: 1px dashed #cbd5e1; box-shadow: 0 2px 8px rgba(79,70,229,0.08);">
+        <h2 style="color: #4f46e5; text-align: center; font-size: 26px; margin-bottom: 18px; font-weight: 900;">Recuperación de Acceso</h2>
+        <p style="font-size: 16px; color: #334155; margin-bottom: 24px;">Utiliza el siguiente código para restablecer tu contraseña:</p>
+        <span style="font-size: 36px; font-weight: 900; letter-spacing: 8px; color: #4f46e5; background: #eef2ff; padding: 16px 32px; border-radius: 12px; display: inline-block; margin-bottom: 16px;">${token}</span>
+        <p style="font-size: 13px; color: #64748b; margin-top: 24px;">Este código es válido por 10 minutos. Si no solicitaste el cambio, ignora este correo.</p>
+      </div>
+      <div style="margin-top: 32px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+        <p style="font-size: 12px; color: #94a3b8; margin: 0;">FleetMaster Hub nunca te pedirá tu contraseña por email.</p>
+        <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">© 2025 FleetMaster Hub System.</p>
       </div>
     </div>
   `,
