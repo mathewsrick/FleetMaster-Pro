@@ -39,7 +39,7 @@ const formatDate = (date: string | Date) => {
   return new Date(date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
-const LOGO_PATH = 'backend/public/assets/image.png';
+const LOGO_PATH = ENV.APP_URL + '/api/public/assets/truck-fast-solid-full.png';
 
 const LOGO_HTML = `
   <div style="text-align: center; margin-bottom: 24px;">
