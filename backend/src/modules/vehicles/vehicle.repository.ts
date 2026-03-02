@@ -62,6 +62,8 @@ export const restore = async (userId: string, id: string, newData: any) => {
       techExpiration: newData.techExpiration ? new Date(newData.techExpiration) : null,
       hasFullCoverage: newData.hasFullCoverage || false,
       fullCoverageExpiration: newData.hasFullCoverage && newData.fullCoverageExpiration ? new Date(newData.fullCoverageExpiration) : null,
+      fullCoverageInsurer: newData.hasFullCoverage ? (newData.fullCoverageInsurer || null) : null,
+      fullCoverageEmergencyNumber: newData.hasFullCoverage ? (newData.fullCoverageEmergencyNumber || null) : null,
       rentaValue: Number(newData.rentaValue),
       photos: Array.isArray(newData.photos) ? newData.photos : [],
       deletedAt: null // 🔑 Restaurar
@@ -94,6 +96,8 @@ export const create = async (userId: string, data: any) => {
       techExpiration: data.techExpiration ? new Date(data.techExpiration) : null,
       hasFullCoverage: data.hasFullCoverage || false,
       fullCoverageExpiration: data.hasFullCoverage && data.fullCoverageExpiration ? new Date(data.fullCoverageExpiration) : null,
+      fullCoverageInsurer: data.hasFullCoverage ? (data.fullCoverageInsurer || null) : null,
+      fullCoverageEmergencyNumber: data.hasFullCoverage ? (data.fullCoverageEmergencyNumber || null) : null,
       rentaValue: Number(data.rentaValue),
       photos: Array.isArray(data.photos) ? data.photos : []
     } as any,
@@ -139,6 +143,8 @@ export const update = async (userId: string, payload: any) => {
       techExpiration: payload.techExpiration ? new Date(payload.techExpiration) : null,
       hasFullCoverage: payload.hasFullCoverage || false,
       fullCoverageExpiration: payload.hasFullCoverage && payload.fullCoverageExpiration ? new Date(payload.fullCoverageExpiration) : null,
+      fullCoverageInsurer: payload.hasFullCoverage ? (payload.fullCoverageInsurer || null) : null,
+      fullCoverageEmergencyNumber: payload.hasFullCoverage ? (payload.fullCoverageEmergencyNumber || null) : null,
       rentaValue: Number(payload.rentaValue),
       photos: Array.isArray(payload.photos) ? payload.photos : []
     } as any,

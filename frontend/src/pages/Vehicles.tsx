@@ -16,6 +16,8 @@ const Vehicles: React.FC = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [vehicleHistory, setVehicleHistory] = useState<{ payments: Payment[], expenses: Expense[] }>({ payments: [], expenses: [] });
+  const [photoViewerOpen, setPhotoViewerOpen] = useState(false);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -34,7 +36,8 @@ const Vehicles: React.FC = () => {
     year: new Date().getFullYear(), licensePlate: '', model: '', color: '',
     purchaseDate: formatDateToISO(getTodayDateDisplay()),
     insurance: '', insuranceNumber: '', soatExpiration: '', techExpiration: '',
-    hasFullCoverage: false, fullCoverageExpiration: '', // 🆕 Seguro todo riesgo
+    hasFullCoverage: false, fullCoverageExpiration: '', 
+    fullCoverageInsurer: '', fullCoverageEmergencyNumber: '', // 🆕 Nuevos campos
     rentaValue: 0, driverId: null, photos: []
   };
 
@@ -148,8 +151,10 @@ const Vehicles: React.FC = () => {
         insuranceNumber: formData.insuranceNumber || null,
         soatExpiration: formData.soatExpiration,
         techExpiration: formData.techExpiration,
-        hasFullCoverage: formData.hasFullCoverage || false, // 🆕 Seguro todo riesgo
-        fullCoverageExpiration: formData.hasFullCoverage ? formData.fullCoverageExpiration : null, // 🆕
+        hasFullCoverage: formData.hasFullCoverage || false,
+        fullCoverageExpiration: formData.hasFullCoverage ? formData.fullCoverageExpiration : null,
+        fullCoverageInsurer: formData.hasFullCoverage ? (formData.fullCoverageInsurer || null) : null, // 🆕
+        fullCoverageEmergencyNumber: formData.hasFullCoverage ? (formData.fullCoverageEmergencyNumber || null) : null, // 🆕
         rentaValue: Number(formData.rentaValue),
         // Fix: Provide driverId to match Vehicle type expectations
         driverId: formData.driverId || null,
@@ -290,17 +295,28 @@ const Vehicles: React.FC = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditingId(v.id);
+                      // Normalizar fechas: extraer solo YYYY-MM-DD de ISO strings
+                      const normalizeDate = (dateStr: string | undefined) => {
+                        if (!dateStr) return '';
+                        // Si está en formato ISO completo, extraer solo la fecha
+                        return dateStr.split('T')[0];
+                      };
+                      
                       setFormData({
                         id: v.id,
                         year: v.year,
                         licensePlate: v.licensePlate,
                         model: v.model,
                         color: v.color,
-                        purchaseDate: v.purchaseDate,
+                        purchaseDate: normalizeDate(v.purchaseDate),
                         insurance: v.insurance,
                         insuranceNumber: v.insuranceNumber,
-                        soatExpiration: v.soatExpiration,
-                        techExpiration: v.techExpiration,
+                        soatExpiration: normalizeDate(v.soatExpiration),
+                        techExpiration: normalizeDate(v.techExpiration),
+                        hasFullCoverage: v.hasFullCoverage,
+                        fullCoverageExpiration: normalizeDate(v.fullCoverageExpiration),
+                        fullCoverageInsurer: v.fullCoverageInsurer,
+                        fullCoverageEmergencyNumber: v.fullCoverageEmergencyNumber,
                         rentaValue: v.rentaValue,
                         driverId: v.driverId || null,
                         photos: v.photos || []
@@ -348,7 +364,14 @@ const Vehicles: React.FC = () => {
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                 {selectedVehicle.photos && selectedVehicle.photos.length > 0 ? selectedVehicle.photos.map((src, idx) => (
-                  <div key={idx} className="aspect-square bg-slate-100 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 hover:scale-105 transition-transform">
+                  <div 
+                    key={idx} 
+                    className="aspect-square bg-slate-100 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 hover:scale-105 transition-transform cursor-pointer"
+                    onClick={() => {
+                      setSelectedPhotoIndex(idx);
+                      setPhotoViewerOpen(true);
+                    }}
+                  >
                     <img src={`${API_URL}${src}`} className="w-full h-full object-cover" alt={`Foto ${idx + 1}`} />
                   </div>
                 )) : (
@@ -374,6 +397,37 @@ const Vehicles: React.FC = () => {
                     {selectedVehicle.techExpiration ? formatDateDisplay(selectedVehicle.techExpiration).split(' ')[0].replace(',', '') : 'N/A'}
                   </span>
                 </div>
+                
+                {/* 🆕 Información del seguro todo riesgo */}
+                {selectedVehicle.hasFullCoverage && (
+                  <>
+                    <div className="border-t border-slate-200 pt-3 mt-3"></div>
+                    <div className="flex justify-between text-xs sm:text-sm">
+                      <span className="font-bold text-slate-500">Seguro Todo Riesgo:</span>
+                      <span className={`font-black ${new Date(selectedVehicle.fullCoverageExpiration || '') < new Date() ? 'text-rose-500' : 'text-emerald-500'}`}>
+                        {selectedVehicle.fullCoverageExpiration ? formatDateDisplay(selectedVehicle.fullCoverageExpiration).split(' ')[0].replace(',', '') : 'N/A'}
+                      </span>
+                    </div>
+                    {selectedVehicle.fullCoverageInsurer && (
+                      <div className="flex justify-between text-xs sm:text-sm">
+                        <span className="font-bold text-slate-500">Aseguradora:</span>
+                        <span className="font-black text-slate-700">{selectedVehicle.fullCoverageInsurer}</span>
+                      </div>
+                    )}
+                    {selectedVehicle.fullCoverageEmergencyNumber && (
+                      <div className="flex justify-between text-xs sm:text-sm">
+                        <span className="font-bold text-slate-500">Emergencia:</span>
+                        <a 
+                          href={`tel:${selectedVehicle.fullCoverageEmergencyNumber}`}
+                          className="font-black text-indigo-600 hover:text-indigo-700 transition-colors"
+                        >
+                          {selectedVehicle.fullCoverageEmergencyNumber}
+                        </a>
+                      </div>
+                    )}
+                  </>
+                )}
+                
                 <div className="flex justify-between text-xs sm:text-sm pt-2 border-t">
                   <span className="font-bold text-slate-500">Renta:</span>
                   <span className="font-black text-slate-900">${Number(selectedVehicle.rentaValue).toLocaleString()}</span>
@@ -490,7 +544,13 @@ const Vehicles: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={formData.hasFullCoverage || false}
-                    onChange={(e) => setFormData({...formData, hasFullCoverage: e.target.checked, fullCoverageExpiration: e.target.checked ? formData.fullCoverageExpiration : ''})}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      hasFullCoverage: e.target.checked, 
+                      fullCoverageExpiration: e.target.checked ? formData.fullCoverageExpiration : '',
+                      fullCoverageInsurer: e.target.checked ? formData.fullCoverageInsurer : '',
+                      fullCoverageEmergencyNumber: e.target.checked ? formData.fullCoverageEmergencyNumber : ''
+                    })}
                     className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
@@ -502,14 +562,44 @@ const Vehicles: React.FC = () => {
             </div>
             
             {formData.hasFullCoverage && (
-              <div className="animate-in slide-in-from-top-2 duration-300">
-                <label className="text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1 sm:mb-2 block">Vencimiento Seguro Todo Riesgo</label>
-                <DateInput
-                  required={formData.hasFullCoverage}
-                  value={formData.fullCoverageExpiration || ''} 
-                  onChange={(isoDate) => setFormData({...formData, fullCoverageExpiration: isoDate})} 
-                  className="w-full p-3 sm:p-4 bg-indigo-50 border-2 border-indigo-200 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base focus:ring-2 focus:ring-indigo-500" 
-                />
+              <div className="animate-in slide-in-from-top-2 duration-300 space-y-4">
+                <div>
+                  <label className="text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1 sm:mb-2 block">Vencimiento Seguro Todo Riesgo</label>
+                  <DateInput
+                    required={formData.hasFullCoverage}
+                    value={formData.fullCoverageExpiration || ''} 
+                    onChange={(isoDate) => setFormData({...formData, fullCoverageExpiration: isoDate})} 
+                    className="w-full p-3 sm:p-4 bg-indigo-50 border-2 border-indigo-200 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base focus:ring-2 focus:ring-indigo-500" 
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1 sm:mb-2 block">
+                      Aseguradora <span className="text-slate-400">(Opcional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej: SURA, Allianz, Mapfre"
+                      value={formData.fullCoverageInsurer || ''} 
+                      onChange={(e) => setFormData({...formData, fullCoverageInsurer: e.target.value})} 
+                      className="w-full p-3 sm:p-4 bg-indigo-50 border-2 border-indigo-200 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base focus:ring-2 focus:ring-indigo-500" 
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1 sm:mb-2 block">
+                      Teléfono Emergencia <span className="text-slate-400">(Opcional)</span>
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="Ej: +57 300 123 4567"
+                      value={formData.fullCoverageEmergencyNumber || ''} 
+                      onChange={(e) => setFormData({...formData, fullCoverageEmergencyNumber: e.target.value})} 
+                      className="w-full p-3 sm:p-4 bg-indigo-50 border-2 border-indigo-200 rounded-xl sm:rounded-2xl font-bold outline-none text-sm sm:text-base focus:ring-2 focus:ring-indigo-500" 
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -596,6 +686,80 @@ const Vehicles: React.FC = () => {
           />
         </form>
       </ResponsiveModal>
+
+      {/* 🆕 Visor de Fotos en Tamaño Completo */}
+      {photoViewerOpen && selectedVehicle && selectedVehicle.photos && selectedVehicle.photos.length > 0 && (
+        <div 
+          className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setPhotoViewerOpen(false)}
+        >
+          <button
+            onClick={() => setPhotoViewerOpen(false)}
+            className="absolute top-4 right-4 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all z-10 active:scale-95"
+          >
+            <i className="fa-solid fa-times text-xl"></i>
+          </button>
+
+          <div className="relative max-w-6xl w-full" onClick={(e) => e.stopPropagation()}>
+            {/* Navegación anterior */}
+            {selectedVehicle.photos.length > 1 && selectedPhotoIndex > 0 && (
+              <button
+                onClick={() => setSelectedPhotoIndex(prev => prev - 1)}
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all z-10 active:scale-95"
+              >
+                <i className="fa-solid fa-chevron-left text-xl"></i>
+              </button>
+            )}
+
+            {/* Imagen principal */}
+            <div className="bg-slate-900 rounded-2xl overflow-hidden shadow-2xl">
+              <img
+                src={`${API_URL}${selectedVehicle.photos[selectedPhotoIndex]}`}
+                className="w-full h-auto max-h-[80vh] object-contain"
+                alt={`Foto ${selectedPhotoIndex + 1}`}
+              />
+            </div>
+
+            {/* Navegación siguiente */}
+            {selectedVehicle.photos.length > 1 && selectedPhotoIndex < selectedVehicle.photos.length - 1 && (
+              <button
+                onClick={() => setSelectedPhotoIndex(prev => prev + 1)}
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all z-10 active:scale-95"
+              >
+                <i className="fa-solid fa-chevron-right text-xl"></i>
+              </button>
+            )}
+
+            {/* Contador de fotos */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-bold backdrop-blur-sm">
+              {selectedPhotoIndex + 1} / {selectedVehicle.photos.length}
+            </div>
+
+            {/* Miniaturas (navegación rápida) */}
+            {selectedVehicle.photos.length > 1 && (
+              <div className="mt-4 flex gap-2 justify-center overflow-x-auto pb-2">
+                {selectedVehicle.photos.map((photo, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedPhotoIndex(idx)}
+                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                      idx === selectedPhotoIndex 
+                        ? 'border-indigo-500 scale-110' 
+                        : 'border-white/20 hover:border-white/40'
+                    }`}
+                  >
+                    <img
+                      src={`${API_URL}${photo}`}
+                      className="w-full h-full object-cover"
+                      alt={`Miniatura ${idx + 1}`}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
