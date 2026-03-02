@@ -63,7 +63,7 @@ export const templates = {
       <h2 style="color: #1e293b; text-align: center; font-size: 24px; margin-bottom: 24px;">¡Bienvenido a bordo, ${username}!</h2>
       <p style="font-size: 16px; line-height: 1.6;">Gracias por confiar en <strong>FleetMaster Hub</strong> para la gestión de tu flota.</p>
       <div style="text-align: center; margin: 40px 0;">
-        <a href="${ENV.FRONTEND_URL}/#/confirm/${token}" style="background-color: #4f46e5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);">Confirmar mi cuenta</a>
+        <a href="${ENV.FRONTEND_URL}/confirm/${token}" style="background-color: #4f46e5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);">Confirmar mi cuenta</a>
       </div>
       <p style="font-size: 12px; color: #94a3b8; margin-top: 32px;">Si no creaste esta cuenta, puedes ignorar este correo.</p>
     </div>
@@ -191,7 +191,7 @@ export const templates = {
       </div>
       <p style="font-size: 14px; color: #64748b; text-align: center;">Referencia: ${data.reference}</p>
       <div style="text-align: center; margin-top: 24px;">
-        <a href="${ENV.APP_URL}/#/pricing-checkout" style="color: #4f46e5; font-weight: bold; text-decoration: underline;">Intentar de nuevo</a>
+        <a href="${ENV.APP_URL}/pricing-checkout" style="color: #4f46e5; font-weight: bold; text-decoration: underline;">Intentar de nuevo</a>
       </div>
     </div>
   `,
@@ -417,7 +417,7 @@ export const templates = {
       <p>Plan ${data.plan.toUpperCase()}</p>
       <h1>${data.daysRemaining} días</h1>
       <p>Expira el ${new Date(data.expirationDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
-      <a href="${ENV.APP_URL}/#/pricing-checkout"
+      <a href="${ENV.APP_URL}/pricing-checkout"
          style="background:#4f46e5;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;">
          Renovar ahora
       </a>

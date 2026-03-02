@@ -47,7 +47,7 @@ export const initializePayment = async (req: any, res: any) => {
       reference,
       signature,
       // Redirigir explícitamente a la página de resultados
-      redirectUrl: `${ENV.APP_URL}/#/payment-result`
+      redirectUrl: `${ENV.APP_URL}/payment-result`
     });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
