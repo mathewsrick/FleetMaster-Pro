@@ -17,10 +17,45 @@ const Landing: React.FC = () => {
   const [wordIndex, setWordIndex] = useState(0);
   const words = ["Dinero Bajo Control", "Cero Excels Infinitos", "Rentabilidad Real", "Adiós al Estrés Administrativo"];
 
+  const [productSlideIndex, setProductSlideIndex] = useState(0);
+  const productSlides = [
+    {
+      title: "Control Financiero Real",
+      problem: "¿Vives con la duda de si tu flota es rentable o si solo estás moviendo dinero?",
+      solution: "Panel inteligente que te muestra la utilidad neta real después de todos tus gastos operativos.",
+      image: "/dashboard.png",
+      mobile: "/mobile-dashboard.png",
+      icon: "fa-chart-line"
+    },
+    {
+      title: "Cuentas claras",
+      problem: "Los pagos se pierden en chats de WhatsApp y libretas que nadie entiende.",
+      solution: "Registro digital centralizado donde cada ingreso queda vinculado automáticamente al conductor.",
+      image: "/incomes.png",
+      mobile: "/mobile-incomes.png",
+      icon: "fa-cash-register"
+    },
+    {
+      title: "Decisiones inteligentes",
+      problem: "Pasas horas tratando de entender tus números.",
+      solution: "Reportes consolidados listos para exportar. Audita tu negocio en un solo clic.",
+      image: "/reports.png",
+      mobile: "/mobile-reports.png",
+      icon: "fa-file-invoice-dollar"
+    }
+  ];
+
   useEffect(() => {
     const timer = setInterval(() => {
       setWordIndex((prev) => (prev + 1) % words.length);
     }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProductSlideIndex((prev) => (prev + 1) % productSlides.length);
+    }, 8000);
     return () => clearInterval(timer);
   }, []);
 
@@ -222,11 +257,11 @@ const Landing: React.FC = () => {
             <span className="text-slate-400 text-xl sm:text-2xl md:text-3xl font-medium block mt-4 max-w-3xl mx-auto">Deja de perder dinero por desorden administrativo y falta de control.</span>
           </h1>
           <p className="text-slate-600 text-sm sm:text-base md:text-lg max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 font-medium leading-relaxed px-4">
-            Diseñado para dueños de vehículos que quieren pasar del caos de WhatsApp y Excel a una operación profesional. Controla pagos, automatiza cobros de mora y visualiza tu rentabilidad por vehículo en tiempo real.
+            Diseñado para dueños de vehículos que quieren pasar del caos de WhatsApp y Excel a una operación profesional. Controla pagos, automatiza cobros de deudas y visualiza tu rentabilidad real por vehículo en tiempo real.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4">
             <Link to="/login" className="w-full sm:w-auto bg-indigo-600 text-white px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-black text-base sm:text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95">
-              Empieza gratis por 5 días
+              Digitalizar mi Flota Gratis
             </Link>
             <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto bg-white text-emerald-600 border-2 border-emerald-500 px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-black text-base sm:text-lg hover:bg-emerald-50 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-100">
               <i className="fa-brands fa-whatsapp"></i> Consultar por WhatsApp
@@ -288,6 +323,133 @@ const Landing: React.FC = () => {
             ].map((f, i) => (
               <FeatureCard key={i} {...f} index={i} />
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Product Showcase Section */}
+      <section className="py-16 sm:py-20 md:py-32 px-4 sm:px-6 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            {/* Text Content */}
+            <div className="lg:col-span-5 space-y-8">
+                <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl text-indigo-600 text-xs font-black uppercase tracking-widest">
+                <i className="fa-solid fa-display"></i> Así funciona FleetMaster Hub
+                </div>
+
+              <div className="space-y-6">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={productSlideIndex}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.5 }}
+                    className="space-y-6"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+                        <i className={`fa-solid ${productSlides[productSlideIndex].icon}`}></i>
+                      </div>
+                      <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                        {productSlides[productSlideIndex].title}
+                      </h2>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="p-4 bg-rose-50 border-l-4 border-rose-500 rounded-r-xl">
+                        <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">El Problema</p>
+                        <p className="text-slate-700 font-bold text-sm sm:text-base italic">
+                          "{productSlides[productSlideIndex].problem}"
+                        </p>
+                      </div>
+
+                      <div className="p-4 bg-emerald-50 border-l-4 border-emerald-500 rounded-r-xl">
+                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">La Solución FleetMaster</p>
+                        <p className="text-slate-800 font-bold text-sm sm:text-base">
+                          {productSlides[productSlideIndex].solution}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Carousel Indicators */}
+              <div className="flex gap-3 pt-4">
+                {productSlides.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setProductSlideIndex(i)}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      productSlideIndex === i ? 'w-12 bg-indigo-600' : 'w-3 bg-slate-200 hover:bg-slate-300'
+                    }`}
+                    aria-label={`Ir al slide ${i + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Mockup Display */}
+            <div className="lg:col-span-7 relative mt-12 lg:mt-0">
+              {/* Laptop Mockup */}
+              <div className="relative z-10 mx-auto lg:ml-auto lg:mr-0 max-w-[540px]">
+                <div className="bg-white rounded-t-3xl p-2 sm:p-3 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] border-t border-x border-slate-200">
+                  <div className="overflow-hidden rounded-xl bg-slate-100 aspect-[16/10] relative border border-slate-100">
+                    <AnimatePresence mode="wait">
+                      <motion.img
+                      key={productSlideIndex}
+                      src={productSlides[productSlideIndex].image}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="h-full object-top"
+                      alt={productSlides[productSlideIndex].title}
+                      referrerPolicy="no-referrer"
+                      />
+                    </AnimatePresence>
+                  </div>
+                </div>
+                {/* Laptop Base */}
+                <div className="h-3 sm:h-4 bg-slate-200 rounded-b-2xl w-[106%] -ml-[3%] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] relative z-20">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 sm:w-24 h-1 sm:h-1.5 bg-slate-300 rounded-b-full"></div>
+                </div>
+              </div>
+
+              {/* Mobile Mockup */}
+              <motion.div 
+                initial={{ y: -10, opacity: 0, x: -10 }}
+                whileInView={{ y: 10, opacity: 1, x: -0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+                className="absolute -bottom-10 -right-4 sm:-right-8 z-30 w-[130px] sm:w-[180px] hidden sm:block"
+              >
+                <div className="bg-white rounded-[2.5rem] p-2 sm:p-2.5 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.25)] border-4 border-slate-100 relative overflow-hidden aspect-[9/19]">
+                  {/* Speaker/Camera notch */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 sm:w-16 h-4 sm:h-5 bg-white rounded-b-2xl z-40 border-x border-b border-slate-100"></div>
+                  <div className="w-full h-full rounded-[1.8rem] overflow-hidden bg-slate-50 border border-slate-100">
+                    <AnimatePresence mode="wait">
+                      <motion.img
+                        key={productSlideIndex}
+                        src={productSlides[productSlideIndex].mobile}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="h-full object-top px-0.5"
+                        alt="Mobile view"
+                        referrerPolicy="no-referrer"
+                      />
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Decorative Elements */}
+              <div className="absolute -top-20 -right-20 w-80 h-80 bg-indigo-600/5 rounded-full blur-[100px] -z-10"></div>
+              <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-violet-600/5 rounded-full blur-[100px] -z-10"></div>
+            </div>
           </div>
         </div>
       </section>

@@ -21,7 +21,7 @@ const Reports: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const authData = useMemo(() => JSON.parse(localStorage.getItem('fmp_auth') || '{}'), []);
+  const authData = useMemo(() => JSON.parse(sessionStorage.getItem('fmp_auth') || '{}'), []);
   const plan = authData.accountStatus?.plan;
   const limits = authData.accountStatus?.limits;
 

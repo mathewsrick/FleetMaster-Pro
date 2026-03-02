@@ -11,7 +11,7 @@ const PricingCheckout: React.FC = () => {
   const [duration, setDuration] = useState<Duration>('monthly');
   const [loading, setLoading] = useState<string | null>(null);
 
-  const auth = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
+  const auth = JSON.parse(sessionStorage.getItem('fmp_auth') || '{}');
   const currentPlan = auth.accountStatus?.plan || 'free_trial';
   const daysRemaining = auth.accountStatus?.daysRemaining || 0;
   

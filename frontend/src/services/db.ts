@@ -75,7 +75,7 @@ export const formatDateDisplay = (dateStr: string) => {
 };
 
 const getAuth = () => {
-  const auth = localStorage.getItem('fmp_auth');
+  const auth = sessionStorage.getItem('fmp_auth');
   return auth ? JSON.parse(auth) : null;
 };
 
@@ -106,7 +106,7 @@ export const db = {
   refreshAuth: async () => {
     const data = await request<any>('/auth/refresh', 'GET');
     const newState = { isAuthenticated: true, user: data.user, token: data.token, accountStatus: data.accountStatus };
-    localStorage.setItem('fmp_auth', JSON.stringify(newState));
+    sessionStorage.setItem('fmp_auth', JSON.stringify(newState));
     return newState;
   },
   register: (credentials: { email: string; username: string; password: string }) => request<any>('/auth/register', 'POST', credentials),

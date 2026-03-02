@@ -29,7 +29,7 @@ const Drivers: React.FC = () => {
   const [pendingIdCard, setPendingIdCard] = useState<File | null>(null);
   const [previews, setPreviews] = useState({ license: '', idCard: '' });
 
-  const authData = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
+  const authData = JSON.parse(sessionStorage.getItem('fmp_auth') || '{}');
   const limits = authData.accountStatus?.limits;
   const reachedLimit = limits ? total >= limits.maxDrivers : false;
 

@@ -22,7 +22,7 @@
 ✅ Validación de datos en frontend y backend
 💳 2. SISTEMA DE SUSCRIPCIONES Y PAGOS
 2.1 Planes de Suscripción
-✅ Plan FREE TRIAL: 5 días gratis para nuevos usuarios
+✅ Plan FREE TRIAL: 15 días gratis para nuevos usuarios
 
 2 vehículos
 3 conductores

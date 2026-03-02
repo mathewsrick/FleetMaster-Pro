@@ -17,7 +17,7 @@ const Dashboard: React.FC = () => {
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
   const [expenseTypeFilter, setExpenseTypeFilter] = useState<string>('');
 
-  const authData = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
+  const authData = JSON.parse(sessionStorage.getItem('fmp_auth') || '{}');
   const accountStatus: AccountStatus | undefined = authData.accountStatus;
 
   useEffect(() => {

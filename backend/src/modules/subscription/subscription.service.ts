@@ -67,7 +67,7 @@ export const activate = async (userId: string, keyId: string) => {
     }
   }
 
-  const days = key.plan === 'free_trial' ? 5 : 30; 
+  const days = key.plan === 'free_trial' ? 15 : 30; 
   const startDate = new Date();
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + days);

@@ -149,7 +149,7 @@
 *"Paga como prefieras: tarjeta, PSE, Nequi. Seguro, rápido y 100% colombiano."*
 
 ### 13. **Planes Flexibles para Todos** 💰
-- ✅ **FREE TRIAL 5 días** → Prueba sin tarjeta
+- ✅ **FREE TRIAL 15 días** → Prueba sin tarjeta
 - ✅ **Básico $59.900/mes** → Para 3-5 vehículos
 - ✅ **Pro $95.900/mes** → Excel + reportes avanzados
 - ✅ **Enterprise $145.900/mes** → Sin límites

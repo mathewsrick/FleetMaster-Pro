@@ -95,7 +95,7 @@ const SuperAdmin: React.FC = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${JSON.parse(localStorage.getItem('fmp_auth') || '{}').token}`
+            'Authorization': `Bearer ${JSON.parse(sessionStorage.getItem('fmp_auth') || '{}').token}`
           },
           body: JSON.stringify({
             userId: user.id,

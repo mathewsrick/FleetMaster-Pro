@@ -26,7 +26,7 @@ const isPasswordSecure = (password: string): boolean => {
 const getAccountStatusForUser = async (user: any) => {
   const now = Date.now();
   const createdAt = new Date(user.createdAt).getTime();
-  const trialDaysRemaining = Math.max(0, 5 - Math.floor((now - createdAt) / (1000 * 3600 * 24)));
+  const trialDaysRemaining = Math.max(0, 15 - Math.floor((now - createdAt) / (1000 * 3600 * 24)));
 
   const licenseOverride = await repo.getActiveLicenseOverride(user.id);
   const subscription = await repo.getActiveSubscription(user.id);

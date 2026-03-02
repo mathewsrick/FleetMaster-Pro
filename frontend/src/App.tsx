@@ -57,7 +57,9 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
           <div className="bg-indigo-600 p-2 rounded-lg text-white">
             <i className="fa-solid fa-truck-fast"></i>
           </div>
-          <span className="font-black text-xl tracking-tight text-white">FleetMaster</span>
+            <Link to="/dashboard" className="font-black tracking-tight text-white">
+            FleetMaster Hub
+            </Link>
         </div>
         <button onClick={closeMenu} className="lg:hidden text-slate-400 hover:text-white">
           <i className="fa-solid fa-xmark text-xl"></i>
@@ -217,20 +219,20 @@ const AppContent: React.FC<{ auth: AuthState; login: (data: any) => void; logout
 
 const App: React.FC = () => {
   const [auth, setAuth] = useState<AuthState>(() => {
-    const saved = localStorage.getItem('fmp_auth');
+    const saved = sessionStorage.getItem('fmp_auth');
     return saved ? JSON.parse(saved) : { isAuthenticated: false, user: null, token: null };
   });
 
   const login = (data: any) => {
     const newState = { isAuthenticated: true, user: data.user, token: data.token, accountStatus: data.accountStatus };
     setAuth(newState);
-    localStorage.setItem('fmp_auth', JSON.stringify(newState));
+    sessionStorage.setItem('fmp_auth', JSON.stringify(newState));
   };
 
   const logout = () => {
     const newState = { isAuthenticated: false, user: null, token: null, accountStatus: null };
     setAuth(newState);
-    localStorage.removeItem('fmp_auth');
+    sessionStorage.removeItem('fmp_auth');
   };
 
   const refreshAccount = async () => {
@@ -245,7 +247,7 @@ const App: React.FC = () => {
           accountStatus: res.accountStatus,
         };
 
-        localStorage.setItem('fmp_auth', JSON.stringify(updated));
+        sessionStorage.setItem('fmp_auth', JSON.stringify(updated));
         return updated;
       });
 

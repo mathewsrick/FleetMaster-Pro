@@ -26,7 +26,7 @@ const Vehicles: React.FC = () => {
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  const authData = JSON.parse(localStorage.getItem('fmp_auth') || '{}');
+  const authData = JSON.parse(sessionStorage.getItem('fmp_auth') || '{}');
   const limits = authData.accountStatus?.limits;
   const reachedLimit = limits ? total >= limits.maxVehicles : false;
 
