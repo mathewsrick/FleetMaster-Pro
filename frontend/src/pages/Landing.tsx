@@ -114,7 +114,7 @@ const Landing: React.FC = () => {
             <div className="bg-indigo-600 p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-white transform group-hover:rotate-12 transition-transform shadow-lg shadow-indigo-200">
               <i className="fa-solid fa-truck-fast text-base sm:text-xl"></i>
             </div>
-            <span className="text-base sm:text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
+            <span className="text-base sm:text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 w-40">
               FleetMaster Hub
             </span>
           </div>
@@ -256,10 +256,8 @@ const Landing: React.FC = () => {
             para tu Flota de Vehículos <br />
             <span className="text-slate-400 text-xl sm:text-2xl md:text-3xl font-medium block mt-4 max-w-3xl mx-auto">Deja de perder dinero por desorden administrativo y falta de control.</span>
           </h1>
-          <p className="text-slate-600 text-sm sm:text-base md:text-lg max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 font-medium leading-relaxed px-4">
-            Diseñado para dueños de vehículos que quieren pasar del caos de WhatsApp y Excel a una operación profesional. Controla pagos, automatiza cobros de deudas y visualiza tu rentabilidad real por vehículo en tiempo real.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4">
+
+          <div className="flex pt-8 flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4">
             <Link to="/login" className="w-full sm:w-auto bg-indigo-600 text-white px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-black text-base sm:text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95">
               Digitalizar mi Flota Gratis
             </Link>
@@ -329,6 +327,9 @@ const Landing: React.FC = () => {
 
       {/* Product Showcase Section */}
       <section className="py-16 sm:py-20 md:py-32 px-4 sm:px-6 bg-white overflow-hidden">
+        <p className="text-slate-600 text-sm sm:text-base md:text-lg max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 font-medium leading-relaxed text-center">
+            Diseñado para dueños de vehículos que quieren pasar del caos de WhatsApp y Excel a una operación profesional. Controla pagos, automatiza cobros de deudas y visualiza tu rentabilidad real por vehículo en tiempo real.
+          </p>
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             {/* Text Content */}
