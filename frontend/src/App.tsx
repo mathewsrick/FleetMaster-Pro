@@ -35,7 +35,7 @@ const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) =>
   return (
     <div className={`${bannerColor} text-white px-4 py-2 text-center text-xs sm:text-sm font-bold flex items-center justify-center gap-2 sm:gap-4 animate-in slide-in-from-top duration-500`}>
       <i className={`fa-solid ${icon}`}></i>
-      <span className="flex-1">
+      <span className="flex">
         {status.reason === 'TRIAL' ? '🎁 Período de Prueba:' : '⏰ Tu plan'} {status.daysRemaining} {status.daysRemaining === 1 ? 'día' : 'días'} restantes
       </span>
       <Link to="/pricing-checkout" className="underline hover:opacity-80 whitespace-nowrap">
