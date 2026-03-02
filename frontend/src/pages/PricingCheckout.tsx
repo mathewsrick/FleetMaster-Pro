@@ -87,13 +87,30 @@ const PricingCheckout: React.FC = () => {
   const currentWeight = PLAN_WEIGHTS[currentPlan] || 0;
   const cannotChooseBasico = currentWeight > 1;
 
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    sessionStorage.removeItem('fmp_auth');
+    window.location.href = '/';
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 p-8 md:p-24 font-sans selection:bg-indigo-100">
       <div className="max-w-6xl mx-auto">
         <header className="text-center mb-16">
-          <Link to="/" className="inline-flex items-center gap-2 text-indigo-600 font-black mb-8 hover:gap-3 transition-all">
-            <i className="fa-solid fa-arrow-left"></i> Volver al Inicio
-          </Link>
+          {/* Mostrar "Volver al Inicio" solo si NO está bloqueado, "Cerrar Sesión" si está bloqueado */}
+          {isBlocked ? (
+            <button 
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 text-rose-600 font-black mb-8 hover:gap-3 transition-all hover:text-rose-700"
+            >
+              <i className="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+            </button>
+          ) : (
+            <Link to="/dashboard" className="inline-flex items-center gap-2 text-indigo-600 font-black mb-8 hover:gap-3 transition-all">
+              <i className="fa-solid fa-arrow-left"></i> Volver al Dashboard
+            </Link>
+          )}
+          
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">Elige tu Plan de Crecimiento</h1>
           <p className="text-slate-500 font-medium max-w-xl mx-auto mb-10 leading-relaxed">Sube el nivel de tu operación logística con herramientas avanzadas.</p>
           

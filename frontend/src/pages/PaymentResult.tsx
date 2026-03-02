@@ -33,11 +33,13 @@ const PaymentResult: React.FC<{ refreshAccount: () => Promise<void> }> = ({ refr
           clearInterval(interval);
           setStatus('APPROVED');
 
+          // Refrescar el estado de la cuenta
           await refreshAccount();
 
+          // Dar tiempo para que el estado se actualice y redirigir
           setTimeout(() => {
-            navigate('/dashboard');
-          }, 1500);
+            window.location.href = '/dashboard';
+          }, 2000);
         }
 
         if (res.status === 'DECLINED') {

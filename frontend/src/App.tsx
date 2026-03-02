@@ -26,7 +26,7 @@ const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) =>
   const shouldShowBanner = 
     status.reason === 'TRIAL' || 
     status.reason === 'TRIAL_EXPIRED' ||
-    (status.reason === 'ACTIVE_SUBSCRIPTION' && status.daysRemaining <= 7) ||
+    (status.reason === 'ACTIVE_SUBSCRIPTION' && status.daysRemaining !== undefined && status.daysRemaining <= 7) ||
     status.accessLevel === 'BLOCKED';
 
   if (!shouldShowBanner) return null;
@@ -279,6 +279,8 @@ const App: React.FC = () => {
       const res = await db.refreshAuth();
 
       if (!res?.accountStatus) return;
+
+      console.log('🔄 Account refreshed:', res.accountStatus);
 
       setAuth(prev => {
         const updated = {
