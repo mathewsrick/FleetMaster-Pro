@@ -22,24 +22,37 @@ const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) =>
   // Mostrar banner si:
   // 1. Está en período de prueba (TRIAL) - siempre
   // 2. Plan activo con 7 días o menos para expirar
+  // 3. BLOQUEADO (suscripción expirada)
   const shouldShowBanner = 
     status.reason === 'TRIAL' || 
-    (status.reason === 'ACTIVE_SUBSCRIPTION' && status.daysRemaining <= 7);
+    status.reason === 'TRIAL_EXPIRED' ||
+    (status.reason === 'ACTIVE_SUBSCRIPTION' && status.daysRemaining <= 7) ||
+    status.accessLevel === 'BLOCKED';
 
   if (!shouldShowBanner) return null;
 
-  // Color del banner según urgencia
-  const bannerColor = status.daysRemaining <= 3 ? 'bg-rose-500' : 'bg-amber-500';
-  const icon = status.daysRemaining <= 3 ? 'fa-circle-exclamation' : 'fa-triangle-exclamation';
+  // Determinar urgencia y estilo
+  const isExpired = status.reason === 'TRIAL_EXPIRED' || status.accessLevel === 'BLOCKED';
+  const isCritical = status.daysRemaining <= 3;
+  
+  const bannerColor = isExpired ? 'bg-rose-600' : (isCritical ? 'bg-rose-500' : 'bg-amber-500');
+  const icon = isExpired ? 'fa-circle-exclamation' : (isCritical ? 'fa-circle-exclamation' : 'fa-triangle-exclamation');
+  
+  let message = '';
+  if (isExpired) {
+    message = '🚨 Tu suscripción ha expirado. Renueva ahora para recuperar el acceso';
+  } else if (status.reason === 'TRIAL') {
+    message = `🎁 Período de Prueba: ${status.daysRemaining} ${status.daysRemaining === 1 ? 'día' : 'días'} restantes`;
+  } else {
+    message = `⏰ Tu plan expira en ${status.daysRemaining} ${status.daysRemaining === 1 ? 'día' : 'días'}`;
+  }
 
   return (
-    <div className={`${bannerColor} text-white px-4 py-2 text-center text-xs sm:text-sm font-bold flex items-center justify-center gap-2 sm:gap-4 animate-in slide-in-from-top duration-500`}>
-      <i className={`fa-solid ${icon}`}></i>
-      <span className="flex">
-        {status.reason === 'TRIAL' ? '🎁 Período de Prueba:' : '⏰ Tu plan'} {status.daysRemaining} {status.daysRemaining === 1 ? 'día' : 'días'} restantes
-      </span>
-      <Link to="/pricing-checkout" className="underline hover:opacity-80 whitespace-nowrap">
-        {status.reason === 'TRIAL' ? 'Activar Plan' : 'Renovar'}
+    <div className={`${bannerColor} text-white px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-bold flex items-center justify-center gap-2 sm:gap-4 animate-in slide-in-from-top duration-500 shadow-lg`}>
+      <i className={`fa-solid ${icon} ${isExpired ? 'animate-pulse' : ''}`}></i>
+      <span className="flex-1">{message}</span>
+      <Link to="/pricing-checkout" className={`underline hover:opacity-80 whitespace-nowrap ${isExpired ? 'animate-pulse font-black' : ''}`}>
+        {isExpired ? '¡RENOVAR AHORA!' : (status.reason === 'TRIAL' ? 'Activar Plan' : 'Renovar')}
       </Link>
     </div>
   );
@@ -209,21 +222,34 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
 const AppContent: React.FC<{ auth: AuthState; login: (data: any) => void; logout: () => void; refreshAccount: () => Promise<void> }> = ({ auth, login, logout, refreshAccount }) => {
   usePageTracking();
 
+  // 🔒 Verificar si el usuario está bloqueado y necesita renovar
+  const isBlocked = auth.accountStatus?.accessLevel === 'BLOCKED' && auth.user?.role !== 'SUPERADMIN';
+  
+  // Componente para proteger rutas cuando el usuario está bloqueado
+  const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+    if (!auth.isAuthenticated) return <Navigate to="/login" />;
+    if (isBlocked) return <Navigate to="/pricing-checkout" replace />;
+    return children;
+  };
+
   return (
     <Routes>
-      <Route path="/" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Landing />} />
-      <Route path="/login" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLogin={login} />} />
+      <Route path="/" element={auth.isAuthenticated ? (isBlocked ? <Navigate to="/pricing-checkout" /> : <Navigate to="/dashboard" />) : <Landing />} />
+      <Route path="/login" element={auth.isAuthenticated ? (isBlocked ? <Navigate to="/pricing-checkout" /> : <Navigate to="/dashboard" />) : <Login onLogin={login} />} />
       <Route path="/confirm/:token" element={<ConfirmAccount />} />
+      
+      {/* ✅ Pricing Checkout SIEMPRE accesible para usuarios autenticados */}
       <Route path="/pricing-checkout" element={auth.isAuthenticated ? <PricingCheckout /> : <Navigate to="/login" />} />
       <Route path="/payment-result" element={auth.isAuthenticated ? <PaymentResult refreshAccount={refreshAccount} /> : <Navigate to="/login" />} />
 
-      <Route path="/dashboard" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Dashboard /></Layout> : <Navigate to="/" />} />
+      {/* 🔒 Rutas protegidas - bloqueadas si la suscripción expiró */}
+      <Route path="/dashboard" element={<ProtectedRoute><Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Dashboard /></Layout></ProtectedRoute>} />
       <Route path="/superadmin" element={auth.isAuthenticated && auth.user?.role === 'SUPERADMIN' ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><SuperAdmin /></Layout> : <Navigate to="/" />} />
-      <Route path="/vehicles" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Vehicles /></Layout> : <Navigate to="/" />} />
-      <Route path="/drivers" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Drivers /></Layout> : <Navigate to="/" />} />
-      <Route path="/payments" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Payments /></Layout> : <Navigate to="/" />} />
-      <Route path="/expenses" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Expenses /></Layout> : <Navigate to="/" />} />
-      <Route path="/reports" element={auth.isAuthenticated ? <Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Reports /></Layout> : <Navigate to="/" />} />
+      <Route path="/vehicles" element={<ProtectedRoute><Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Vehicles /></Layout></ProtectedRoute>} />
+      <Route path="/drivers" element={<ProtectedRoute><Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Drivers /></Layout></ProtectedRoute>} />
+      <Route path="/payments" element={<ProtectedRoute><Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Payments /></Layout></ProtectedRoute>} />
+      <Route path="/expenses" element={<ProtectedRoute><Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Expenses /></Layout></ProtectedRoute>} />
+      <Route path="/reports" element={<ProtectedRoute><Layout logout={logout} username={auth.user?.username || 'User'} role={auth.user?.role} status={auth.accountStatus}><Reports /></Layout></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

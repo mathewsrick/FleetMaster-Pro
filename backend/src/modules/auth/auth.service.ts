@@ -167,9 +167,10 @@ export const login = async (identifier: string, password: string) => {
   if (accountStatus.reason === 'UNCONFIRMED') {
     throw Object.assign(new Error('Debes confirmar tu cuenta por correo.'), { accountStatus });
   }
-  if (accountStatus.accessLevel === 'BLOCKED' && user.role !== 'SUPERADMIN') {
-    throw Object.assign(new Error('Subscription required'), { accountStatus });
-  }
+  
+  // ✅ PERMITIR LOGIN INCLUSO SI ESTÁ BLOQUEADO
+  // El usuario podrá entrar pero solo acceder a /pricing-checkout
+  // La restricción se maneja en el frontend y en el middleware de suscripción
 
   const token = jwt.sign({ userId: user.id, accessLevel, role: user.role, plan }, ENV.JWT_SECRET, { expiresIn: '7d' });
 

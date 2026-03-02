@@ -14,6 +14,7 @@ const PricingCheckout: React.FC = () => {
   const auth = JSON.parse(sessionStorage.getItem('fmp_auth') || '{}');
   const currentPlan = auth.accountStatus?.plan || 'free_trial';
   const daysRemaining = auth.accountStatus?.daysRemaining || 0;
+  const isBlocked = auth.accountStatus?.accessLevel === 'BLOCKED';
   
   const isPlanActive = daysRemaining > 0 && auth.accountStatus?.reason === 'ACTIVE_SUBSCRIPTION';
 
@@ -96,7 +97,25 @@ const PricingCheckout: React.FC = () => {
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">Elige tu Plan de Crecimiento</h1>
           <p className="text-slate-500 font-medium max-w-xl mx-auto mb-10 leading-relaxed">Sube el nivel de tu operación logística con herramientas avanzadas.</p>
           
-          {isPlanActive && (
+          {/* 🚨 Alerta de suscripción expirada */}
+          {isBlocked && (
+            <div className="mb-10 p-6 bg-rose-50 border-2 border-rose-300 rounded-3xl max-w-2xl mx-auto text-rose-700 shadow-xl shadow-rose-100/20 animate-in fade-in slide-in-from-top duration-500">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <i className="fa-solid fa-circle-exclamation text-3xl"></i>
+                <h3 className="text-xl font-black">Tu Suscripción ha Expirado</h3>
+              </div>
+              <p className="font-bold text-sm mb-4">
+                Para continuar usando FleetMaster Hub, necesitas renovar o activar un plan. 
+                Tu acceso está limitado hasta que completes el pago.
+              </p>
+              <div className="flex items-center justify-center gap-2 text-xs">
+                <i className="fa-solid fa-shield-halved"></i>
+                <span>Tus datos están seguros y se mantendrán intactos</span>
+              </div>
+            </div>
+          )}
+
+          {isPlanActive && !isBlocked && (
             <div className="mb-10 p-6 bg-amber-50 border-2 border-amber-200 rounded-3xl max-w-2xl mx-auto text-amber-700 font-bold text-sm shadow-xl shadow-amber-100/20">
                <i className="fa-solid fa-lock text-xl mb-2 block"></i>
                Tienes una suscripción vigente de <strong>{currentPlan.toUpperCase()}</strong> con {daysRemaining} días restantes. 
