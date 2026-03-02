@@ -19,15 +19,28 @@ import { usePageTracking } from '@/hooks/usePageTracking';
 const TrialBanner: React.FC<{ status?: AccountStatus | null }> = ({ status }) => {
   if (!status) return null;
 
-  const isExpiringSoon = status.daysRemaining <= 5 && (status.reason === 'TRIAL' || status.reason === 'ACTIVE_SUBSCRIPTION');
+  // Mostrar banner si:
+  // 1. Está en período de prueba (TRIAL) - siempre
+  // 2. Plan activo con 7 días o menos para expirar
+  const shouldShowBanner = 
+    status.reason === 'TRIAL' || 
+    (status.reason === 'ACTIVE_SUBSCRIPTION' && status.daysRemaining <= 7);
 
-  if (!isExpiringSoon) return null;
+  if (!shouldShowBanner) return null;
+
+  // Color del banner según urgencia
+  const bannerColor = status.daysRemaining <= 3 ? 'bg-rose-500' : 'bg-amber-500';
+  const icon = status.daysRemaining <= 3 ? 'fa-circle-exclamation' : 'fa-triangle-exclamation';
 
   return (
-    <div className="bg-amber-500 text-white px-4 py-2 text-center text-sm font-bold flex items-center justify-center gap-4 animate-in slide-in-from-top duration-500">
-      <i className="fa-solid fa-triangle-exclamation"></i>
-      {status.reason === 'TRIAL' ? 'Tu periodo de prueba' : 'Tu plan actual'} expira en {status.daysRemaining} {status.daysRemaining === 1 ? 'día' : 'días'}. 
-      <Link to="/pricing-checkout" className="underline hover:text-amber-100 ml-2">Renovar o subir de plan ahora</Link>
+    <div className={`${bannerColor} text-white px-4 py-2 text-center text-xs sm:text-sm font-bold flex items-center justify-center gap-2 sm:gap-4 animate-in slide-in-from-top duration-500`}>
+      <i className={`fa-solid ${icon}`}></i>
+      <span className="flex-1">
+        {status.reason === 'TRIAL' ? '🎁 Período de Prueba:' : '⏰ Tu plan'} {status.daysRemaining} {status.daysRemaining === 1 ? 'día' : 'días'} restantes
+      </span>
+      <Link to="/pricing-checkout" className="underline hover:opacity-80 whitespace-nowrap">
+        {status.reason === 'TRIAL' ? 'Activar Plan' : 'Renovar'}
+      </Link>
     </div>
   );
 };
