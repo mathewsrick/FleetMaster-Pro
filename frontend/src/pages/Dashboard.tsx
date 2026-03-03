@@ -93,7 +93,23 @@ const Dashboard: React.FC = () => {
     const daysToSoat = Math.ceil((soat.getTime() - today.getTime()) / (1000 * 3600 * 24));
     const tecno = new Date(selectedVehicle.techExpiration);
     const daysToTecno = Math.ceil((tecno.getTime() - today.getTime()) / (1000 * 3600 * 24));
-    return { totalRev, totalExp, net: totalRev - totalExp, daysToSoat, daysToTecno, paymentCount: vPayments.length };
+    
+    // Calcular días hasta el vencimiento del seguro todo riesgo si existe
+    let daysToFullCoverage = null;
+    if (selectedVehicle.hasFullCoverage && selectedVehicle.fullCoverageExpiration) {
+      const fullCoverage = new Date(selectedVehicle.fullCoverageExpiration);
+      daysToFullCoverage = Math.ceil((fullCoverage.getTime() - today.getTime()) / (1000 * 3600 * 24));
+    }
+    
+    return { 
+      totalRev, 
+      totalExp, 
+      net: totalRev - totalExp, 
+      daysToSoat, 
+      daysToTecno, 
+      daysToFullCoverage,
+      paymentCount: vPayments.length 
+    };
   }, [selectedVehicle, data]);
 
   const filteredVehicleExpenses = useMemo(() => {
@@ -104,6 +120,17 @@ const Dashboard: React.FC = () => {
     }
     return expenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [selectedVehicle, data.expenses, expenseTypeFilter]);
+
+  // Gastos recientes para mostrar en el dashboard (todos los vehículos)
+  const recentExpenses = useMemo(() => {
+    let expenses = [...data.expenses];
+    if (expenseTypeFilter) {
+      expenses = expenses.filter(e => e.type === expenseTypeFilter);
+    }
+    return expenses
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 10); // Mostrar los 10 más recientes
+  }, [data.expenses, expenseTypeFilter]);
 
   const chartData = useMemo(() => {
     // Normaliza la fecha a yyyy-mm-dd para comparar solo el día
@@ -239,7 +266,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Historial de Gastos */}
-          <div className="p-4 sm:p-6 md:p-8 border-t border-slate-100">
+          <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] shadow-sm border border-slate-200">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
               <h3 className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2">
                 <i className="fa-solid fa-receipt text-rose-500 text-sm sm:text-base"></i>
@@ -263,9 +290,9 @@ const Dashboard: React.FC = () => {
               </select>
             </div>
 
-            {filteredVehicleExpenses.length > 0 ? (
+            {recentExpenses.length > 0 ? (
               <div className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
-                {filteredVehicleExpenses.map((expense) => {
+                {recentExpenses.map((expense) => {
                   const typeColors: Record<string, string> = {
                     reparacion: 'bg-orange-50 text-orange-600 border-orange-100',
                     repuesto: 'bg-blue-50 text-blue-600 border-blue-100',
@@ -289,6 +316,9 @@ const Dashboard: React.FC = () => {
                     otro: 'Otro'
                   };
                   
+                  // Encontrar el vehículo asociado para mostrar su placa
+                  const vehicle = data.vehicles.find(v => v.id === expense.vehicleId);
+                  
                   return (
                     <div key={expense.id} className="flex items-center justify-between p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100 hover:shadow-sm transition-shadow">
                       <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
@@ -296,10 +326,15 @@ const Dashboard: React.FC = () => {
                           <i className="fa-solid fa-receipt text-rose-600 text-xs sm:text-sm"></i>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start gap-2 mb-1">
+                          <div className="flex items-start gap-2 mb-1 flex-wrap">
                             <span className={`text-[8px] sm:text-[9px] font-black px-2 py-0.5 sm:px-2 sm:py-1 rounded-lg border uppercase tracking-wider ${typeColors[expense.type] || typeColors.otro}`}>
                               {typeLabels[expense.type] || expense.type}
                             </span>
+                            {vehicle && (
+                              <span className="text-[8px] sm:text-[9px] font-black px-2 py-0.5 sm:px-2 sm:py-1 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 uppercase tracking-wider">
+                                {vehicle.licensePlate}
+                              </span>
+                            )}
                             <span className="text-[9px] sm:text-[10px] font-mono text-slate-400">
                               {new Date(expense.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                             </span>
@@ -408,6 +443,45 @@ const Dashboard: React.FC = () => {
                       </span>
                     </div>
                   </div>
+
+                  {/* Seguro Todo Riesgo */}
+                  {selectedVehicle.hasFullCoverage && selectedVehicle.fullCoverageExpiration && vehicleStats.daysToFullCoverage !== null && (
+                    <div className="pt-2 sm:pt-3 border-t border-slate-200">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0 ${vehicleStats.daysToFullCoverage < 30 ? 'bg-rose-500 animate-pulse shadow-lg shadow-rose-200' : 'bg-indigo-500 shadow-lg shadow-indigo-200'}`} />
+                          <p className="text-[10px] sm:text-xs font-black uppercase text-indigo-600">Todo Riesgo</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <span className="text-[10px] sm:text-xs font-mono font-bold text-slate-600 block">
+                            {new Date(selectedVehicle.fullCoverageExpiration).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '-')}
+                          </span>
+                          <span className={`text-[9px] sm:text-[10px] font-bold ${vehicleStats.daysToFullCoverage < 0 ? 'text-rose-600' : vehicleStats.daysToFullCoverage < 30 ? 'text-rose-600' : 'text-indigo-600'}`}>
+                            {vehicleStats.daysToFullCoverage < 0 ? 'Seguro vencido' : `(${vehicleStats.daysToFullCoverage}d)`}
+                          </span>
+                        </div>
+                      </div>
+                      {selectedVehicle.fullCoverageInsurer && (
+                        <div className="flex items-center gap-2 mb-1">
+                          <i className="fa-solid fa-shield-halved text-indigo-400 text-[9px] sm:text-[10px]"></i>
+                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-600">
+                            {selectedVehicle.fullCoverageInsurer}
+                          </span>
+                        </div>
+                      )}
+                      {selectedVehicle.fullCoverageEmergencyNumber && (
+                        <div className="flex items-center gap-2">
+                          <i className="fa-solid fa-phone text-rose-400 text-[9px] sm:text-[10px]"></i>
+                          <a 
+                            href={`tel:${selectedVehicle.fullCoverageEmergencyNumber}`}
+                            className="text-[9px] sm:text-[10px] font-bold text-indigo-600 hover:text-indigo-700 hover:underline"
+                          >
+                            {selectedVehicle.fullCoverageEmergencyNumber}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
