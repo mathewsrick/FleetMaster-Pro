@@ -15,6 +15,8 @@ const Drivers: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{ url: string, title: string } | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [driverHistory, setDriverHistory] = useState<{ payments: Payment[], arrears: Arrear[] }>({ payments: [], arrears: [] });
 
@@ -65,6 +67,16 @@ const Drivers: React.FC = () => {
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleOpenImage = (url: string, title: string) => {
+    setSelectedImage({ url, title });
+    setIsImageModalOpen(true);
+  };
+
+  const handleCloseImageModal = () => {
+    setIsImageModalOpen(false);
+    setSelectedImage(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -345,7 +357,7 @@ const Drivers: React.FC = () => {
                       <img
                         src={`${API_URL}${selectedDriver.licensePhoto}`}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
-                        onClick={() => window.open(`${API_URL}${selectedDriver.licensePhoto}`, '_blank')}
+                        onClick={() => handleOpenImage(`${API_URL}${selectedDriver.licensePhoto}`, 'Licencia de Conducción')}
                       />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
@@ -362,7 +374,7 @@ const Drivers: React.FC = () => {
                       <img
                         src={`${API_URL}${selectedDriver.idPhoto}`}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
-                        onClick={() => window.open(`${API_URL}${selectedDriver.idPhoto}`, '_blank')}
+                        onClick={() => handleOpenImage(`${API_URL}${selectedDriver.idPhoto}`, 'Documento de Identidad (Cédula)')}
                       />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
@@ -542,6 +554,64 @@ const Drivers: React.FC = () => {
           />
         </form>
       </ResponsiveModal>
+
+      {/* Modal de Visualización de Imagen */}
+      {isImageModalOpen && selectedImage && (
+        <div 
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 sm:p-8"
+          onClick={handleCloseImageModal}
+        >
+          <div 
+            className="relative max-w-6xl w-full max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4 px-2">
+              <h3 className="text-lg sm:text-xl font-black text-white flex items-center gap-3">
+                <i className="fa-solid fa-image text-indigo-400"></i>
+                {selectedImage.title}
+              </h3>
+              <button
+                onClick={handleCloseImageModal}
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all active:scale-95"
+                aria-label="Cerrar"
+              >
+                <i className="fa-solid fa-xmark text-xl"></i>
+              </button>
+            </div>
+
+            {/* Imagen */}
+            <div className="flex-1 flex items-center justify-center overflow-auto rounded-2xl bg-white/5 border border-white/10">
+              <img
+                src={selectedImage.url}
+                alt={selectedImage.title}
+                className="max-w-full max-h-full object-contain rounded-xl"
+              />
+            </div>
+
+            {/* Footer con acciones */}
+            <div className="flex items-center justify-center gap-3 mt-4">
+              <a
+                href={selectedImage.url}
+                download
+                className="px-4 py-2 sm:px-6 sm:py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm transition-all active:scale-95 flex items-center gap-2"
+              >
+                <i className="fa-solid fa-download"></i>
+                Descargar
+              </a>
+              <a
+                href={selectedImage.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 sm:px-6 sm:py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm transition-all active:scale-95 flex items-center gap-2"
+              >
+                <i className="fa-solid fa-arrow-up-right-from-square"></i>
+                Abrir en nueva pestaña
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

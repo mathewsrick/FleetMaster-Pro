@@ -34,7 +34,6 @@
 ### 3. **Control Total de Gastos** 💳
 - ✅ **9 categorías de gastos predefinidas** → Organización automática
 - ✅ **Gastos por vehículo, conductor y tipo** → Encuentra dónde se va tu dinero
-- ✅ **Alertas de gastos excesivos** → Detecta fugas de dinero
 - ✅ **Exportación a Excel para contabilidad** → Entrega a tu contador en 1 clic
 
 **💡 Mensaje publicitario:**
