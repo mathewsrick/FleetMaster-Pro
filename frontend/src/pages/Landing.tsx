@@ -627,7 +627,7 @@ const Landing: React.FC = () => {
           <div className="flex gap-6 sm:gap-8 text-xs sm:text-sm font-bold text-slate-400">
             <button onClick={() => setShowPrivacy(true)} className="hover:text-indigo-600 transition-colors">Privacidad</button>
             <button onClick={() => setShowTerms(true)} className="hover:text-indigo-600 transition-colors">Términos</button>
-            <a href="#contact" className="hover:text-indigo-600 transition-colors">Contacto</a>
+            <a href="/" className="hover:text-indigo-600 transition-colors">Contacto</a>
           </div>
           <p className="text-slate-400 text-[10px] sm:text-xs font-medium text-center md:text-left">© 2025 FleetMaster Hub. Todos los derechos reservados.</p>
         </div>
