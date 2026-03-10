@@ -1,17 +1,19 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { db } from '@/services/db';
-import { Vehicle, Driver, Payment, Expense, AccountStatus } from '@/types/types';
-import { Link } from 'react-router-dom';
+import { Vehicle, Driver, Payment, Expense, AccountStatus, Arrear } from '@/types/types';
+import { Link, useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState({
     vehicles: [] as Vehicle[],
     drivers: [] as Driver[],
     payments: [] as Payment[],
     expenses: [] as Expense[],
+    arrears: [] as Arrear[],
   });
   const [loading, setLoading] = useState(true);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
@@ -24,11 +26,12 @@ const Dashboard: React.FC = () => {
     const loadAllData = async () => {
       try {
         setLoading(true);
-        const [v, d, p, e] = await Promise.all([
+        const [v, d, p, e, a] = await Promise.all([
           db.getVehicles(1, 1000),
           db.getDrivers(1, 1000),
           db.getPayments({ page: 1, limit: 1000 }),
           db.getExpenses({ page: 1, limit: 1000 }),
+          db.getArrears(),
         ]);
 
         setData({
@@ -42,6 +45,7 @@ const Dashboard: React.FC = () => {
             ...x,
             amount: Number(x.amount)
           })),
+          arrears: a,
         });
       } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -70,6 +74,11 @@ const Dashboard: React.FC = () => {
       0
     );
 
+    // Calcular total de deudas pendientes
+    const totalArrears = data.arrears
+      .filter(a => a.status === 'pending')
+      .reduce((sum, a) => sum + Number(a.amountOwed), 0);
+
     return {
       totalPayments,
       totalExpenses,
@@ -77,6 +86,8 @@ const Dashboard: React.FC = () => {
       totalVehicles: data.vehicles.length,
       netBalance: totalPayments - totalExpenses,
       potentialRevenue: totalPotentialRenta,
+      totalArrears,
+      pendingArrearsCount: data.arrears.filter(a => a.status === 'pending').length,
     };
   }, [data]);
 
@@ -205,11 +216,43 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard title="Flota Activa" value={`${stats.activeVehicles}/${stats.totalVehicles}`} icon="fa-car" color="indigo" />
-        <StatCard title="Ingresos Totales" value={`$${stats.totalPayments.toLocaleString()}`} icon="fa-money-bill-trend-up" color="green" />
-        <StatCard title="Gastos Totales" value={`$${stats.totalExpenses.toLocaleString()}`} icon="fa-money-bill-transfer" color="rose" />
-        <StatCard title="Balance Neto" value={`$${stats.netBalance.toLocaleString()}`} icon="fa-scale-balanced" color="blue" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+        <StatCard 
+          title="Flota Activa" 
+          value={`${stats.activeVehicles}/${stats.totalVehicles}`} 
+          icon="fa-car" 
+          color="indigo"
+          onClick={() => navigate('/vehicles')}
+        />
+        <StatCard 
+          title="Ingresos Totales" 
+          value={`$${stats.totalPayments.toLocaleString()}`} 
+          icon="fa-money-bill-trend-up" 
+          color="green"
+          onClick={() => navigate('/payments', { state: { defaultView: 'payments' } })}
+        />
+        <StatCard 
+          title="Gastos Totales" 
+          value={`$${stats.totalExpenses.toLocaleString()}`} 
+          icon="fa-money-bill-transfer" 
+          color="rose"
+          onClick={() => navigate('/expenses', { state: { defaultView: 'expenses' } })}
+        />
+        <StatCard 
+          title="Balance Neto" 
+          value={`$${stats.netBalance.toLocaleString()}`} 
+          icon="fa-scale-balanced" 
+          color="blue"
+          onClick={() => navigate('/reports')}
+        />
+        <StatCard 
+          title="Deudas por Cobrar" 
+          value={`$${stats.totalArrears.toLocaleString()}`} 
+          icon="fa-circle-exclamation" 
+          color="amber"
+          badge={stats.pendingArrearsCount > 0 ? stats.pendingArrearsCount.toString() : undefined}
+          onClick={() => navigate('/drivers')}
+        />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
@@ -497,15 +540,26 @@ const Dashboard: React.FC = () => {
   );
 };
 
-const StatCard: React.FC<{ title: string, value: string, icon: string, color: string }> = ({ title, value, icon, color }) => {
+const StatCard: React.FC<{ 
+  title: string; 
+  value: string; 
+  icon: string; 
+  color: string; 
+  onClick?: () => void;
+  badge?: string;
+}> = ({ title, value, icon, color, onClick, badge }) => {
   const colorMap: Record<string, string> = { 
     indigo: 'bg-indigo-50 text-indigo-600 shadow-indigo-100', 
     green: 'bg-emerald-50 text-emerald-600 shadow-emerald-100', 
     rose: 'bg-rose-50 text-rose-600 shadow-rose-100', 
-    blue: 'bg-sky-50 text-sky-600 shadow-sky-100' 
+    blue: 'bg-sky-50 text-sky-600 shadow-sky-100',
+    amber: 'bg-amber-50 text-amber-600 shadow-amber-100'
   };
   return (
-    <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] shadow-sm border border-slate-200 flex items-center gap-3 sm:gap-4 md:gap-6 hover:shadow-md transition-shadow">
+    <div 
+      onClick={onClick}
+      className={`bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] shadow-sm border border-slate-200 flex items-center gap-3 sm:gap-4 md:gap-6 hover:shadow-md transition-all relative ${onClick ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''}`}
+    >
       <div className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-xl md:text-2xl shadow-lg ${colorMap[color]}`}>
         <i className={`fa-solid ${icon}`}></i>
       </div>
@@ -513,6 +567,11 @@ const StatCard: React.FC<{ title: string, value: string, icon: string, color: st
         <p className="text-[8px] sm:text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-wider sm:tracking-widest mb-0.5 sm:mb-1 truncate">{title}</p>
         <h3 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight truncate">{value}</h3>
       </div>
+      {badge && (
+        <div className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg animate-pulse">
+          {badge}
+        </div>
+      )}
     </div>
   );
 };
