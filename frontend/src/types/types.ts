@@ -125,6 +125,7 @@ export interface Expense {
   date: string;
   vehicleId: string;
   type: 'reparacion' | 'repuesto' | 'combustible' | 'mantenimiento' | 'seguro' | 'impuesto' | 'multa' | 'lavado' | 'otro';
+  mileage?: number; // 🆕 Kilometraje opcional para rastrear mantenimientos
 }
 
 export interface Arrear {

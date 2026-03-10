@@ -6,6 +6,7 @@ import ResponsiveTable from '@/components/ResponsiveTable';
 import ResponsiveModal from '@/components/ResponsiveModal';
 import ModalFooter from '@/components/ModalFooter';
 import DateInput from '@/components/DateInput';
+import CurrencyInput from '@/components/CurrencyInput';
 
 const Expenses: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -268,18 +269,50 @@ const Expenses: React.FC = () => {
                 <option value="otro">📦 Otro</option>
               </select>
             </div>
+
+            {/* Campo de Kilometraje para mantenimientos y repuestos */}
+            {(formData.type === 'mantenimiento' || formData.type === 'repuesto') && (
+              <div className="bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4">
+                <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 block flex items-center gap-2">
+                  <i className="fa-solid fa-gauge-high"></i>
+                  Kilometraje Actual (Opcional)
+                </label>
+                <input 
+                  type="number" 
+                  value={formData.mileage || ''} 
+                  onChange={e => setFormData({...formData, mileage: e.target.value ? Number(e.target.value) : undefined})} 
+                  className="w-full p-4 bg-white rounded-xl border-2 border-indigo-200 font-bold outline-none text-sm focus:ring-2 focus:ring-indigo-500" 
+                  placeholder="Ej: 45000 km"
+                />
+                <p className="text-xs text-indigo-600 mt-2 font-medium">
+                  📊 Esto nos ayuda a calcular la frecuencia de mantenimientos automáticamente
+                </p>
+              </div>
+            )}
+
             <div>
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Descripción (Opcional)</label>
               <input value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none text-sm" placeholder="Detalle del gasto..." />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <input type="number" required placeholder="Costo" value={formData.amount || ''} onChange={e => setFormData({...formData, amount: Number(e.target.value)})} className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none" />
-              <DateInput
-                required 
-                value={formData.date || ''} 
-                onChange={(isoDate) => setFormData({...formData, date: isoDate})} 
-                className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none text-sm" 
-              />
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Costo</label>
+                <CurrencyInput
+                  value={formData.amount || ''}
+                  onValueChange={(value) => setFormData({...formData, amount: value ? Number(value) : 0})}
+                  placeholder="0"
+                  className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Fecha</label>
+                <DateInput
+                  required 
+                  value={formData.date || ''} 
+                  onChange={(isoDate) => setFormData({...formData, date: isoDate})} 
+                  className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none text-sm" 
+                />
+              </div>
             </div>
             <ModalFooter
               primaryButton={{

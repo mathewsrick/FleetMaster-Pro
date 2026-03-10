@@ -6,6 +6,7 @@ import ResponsiveTable from '@/components/ResponsiveTable';
 import ResponsiveModal from '@/components/ResponsiveModal';
 import ModalFooter from '@/components/ModalFooter';
 import DateInput from '@/components/DateInput';
+import CurrencyInput from '@/components/CurrencyInput';
 
 const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
@@ -627,13 +628,11 @@ const Vehicles: React.FC = () => {
             </div>
             <div className="col-span-2 md:col-span-1">
               <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 block">Renta ($)</label>
-              <input 
-                type="number" 
-                required 
-                value={formData.rentaValue || ''} 
-                onChange={e => setFormData({...formData, rentaValue: Number(e.target.value)})} 
-                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-black outline-none text-sm sm:text-base" 
-                placeholder="0.00" 
+              <CurrencyInput
+                value={formData.rentaValue || ''}
+                onValueChange={(value) => setFormData({...formData, rentaValue: value ? Number(value) : 0})}
+                placeholder="0"
+                className="w-full p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl font-black outline-none text-sm sm:text-base"
               />
             </div>
           </div>

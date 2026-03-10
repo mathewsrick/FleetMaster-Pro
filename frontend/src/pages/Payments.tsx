@@ -7,6 +7,7 @@ import ResponsiveModal from '@/components/ResponsiveModal';
 import ModalFooter from '@/components/ModalFooter';
 import DateInput from '@/components/DateInput';
 import DateRangePicker from '@/components/DateRangePicker';
+import CurrencyInput from '@/components/CurrencyInput';
 
 const Payments: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -424,16 +425,12 @@ const Payments: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Monto a Recibir ($)</label>
-                <input
-                  type="number"
-                  required
-                  disabled={saving}
+                <CurrencyInput
                   value={formData.amount || ''}
-                  onChange={e =>
-                  setFormData({ ...formData, amount: Number(e.target.value) })
-                  }
+                  onValueChange={(value) => setFormData({ ...formData, amount: value ? Number(value) : 0 })}
+                  disabled={saving}
+                  placeholder="0"
                   className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-3xl outline-none font-black text-base sm:text-sm transition-all"
-                  placeholder="0.00"
                 />
                 </div>
               <div>
