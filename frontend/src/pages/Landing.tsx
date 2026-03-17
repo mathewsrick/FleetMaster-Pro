@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { db } from '../services/db';
 import ResponsiveModal from '../components/ResponsiveModal';
 import ModalFooter from '../components/ModalFooter';
+import MobileBottomNav from '../components/MobileBottomNav';
+import MobileMenuOverlay from '../components/MobileMenuOverlay';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Landing: React.FC = () => {
@@ -91,14 +93,46 @@ const Landing: React.FC = () => {
     }
   };
 
+  // Mobile bottom nav items
+  const mobileNavItems = [
+    { 
+      label: 'Inicio', 
+      icon: 'fa-house', 
+      onClick: () => window.scrollTo({top: 0, behavior: 'smooth'}) 
+    },
+    { 
+      label: 'Funciones', 
+      icon: 'fa-cubes', 
+      href: '#features',
+      onClick: (e: any) => scrollToSection(e, 'features')
+    },
+    { 
+      label: 'Planes', 
+      icon: 'fa-tags', 
+      href: '#pricing',
+      onClick: (e: any) => scrollToSection(e, 'pricing')
+    },
+    { 
+      label: 'Contacto', 
+      icon: 'fa-envelope', 
+      href: '#contact',
+      onClick: (e: any) => scrollToSection(e, 'contact')
+    },
+    { 
+      label: 'Más', 
+      icon: 'fa-bars-staggered', 
+      onClick: () => setIsMobileMenuOpen(true) 
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-600 scroll-smooth">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-600 scroll-smooth pb-16 md:pb-0">
       {/* Floating WhatsApp Button */}
       <a 
         href={WHATSAPP_LINK}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-[60] bg-emerald-500 text-white w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-2xl sm:text-3xl shadow-2xl hover:bg-emerald-600 hover:scale-110 transition-all active:scale-95 group"
+        className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-[60] bg-emerald-500 text-white w-14 h-14 sm:w-16 sm:h-16 rounded-full hidden md:flex items-center justify-center text-2xl sm:text-3xl shadow-2xl hover:bg-emerald-600 hover:scale-110 transition-all active:scale-95 group"
         title="Chatea con nosotros"
       >
         <i className="fa-brands fa-whatsapp"></i>
@@ -129,87 +163,63 @@ const Landing: React.FC = () => {
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="md:hidden flex items-center justify-center w-10 h-10 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition-all rounded-xl"
-            aria-label="Abrir menú"
-          >
-            <i className="fa-solid fa-bars text-xl"></i>
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Menu Overlay */}
-      <div
-        className={`fixed inset-0 z-[100] md:hidden transition-all duration-300 ${
-          isMobileMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'
-        }`}
-      >
-        {/* Overlay Background */}
-        <div 
-          className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" 
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-        
-        {/* Menu Panel */}
-        <div 
-          className={`absolute top-0 right-0 bottom-0 w-[280px] max-w-[85vw] bg-white flex flex-col shadow-2xl transform transition-transform duration-300 ${
-            isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
-        >
-          {/* Menu Header */}
-          <div className="p-6 flex items-center justify-between border-b border-slate-100">
-            <span className="font-black text-lg text-slate-900">Menú</span>
-            <button 
-              onClick={() => setIsMobileMenuOpen(false)} 
-              className="text-slate-400 hover:text-slate-900 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-all"
-            >
-              <i className="fa-solid fa-xmark text-xl"></i>
-            </button>
-          </div>
-
-          {/* Menu Links */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
-            <a 
-              href="#features" 
-              onClick={(e) => scrollToSection(e, 'features')} 
-              className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all font-bold"
-            >
-              <i className="fa-solid fa-cubes w-5"></i>
-              Funcionalidades
-            </a>
-            <a 
-              href="#pricing" 
-              onClick={(e) => scrollToSection(e, 'pricing')} 
-              className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all font-bold"
-            >
-              <i className="fa-solid fa-tags w-5"></i>
-              Planes
-            </a>
-            <a 
-              href="#contact" 
-              onClick={(e) => scrollToSection(e, 'contact')} 
-              className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all font-bold"
-            >
-              <i className="fa-solid fa-envelope w-5"></i>
-              Contacto
-            </a>
-          </nav>
-
-          {/* Login Button */}
-          <div className="p-4 border-t border-slate-100">
-            <Link 
-              to="/login" 
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold text-center flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all shadow-lg"
-            >
-              <i className="fa-solid fa-right-to-bracket"></i>
-              Iniciar Sesión
+          {/* Mobile Login Button (Top Right) */}
+          <div className="md:hidden">
+            <Link to="/login" className="text-xs font-black uppercase tracking-widest bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg active:scale-95 transition-all">
+              Entrar
             </Link>
           </div>
         </div>
-      </div>
+      </nav>
+
+      {/* Mobile Menu Overlay (Bottom Sheet) */}
+      <MobileMenuOverlay isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-600 p-2 rounded-xl text-white">
+              <i className="fa-solid fa-truck-fast"></i>
+            </div>
+            <span className="font-black text-xl text-slate-900 tracking-tight">FleetMaster Hub</span>
+          </div>
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)} 
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-slate-900 transition-all"
+          >
+            <i className="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Link 
+            to="/login" 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex flex-col items-center justify-center gap-3 p-6 bg-indigo-50 text-indigo-600 rounded-3xl border border-indigo-100 transition-all active:scale-95"
+          >
+            <i className="fa-solid fa-right-to-bracket text-2xl"></i>
+            <span className="font-bold text-sm">Entrar</span>
+          </Link>
+          <a 
+            href={WHATSAPP_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center justify-center gap-3 p-6 bg-emerald-50 text-emerald-600 rounded-3xl border border-emerald-100 transition-all active:scale-95"
+          >
+            <i className="fa-brands fa-whatsapp text-2xl"></i>
+            <span className="font-bold text-sm">WhatsApp</span>
+          </a>
+        </div>
+
+        <div className="space-y-2 pb-8">
+          <button onClick={() => { setShowPrivacy(true); setIsMobileMenuOpen(false); }} className="w-full text-left px-6 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-all flex items-center justify-between">
+            <span>Política de Privacidad</span>
+            <i className="fa-solid fa-chevron-right text-[10px]"></i>
+          </button>
+          <button onClick={() => { setShowTerms(true); setIsMobileMenuOpen(false); }} className="w-full text-left px-6 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-all flex items-center justify-between">
+            <span>Términos y Condiciones</span>
+            <i className="fa-solid fa-chevron-right text-[10px]"></i>
+          </button>
+        </div>
+      </MobileMenuOverlay>
 
       {/* Hero Section */}
       <section className="pt-24 sm:pt-32 md:pt-44 pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6 relative overflow-hidden">
@@ -665,6 +675,9 @@ const Landing: React.FC = () => {
           <p>Queda prohibido el uso del sistema para actividades ilegales o para sobrecargar la infraestructura mediante el uso abusivo de la API personalizada.</p>
         `}
       />
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav items={mobileNavItems} />
     </div>
   );
 };

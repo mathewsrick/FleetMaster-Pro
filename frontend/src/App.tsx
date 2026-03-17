@@ -12,6 +12,8 @@ import PricingCheckout from '@/pages/PricingCheckout';
 import SuperAdmin from '@/pages/SuperAdmin';
 import ConfirmAccount from '@/pages/ConfirmAccount';
 import PaymentResult from '@/pages/PaymentResult';
+import MobileBottomNav from '@/components/MobileBottomNav';
+import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { db } from '@/services/db';
 import { AuthState, AccountStatus } from '@/types/types';
 import { usePageTracking } from '@/hooks/usePageTracking';
@@ -74,7 +76,16 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
     navItems.unshift({ path: '/superadmin', label: 'Admin SaaS', icon: 'fa-shield-halved' });
   }
 
-    const closeMenu = () => setIsMobileMenuOpen(false);
+  const closeMenu = () => setIsMobileMenuOpen(false);
+
+  // Mobile bottom nav items (primeros 4 + menú)
+  const mobileNavItems = [
+    { label: 'Inicio', icon: 'fa-house', to: '/dashboard' },
+    { label: 'Vehículos', icon: 'fa-car', to: '/vehicles' },
+    { label: 'Recaudos', icon: 'fa-money-bill-transfer', to: '/payments' },
+    { label: 'Reportes', icon: 'fa-file-lines', to: '/reports' },
+    { label: 'Más', icon: 'fa-bars-staggered', onClick: () => setIsMobileMenuOpen(true) },
+  ];
 
   const SidebarContent = () => (
     <>
@@ -114,52 +125,70 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans pb-16 md:pb-0">
       <TrialBanner status={status} />
 
-      {/* Mobile Menu Overlay - Renderizado condicional */}
-      <div
-        className={`fixed inset-0 z-[9999] lg:hidden transition-all duration-300 ${
-          isMobileMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'
-        }`}
-        style={{ 
-          position: 'fixed !important' as any,
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 9999
-        }}
-      >
-        {/* Overlay Background */}
-        <div 
-          className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" 
-          onClick={closeMenu}
-          style={{ 
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100%',
-            height: '100%'
-          }}
-        />
-        
-        {/* Sidebar Menu */}
-        <aside 
-          className={`absolute top-0 left-0 bottom-0 w-[280px] max-w-[85vw] bg-slate-900 flex flex-col shadow-2xl transform transition-transform duration-300 ${
-            isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-          style={{ 
-            position: 'absolute',
-            height: '100%',
-            zIndex: 10000
-          }}
-        >
-          <SidebarContent />
-        </aside>
-      </div>
+      {/* Mobile Menu Overlay (Bottom Sheet) */}
+      <MobileMenuOverlay isOpen={isMobileMenuOpen} onClose={closeMenu}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-600 p-2 rounded-xl text-white">
+              <i className="fa-solid fa-truck-fast"></i>
+            </div>
+            <span className="font-black text-xl text-slate-900 tracking-tight">FleetMaster Hub</span>
+          </div>
+          <button 
+            onClick={closeMenu} 
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-slate-900 transition-all"
+          >
+            <i className="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div className="space-y-2 pb-8">
+          {navItems.map(item => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={closeMenu}
+              className={`w-full text-left px-6 py-4 font-bold hover:bg-slate-50 rounded-2xl transition-all flex items-center justify-between ${
+                location.pathname === item.path ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <i className={`fa-solid ${item.icon} w-5`}></i>
+                <span>{item.label}</span>
+              </div>
+              <i className="fa-solid fa-chevron-right text-[10px]"></i>
+            </Link>
+          ))}
+          
+          <div className="pt-4 border-t border-slate-100">
+            <Link
+              to="/pricing-checkout"
+              onClick={closeMenu}
+              className="w-full text-left px-6 py-4 text-indigo-600 font-bold hover:bg-indigo-50 rounded-2xl transition-all flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <i className="fa-solid fa-crown w-5"></i>
+                <span>Mi Suscripción</span>
+              </div>
+              <i className="fa-solid fa-chevron-right text-[10px]"></i>
+            </Link>
+            
+            <button
+              onClick={() => { logout(); closeMenu(); }}
+              className="w-full text-left px-6 py-4 text-rose-500 font-bold hover:bg-rose-50 rounded-2xl transition-all flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <i className="fa-solid fa-right-from-bracket w-5"></i>
+                <span>Cerrar Sesión</span>
+              </div>
+              <i className="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+      </MobileMenuOverlay>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Sidebar */}
@@ -170,22 +199,7 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
         <main className="flex-1 overflow-auto">
           {/* Header Responsive */}
           <header className="bg-white h-14 sm:h-16 md:h-20 border-b border-slate-200 px-3 sm:px-4 md:px-8 flex items-center sticky top-0 z-50 shadow-sm">
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => {
-                setIsMobileMenuOpen(true);
-              }}
-              className="lg:hidden flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 active:bg-indigo-50 transition-all rounded-xl"
-              aria-label="Abrir menú"
-              type="button"
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation',
-                zIndex: 1
-              }}
-            >
-              <i className="fa-solid fa-bars text-xl sm:text-2xl"></i>
-            </button>
+            
 
             {/* Logo Móvil - Visible solo en móvil */}
             <div className="lg:hidden flex items-center gap-1.5 sm:gap-2">
@@ -215,6 +229,9 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
           </div>
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav items={mobileNavItems} />
     </div>
   );
 };
