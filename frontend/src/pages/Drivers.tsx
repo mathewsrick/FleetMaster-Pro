@@ -236,10 +236,23 @@ const Drivers: React.FC = () => {
         description: ''
       });
 
-      // Recargar lista de conductores y historial del conductor
+      // Recargar lista de conductores
       await loadData();
+      
+      // Recargar historial del conductor y actualizar el selectedDriver con los nuevos datos
       if (selectedDriver) {
-        await handleShowDetail(selectedDriver);
+        const [p, a, driversResponse] = await Promise.all([
+          db.getPaymentsByDriver(selectedDriver.id),
+          db.getArrearsByDriver(selectedDriver.id),
+          db.getDrivers(page, limit)
+        ]);
+        setDriverHistory({ payments: p, arrears: a });
+        
+        // Actualizar selectedDriver con los datos frescos que incluyen el totalDebt actualizado
+        const updatedDriver = driversResponse.data.find(d => d.id === selectedDriver.id);
+        if (updatedDriver) {
+          setSelectedDriver(updatedDriver);
+        }
       }
     } catch (err: any) {
       Swal.fire({
@@ -301,10 +314,21 @@ const Drivers: React.FC = () => {
           showConfirmButton: false
         });
 
-        // Recargar lista y detalle
+        // Recargar lista y actualizar el selectedDriver con datos frescos
         await loadData();
         if (selectedDriver) {
-          await handleShowDetail(selectedDriver);
+          const [p, a, driversResponse] = await Promise.all([
+            db.getPaymentsByDriver(selectedDriver.id),
+            db.getArrearsByDriver(selectedDriver.id),
+            db.getDrivers(page, limit)
+          ]);
+          setDriverHistory({ payments: p, arrears: a });
+          
+          // Actualizar selectedDriver con los datos frescos
+          const updatedDriver = driversResponse.data.find(d => d.id === selectedDriver.id);
+          if (updatedDriver) {
+            setSelectedDriver(updatedDriver);
+          }
         }
       } catch (err: any) {
         Swal.fire({
