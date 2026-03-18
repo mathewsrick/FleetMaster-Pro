@@ -6,7 +6,7 @@ backend/.env
 .env.prod
 .env.production
 *.env
-
+*.md
 backend/dist
 dist
 

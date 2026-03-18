@@ -44,7 +44,8 @@ export const createFromPartialPayment = async (req: any, res: any) => {
     driverId: req.body.driverId,
     vehicleId: req.body.vehicleId,
     dueDate: req.body.dueDate,
-    originPaymentId: req.body.originPaymentId
+    originPaymentId: req.body.originPaymentId,
+    description: req.body.description || null // 🆕 Aceptar descripción opcional
   });
 
   res.json({ success: true });

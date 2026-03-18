@@ -76,7 +76,8 @@ export const create = async (userId: string, data: any) => {
                 driverId: payment.driverId,
                 vehicleId: payment.vehicleId,
                 dueDate: payment.date,
-                originPaymentId: payment.id
+                originPaymentId: payment.id,
+                description: 'Generada automáticamente' // 🆕 Descripción para moras automáticas
             });
         }
     }

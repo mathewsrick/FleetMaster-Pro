@@ -16,11 +16,8 @@ export const findAll = async (userId: string, options: { page: number, limit: nu
     };
   }
   if (search) {
-    // Buscar en descripción O en tipo
-    where.OR = [
-      { description: { contains: search, mode: 'insensitive' } },
-      { type: { contains: search, mode: 'insensitive' } }
-    ];
+    // Buscar solo en descripción (type es un enum y no acepta contains)
+    where.description = { contains: search, mode: 'insensitive' };
   }
   if (vehicleId) {
     where.vehicleId = vehicleId;

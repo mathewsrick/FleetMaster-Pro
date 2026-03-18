@@ -162,5 +162,8 @@ export const db = {
   deleteExpense: (id: string) => request(`/expenses/${id}`, 'DELETE'),
   getArrears: () => request<Arrear[]>('/arrears'),
   getArrearsByDriver: (driverId: string) => request<Arrear[]>(`/arrears/driver/${driverId}`),
+  createArrear: (data: { amountOwed: number; driverId: string; vehicleId: string; dueDate: string; description?: string; originPaymentId?: string }) => 
+    request('/arrears', 'POST', data),
+  deleteArrear: (arrearId: string) => request(`/arrears/${arrearId}`, 'DELETE'),
   assignDriver: (driverId: string, vehicleId: string | null) => request('/assign', 'POST', { driverId, vehicleId })
 };

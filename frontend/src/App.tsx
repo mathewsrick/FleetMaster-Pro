@@ -196,9 +196,9 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
           <SidebarContent />
         </aside>
 
-        <main className="flex-1 overflow-auto">
-          {/* Header Responsive */}
-          <header className="bg-white h-14 sm:h-16 md:h-20 border-b border-slate-200 px-3 sm:px-4 md:px-8 flex items-center sticky top-0 z-50 shadow-sm">
+        <main className="flex-1 overflow-auto relative">
+          {/* Header Responsive - FIJO */}
+          <header className="bg-white h-14 sm:h-16 md:h-20 border-b border-slate-200 px-3 sm:px-4 md:px-8 flex items-center fixed top-0 left-0 right-0 lg:left-64 z-50 shadow-sm">
             
 
             {/* Logo Móvil - Visible solo en móvil */}
@@ -223,8 +223,8 @@ const Layout: React.FC<{ children: React.ReactNode; logout: () => void; username
             </div>
           </header>
           
-          {/* Content Area - Padding responsive */}
-          <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+          {/* Content Area - Padding responsive con margen superior para el header fijo */}
+          <div className="p-3 sm:p-4 md:p-6 lg:p-8 pt-[calc(56px+0.75rem)] sm:pt-[calc(64px+1rem)] md:pt-[calc(80px+1.5rem)] lg:pt-[calc(80px+2rem)]">
             {children}
           </div>
         </main>

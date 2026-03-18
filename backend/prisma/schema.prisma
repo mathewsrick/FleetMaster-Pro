@@ -46,26 +46,24 @@ enum ExpenseType {
 // --- MODELOS ---
 
 model User {
-  id                String    @id @default(uuid())
-  username          String    @unique
-  email             String    @unique
+  id                String            @id @default(uuid())
+  username          String            @unique
+  email             String            @unique
   password          String
-  role              UserRole  @default(USER)
-  isConfirmed       Boolean   @default(false)
+  role              UserRole          @default(USER)
+  isConfirmed       Boolean           @default(false)
   confirmationToken String?
   resetToken        String?
   lastActivity      DateTime?
-  createdAt         DateTime  @default(now())
-
-  // Relaciones
-  vehicles         Vehicle[]
-  drivers          Driver[]
-  payments         Payment[]
-  expenses         Expense[]
-  arrears          Arrear[]
-  subscriptions    SubscriptionKey[]
-  transactions     Transaction[]
-  licenseOverrides LicenseOverride[]
+  createdAt         DateTime          @default(now())
+  arrears           Arrear[]
+  drivers           Driver[]
+  expenses          Expense[]
+  licenseOverrides  LicenseOverride[]
+  payments          Payment[]
+  subscriptions     SubscriptionKey[]
+  transactions      Transaction[]
+  vehicles          Vehicle[]
 
   @@index([email])
   @@index([username])
@@ -74,12 +72,12 @@ model User {
 model LicenseOverride {
   id        String    @id @default(uuid())
   userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan      String // basico, pro, enterprise
+  plan      String
   expiresAt DateTime?
   reason    String?
   createdBy String?
   createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -87,14 +85,14 @@ model LicenseOverride {
 model SubscriptionKey {
   id             String             @id @default(uuid())
   userId         String?
-  user           User?              @relation(fields: [userId], references: [id])
-  plan           String // free_trial, basico, pro, enterprise
+  plan           String
   price          Decimal            @db.Decimal(12, 2)
   months         Int                @default(1)
   startDate      DateTime?
   dueDate        DateTime?
   status         SubscriptionStatus @default(active)
   transactionRef String?
+  user           User?              @relation(fields: [userId], references: [id])
 
   @@index([userId, status])
 }
@@ -102,109 +100,101 @@ model SubscriptionKey {
 model Transaction {
   id            String   @id @default(uuid())
   userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   reference     String   @unique
   amount        Decimal  @db.Decimal(12, 2)
   plan          String
   duration      String
-  status        String   @default("PENDING") // PENDING, APPROVED, DECLINED, ERROR
+  status        String   @default("PENDING")
   wompiId       String?  @unique
   paymentMethod String?
   createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model Driver {
-  id                 String    @id @default(uuid())
-  userId             String
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  firstName          String
-  lastName           String
-  email              String?
-  phone              String?
-  idNumber           String
-  licensePhoto       String?
-  idPhoto            String?
-  licenseExpiration  DateTime? // 🆕 Fecha vencimiento licencia de conducción
-  deletedAt          DateTime?
-
-  vehicleId String?   @unique
-  vehicle   Vehicle?  @relation(fields: [vehicleId], references: [id])
-  payments  Payment[]
-  arrears   Arrear[]
+  id                String    @id @default(uuid())
+  userId            String
+  firstName         String
+  lastName          String
+  email             String?
+  phone             String?
+  idNumber          String
+  licensePhoto      String?
+  idPhoto           String?
+  vehicleId         String?   @unique
+  deletedAt         DateTime?
+  licenseExpiration DateTime?
+  arrears           Arrear[]
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle           Vehicle?  @relation(fields: [vehicleId], references: [id])
+  payments          Payment[]
 
   @@index([userId, idNumber])
   @@index([userId, deletedAt])
 }
 
 model Vehicle {
-  id                           String    @id @default(uuid())
-  userId                       String
-  user                         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  year                         Int
-  licensePlate                 String
-  model                        String
-  color                        String
-  purchaseDate                 DateTime?
-  insurance                    String?
-  insuranceNumber              String?
-  soatExpiration               DateTime?
-  techExpiration               DateTime?
-  hasFullCoverage              Boolean?  @default(false) // 🆕 Seguro todo riesgo
-  fullCoverageExpiration       DateTime? // 🆕 Fecha vencimiento seguro todo riesgo
-  fullCoverageInsurer          String? // 🆕 Aseguradora del seguro todo riesgo
-  fullCoverageEmergencyNumber  String? // 🆕 Número de emergencia del seguro
-  rentaValue                   Decimal   @db.Decimal(12, 2)
-  deletedAt                    DateTime?
-  driver                       Driver?
-
-  photos String[]
-
-  payments Payment[]
-  expenses Expense[]
-  arrears  Arrear[]
+  id                          String         @id @default(uuid())
+  userId                      String
+  year                        Int
+  licensePlate                String
+  model                       String
+  color                       String
+  purchaseDate                DateTime?
+  insurance                   String?
+  insuranceNumber             String?
+  soatExpiration              DateTime?
+  techExpiration              DateTime?
+  rentaValue                  Decimal        @db.Decimal(12, 2)
+  photos                      String[]
+  deletedAt                   DateTime?
+  fullCoverageExpiration      DateTime?
+  hasFullCoverage             Boolean?       @default(false)
+  fullCoverageEmergencyNumber String?
+  fullCoverageInsurer         String?
+  arrears                     Arrear[]
+  driver                      Driver?
+  expenses                    Expense[]
+  payments                    Payment[]
+  user                        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, licensePlate])
   @@index([userId, deletedAt])
 }
 
 model Payment {
-  id        String   @id @default(uuid())
+  id        String      @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount    Decimal  @db.Decimal(12, 2)
-  date      DateTime @default(now()) @db.Timestamptz(6)
-  createdAt DateTime @default(now())
-
-  driverId String
-  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
-
+  amount    Decimal     @db.Decimal(12, 2)
+  date      DateTime    @default(now()) @db.Timestamptz(6)
+  driverId  String
   vehicleId String
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-
-  type     PaymentType @default(renta)
-  arrearId String?
+  type      PaymentType @default(renta)
+  arrearId  String?
+  createdAt DateTime    @default(now())
+  driver    Driver      @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle   Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@index([userId, date])
   @@index([driverId, vehicleId])
 }
 
 model Arrear {
-  id         String       @id @default(uuid())
-  userId     String
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amountOwed Decimal      @db.Decimal(12, 2)
-  status     ArrearStatus @default(pending)
-
-  driverId String
-  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
-
-  vehicleId String
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-
-  dueDate         DateTime @db.Timestamptz(6)
+  id              String       @id @default(uuid())
+  userId          String
+  amountOwed      Decimal      @db.Decimal(12, 2)
+  status          ArrearStatus @default(pending)
+  driverId        String
+  vehicleId       String
+  dueDate         DateTime     @db.Timestamptz(6)
   originPaymentId String?
+  description     String?      // 🆕 Descripción opcional de la mora
+  driver          Driver       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle         Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
   @@index([driverId])
@@ -218,6 +208,7 @@ model Expense {
   amount      Decimal     @db.Decimal(12, 2)
   date        DateTime    @default(now()) @db.Timestamptz(6)
   type        ExpenseType @default(reparacion)
+  mileage     Int? // 🆕 Kilometraje opcional para rastrear mantenimientos
   createdAt   DateTime    @default(now())
 
   vehicleId String

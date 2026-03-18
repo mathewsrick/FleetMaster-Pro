@@ -11,11 +11,26 @@ export const getAll = async (req: any, res: any) => {
 };
 
 export const save = async (req: any, res: any) => {
-  await service.updateOrCreate(req.user.userId, req.body);
-  res.json({ success: true });
+  try {
+    await service.updateOrCreate(req.user.userId, req.body);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error saving expense:', error);
+    res.status(500).json({ 
+      error: error.message || 'Error al guardar el gasto',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
 };
 
 export const remove = async (req: any, res: any) => {
-  await service.remove(req.user.userId, req.params.id);
-  res.json({ success: true });
+  try {
+    await service.remove(req.user.userId, req.params.id);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error removing expense:', error);
+    res.status(500).json({ 
+      error: error.message || 'Error al eliminar el gasto'
+    });
+  }
 };

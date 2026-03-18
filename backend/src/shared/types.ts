@@ -117,6 +117,7 @@ export interface Expense {
   date: string;
   vehicleId: string;
   type: 'reparacion' | 'repuesto' | 'combustible' | 'mantenimiento' | 'seguro' | 'impuesto' | 'multa' | 'lavado' | 'otro';
+  mileage?: number; // 🆕 Kilometraje opcional para mantenimientos
 }
 
 export interface Arrear {
@@ -128,4 +129,5 @@ export interface Arrear {
   vehicleId: string;
   dueDate: string;
   originPaymentId?: string;
+  description?: string; // 🆕 Descripción opcional de la mora
 }

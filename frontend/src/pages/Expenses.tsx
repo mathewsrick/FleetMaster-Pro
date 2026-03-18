@@ -176,10 +176,18 @@ const Expenses: React.FC = () => {
               key: 'description',
               label: 'Descripción',
               mobileOrder: 0,
-              render: (desc: string | undefined) => (
-                <span className="text-sm font-bold text-slate-900 line-clamp-2">
-                  {desc || <span className="text-slate-400 italic">Sin descripción</span>}
-                </span>
+              render: (desc: string | undefined, expense: Expense) => (
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-bold text-slate-900 line-clamp-2">
+                    {desc || <span className="text-slate-400 italic">Sin descripción</span>}
+                  </span>
+                  {expense.mileage && (
+                    <span className="text-[11px] text-indigo-600 font-semibold flex items-center gap-1">
+                      <i className="fa-solid fa-gauge-high"></i>
+                      {expense.mileage.toLocaleString()} km
+                    </span>
+                  )}
+                </div>
               )
             },
             {

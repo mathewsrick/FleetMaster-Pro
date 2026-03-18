@@ -6,6 +6,7 @@ import ResponsiveTable from '@/components/ResponsiveTable';
 import ResponsiveModal from '@/components/ResponsiveModal';
 import ModalFooter from '@/components/ModalFooter';
 import DateInput from '@/components/DateInput';
+import CurrencyInput from '@/components/CurrencyInput';
 
 const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
@@ -15,6 +16,7 @@ const Drivers: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isArrearModalOpen, setIsArrearModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ url: string, title: string } | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
@@ -25,6 +27,13 @@ const Drivers: React.FC = () => {
   const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+  // Estado para crear mora manualmente
+  const [arrearFormData, setArrearFormData] = useState<{ amountOwed: number; dueDate: string; description: string }>({
+    amountOwed: 0,
+    dueDate: formatDateToISO(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')),
+    description: ''
+  });
 
   // Estados para fotos
   const [pendingLicense, setPendingLicense] = useState<File | null>(null);
@@ -193,6 +202,115 @@ const Drivers: React.FC = () => {
           title: 'Error al eliminar',
           text: err?.data?.message || 'No se pudo eliminar el conductor. Puede tener registros asociados.',
           confirmButtonColor: '#4f46e5'
+        });
+      }
+    }
+  };
+
+  const handleCreateArrear = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedDriver || !arrearFormData.amountOwed || saving) return;
+
+    setSaving(true);
+    try {
+      await db.createArrear({
+        amountOwed: arrearFormData.amountOwed,
+        driverId: selectedDriver.id,
+        vehicleId: selectedDriver.vehicleId || '',
+        dueDate: arrearFormData.dueDate,
+        description: arrearFormData.description || undefined
+      });
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Mora Creada',
+        text: 'La mora ha sido registrada exitosamente.',
+        timer: 1500,
+        showConfirmButton: false
+      });
+
+      setIsArrearModalOpen(false);
+      setArrearFormData({
+        amountOwed: 0,
+        dueDate: formatDateToISO(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')),
+        description: ''
+      });
+
+      // Recargar lista de conductores y historial del conductor
+      await loadData();
+      if (selectedDriver) {
+        await handleShowDetail(selectedDriver);
+      }
+    } catch (err: any) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err?.data?.message || 'Error al crear la mora'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openArrearModal = () => {
+    if (!selectedDriver?.vehicleId) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Vehículo Requerido',
+        text: 'El conductor debe tener un vehículo asignado para registrar una mora.',
+        confirmButtonColor: '#4f46e5'
+      });
+      return;
+    }
+    setIsArrearModalOpen(true);
+  };
+
+  const handleDeleteArrear = async (arrearId: string, originPaymentId?: string) => {
+    // Las moras con originPaymentId son automáticas
+    if (originPaymentId) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Mora Automática',
+        text: 'Las moras generadas automáticamente no se pueden eliminar directamente. Deben ser pagadas.',
+        confirmButtonColor: '#4f46e5'
+      });
+      return;
+    }
+
+    const res = await Swal.fire({
+      title: '¿Eliminar Mora?',
+      text: "Esta acción no se puede deshacer.",
+      icon: 'warning',
+      showCancelButton: true,
+      reverseButtons: true,
+      confirmButtonColor: '#4f46e5',
+      cancelButtonColor: '#f43f5e',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (res.isConfirmed) {
+      try {
+        await db.deleteArrear(arrearId);
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Eliminada',
+          text: 'La mora ha sido eliminada.',
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        // Recargar lista y detalle
+        await loadData();
+        if (selectedDriver) {
+          await handleShowDetail(selectedDriver);
+        }
+      } catch (err: any) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: err?.data?.message || 'Error al eliminar la mora'
         });
       }
     }
@@ -404,8 +522,68 @@ const Drivers: React.FC = () => {
                 </div>
               </div>
 
+              {/* Moras Pendientes */}
+              {driverHistory.arrears.filter(a => a.status === 'pending').length > 0 && (
+                <div className="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4">
+                  <h4 className="text-xs font-black text-rose-600 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <i className="fa-solid fa-exclamation-triangle"></i>
+                    Moras Activas ({driverHistory.arrears.filter(a => a.status === 'pending').length})
+                  </h4>
+                  <div className="space-y-2">
+                    {driverHistory.arrears.filter(a => a.status === 'pending').map(arrear => (
+                      <div key={arrear.id} className="bg-white rounded-xl p-3 border border-rose-200">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-sm font-black text-rose-700">${Number(arrear.amountOwed).toLocaleString()}</p>
+                              {arrear.originPaymentId && (
+                                <span className="text-[8px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-black uppercase">
+                                  Auto
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-slate-500 mt-0.5">
+                              <i className="fa-solid fa-calendar mr-1"></i>
+                              Vence: {formatDateDisplay(arrear.dueDate)}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteArrear(arrear.id, arrear.originPaymentId)}
+                            title={arrear.originPaymentId ? 'Las moras automáticas no se pueden eliminar' : 'Eliminar mora'}
+                            className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
+                              arrear.originPaymentId 
+                                ? 'text-slate-300 cursor-not-allowed' 
+                                : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50'
+                            }`}
+                          >
+                            <i className="fa-solid fa-trash"></i>
+                          </button>
+                        </div>
+                        {arrear.description && (
+                          <div className="mt-2 pt-2 border-t border-rose-100">
+                            <p className="text-[10px] text-slate-600 italic flex items-start gap-1.5">
+                              <i className="fa-solid fa-quote-left text-rose-300 text-[8px] mt-0.5"></i>
+                              <span>{arrear.description}</span>
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Cronología de Pagos Recientes</h3>
+                <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
+                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Cronología de Pagos Recientes</h3>
+                  <button
+                    onClick={openArrearModal}
+                    className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm"
+                  >
+                    <i className="fa-solid fa-plus"></i>
+                    Crear Mora
+                  </button>
+                </div>
                 <div className="max-h-72 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                   {driverHistory.payments.length > 0 ? driverHistory.payments.map(p => (
                     <div key={p.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -612,6 +790,106 @@ const Drivers: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modal para Crear Mora Manualmente */}
+      <ResponsiveModal
+        isOpen={isArrearModalOpen}
+        onClose={() => !saving && setIsArrearModalOpen(false)}
+        title="Registrar Mora Manual"
+        subtitle={selectedDriver ? `${selectedDriver.firstName} ${selectedDriver.lastName}` : ''}
+        maxWidth="md"
+        fullScreenOnMobile={true}
+      >
+        <form onSubmit={handleCreateArrear} className={`space-y-4 transition-opacity ${saving ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <i className="fa-solid fa-triangle-exclamation text-amber-600 text-xl mt-0.5"></i>
+              <div>
+                <p className="text-xs font-bold text-amber-900 mb-1">Registro Manual de Mora</p>
+                <p className="text-[11px] text-amber-700 leading-relaxed">
+                  Esta función permite crear moras de forma manual para situaciones excepcionales. 
+                  Las moras creadas desde pagos parciales se generan automáticamente.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
+              <i className="fa-solid fa-money-bill-wave mr-1"></i>
+              Monto Adeudado
+            </label>
+            <CurrencyInput
+              required
+              value={arrearFormData.amountOwed || ''}
+              onValueChange={(value) => setArrearFormData({...arrearFormData, amountOwed: value ? Number(value) : 0})}
+              placeholder="0"
+              className="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none focus:ring-2 focus:ring-rose-500 transition-all shadow-inner"
+            />
+          </div>
+
+          <div>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
+              <i className="fa-solid fa-file-lines mr-1"></i>
+              Descripción
+            </label>
+            <textarea
+              value={arrearFormData.description}
+              onChange={(e) => setArrearFormData({...arrearFormData, description: e.target.value})}
+              placeholder="Motivo o descripción de la mora..."
+              rows={3}
+              className="w-full p-4 bg-slate-50 rounded-2xl font-medium outline-none focus:ring-2 focus:ring-rose-500 transition-all shadow-inner resize-none"
+            />
+            <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+              <i className="fa-solid fa-info-circle"></i>
+              Esta descripción será visible en el historial del conductor
+            </p>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
+              <i className="fa-solid fa-calendar-days mr-1"></i>
+              Fecha de Vencimiento
+            </label>
+            <DateInput
+              required
+              value={arrearFormData.dueDate}
+              onChange={(isoDate) => setArrearFormData({...arrearFormData, dueDate: isoDate})}
+              className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-rose-500 transition-all shadow-inner"
+            />
+            <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+              <i className="fa-solid fa-info-circle"></i>
+              Fecha límite para el pago de esta mora
+            </p>
+          </div>
+
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+            <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider">Información del Conductor</p>
+            <div className="space-y-1">
+              <p className="text-sm font-black text-slate-900">{selectedDriver?.firstName} {selectedDriver?.lastName}</p>
+              <p className="text-xs text-slate-600">
+                <i className="fa-solid fa-car mr-1"></i>
+                {selectedDriver?.vehiclePlate || 'Sin vehículo'}
+              </p>
+            </div>
+          </div>
+
+          <ModalFooter
+            primaryButton={{
+              label: saving ? 'Registrando Mora...' : 'Registrar Mora',
+              onClick: () => {}, // Form submit handled by form onSubmit
+              variant: 'danger',
+              loading: saving,
+              disabled: saving
+            }}
+            secondaryButton={{
+              label: 'Cancelar',
+              onClick: () => setIsArrearModalOpen(false),
+              disabled: saving
+            }}
+          />
+        </form>
+      </ResponsiveModal>
     </div>
   );
 };

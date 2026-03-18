@@ -137,4 +137,5 @@ export interface Arrear {
   vehicleId: string;
   dueDate: string;
   originPaymentId?: string;
+  description?: string; // 🆕 Descripción opcional de la mora
 }
