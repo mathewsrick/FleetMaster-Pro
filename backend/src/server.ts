@@ -6,6 +6,7 @@ if (process.env.NODE_ENV !== 'production') {
 import app from './app.js';
 import { runSeeders } from './shared/db.js';
 import { generateAndSendWeeklyReports } from './modules/reports/automated-reports.service.js';
+import { generateAndSendMonthlyReports } from './modules/reports/monthly-report.service.js';
 import { sendExpirationNotifications } from './modules/notifications/notification.service.js';
 
 const port = Number(process.env.PORT) || 3001;
@@ -56,10 +57,22 @@ const bootstrap = async () => {
             log.error('Error en verificación de vencimientos:', error);
           }
         }, { timezone: 'America/Bogota' });
+
+        // 📋 Reporte mensual de flota (día 1 de cada mes, 8:00 AM)
+        cron.schedule('0 8 1 * *', async () => {
+          log.info('📋 Ejecutando generación de reportes mensuales de flota...');
+          try {
+            await generateAndSendMonthlyReports();
+            log.success('Reportes mensuales generados exitosamente');
+          } catch (error) {
+            log.error('Error generando reportes mensuales:', error);
+          }
+        }, { timezone: 'America/Bogota' });
         
         log.info('⏰ Tareas programadas iniciadas:');
         log.info('  📊 Reportes semanales: Lunes 8:00 AM');
         log.info('  🔔 Notificaciones vencimientos: Diario 8:00 AM');
+        log.info('  📋 Reportes mensuales de flota: Día 1 de cada mes 8:00 AM');
       });
     });
   } catch (error) {

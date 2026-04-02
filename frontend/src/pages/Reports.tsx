@@ -25,7 +25,7 @@ const Reports: React.FC = () => {
   const plan = authData.accountStatus?.plan;
   const limits = authData.accountStatus?.limits;
 
-  const canExportExcel = limits?.hasExcelReports === true;
+  const canExportExcel = true;
   const isRestricted = plan === 'free_trial' || plan === 'basico';
   const hasAdvancedReports = plan === 'pro' || plan === 'enterprise';
 
@@ -301,7 +301,7 @@ const Reports: React.FC = () => {
                 </tbody>
               </>
             )}
-            
+
             {activeTab === 'income' && !isRestricted && (
               <>
                 <thead className="bg-slate-50 border-b">

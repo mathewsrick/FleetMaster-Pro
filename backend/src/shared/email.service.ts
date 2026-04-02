@@ -469,6 +469,123 @@ export const templates = {
       </div>
     </div>
   `,
+  monthlyFleetReport: (data: {
+    username: string;
+    monthName: string;
+    totalIncome: number;
+    totalExpenses: number;
+    net: number;
+    totalDebt: number;
+    totalVehicles: number;
+    activeVehicles: number;
+    vehicleDetails: Array<{
+      licensePlate: string;
+      model: string;
+      driverName: string;
+      rentaValue: number;
+      income: number;
+      expenses: number;
+      pendingDebt: number;
+    }>;
+  }) => `
+    <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;max-width:640px;margin:auto;border:1px solid #e2e8f0;padding:48px;border-radius:24px;color:#334155;background:#ffffff;">
+      ${LOGO_HTML}
+
+      <!-- Cabecera -->
+      <div style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);border-radius:20px;padding:32px;text-align:center;color:white;margin-bottom:32px;box-shadow:0 8px 24px rgba(79,70,229,0.25);">
+        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.15em;opacity:0.85;">Extracto Mensual de Flota</div>
+        <h2 style="margin:10px 0 4px 0;font-size:26px;font-weight:900;text-transform:capitalize;">${data.monthName}</h2>
+        <p style="opacity:0.85;font-size:14px;margin:0;">Hola <strong>${data.username}</strong>, aquí está el resumen de tu operación.</p>
+      </div>
+
+      <!-- KPIs generales -->
+      <h3 style="font-size:11px;text-transform:uppercase;color:#94a3b8;letter-spacing:0.12em;margin:0 0 14px 0;">Resumen General</h3>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:32px;">
+        <tr>
+          <td style="width:50%;padding-right:8px;">
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:18px;text-align:center;">
+              <div style="font-size:10px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:0.08em;">Ingresos del mes</div>
+              <div style="font-size:22px;font-weight:900;color:#15803d;margin-top:6px;">$${data.totalIncome.toLocaleString('es-CO')}</div>
+            </div>
+          </td>
+          <td style="width:50%;padding-left:8px;">
+            <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:14px;padding:18px;text-align:center;">
+              <div style="font-size:10px;font-weight:800;color:#be123c;text-transform:uppercase;letter-spacing:0.08em;">Gastos del mes</div>
+              <div style="font-size:22px;font-weight:900;color:#be123c;margin-top:6px;">$${data.totalExpenses.toLocaleString('es-CO')}</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Neto y deuda -->
+      <div style="background:#f1f5f9;border-radius:16px;padding:20px 24px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.08em;">Utilidad Neta del Mes</div>
+          <div style="font-size:28px;font-weight:900;color:${data.net >= 0 ? '#1e293b' : '#dc2626'};">$${data.net.toLocaleString('es-CO')}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.08em;">Moras Pendientes</div>
+          <div style="font-size:20px;font-weight:900;color:${data.totalDebt > 0 ? '#dc2626' : '#15803d'};">${data.totalDebt > 0 ? '$' + data.totalDebt.toLocaleString('es-CO') : '✓ Al día'}</div>
+        </div>
+      </div>
+
+      <!-- Estado flota -->
+      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:40px;">
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:12px 0;color:#64748b;">Vehículos activos en flota:</td>
+          <td style="padding:12px 0;text-align:right;font-weight:800;color:#1e293b;">${data.activeVehicles} de ${data.totalVehicles}</td>
+        </tr>
+        <tr>
+          <td style="padding:12px 0;color:#64748b;">Vehículos sin conductor:</td>
+          <td style="padding:12px 0;text-align:right;font-weight:800;color:${data.totalVehicles - data.activeVehicles > 0 ? '#f59e0b' : '#15803d'};">${data.totalVehicles - data.activeVehicles}</td>
+        </tr>
+      </table>
+
+      <!-- Detalle por vehículo -->
+      <h3 style="font-size:11px;text-transform:uppercase;color:#94a3b8;letter-spacing:0.12em;margin:0 0 16px 0;">Detalle por Vehículo</h3>
+
+      ${data.vehicleDetails.map((v) => `
+      <div style="border:1px solid #e2e8f0;border-radius:16px;margin-bottom:16px;overflow:hidden;">
+        <!-- Cabecera vehículo -->
+        <div style="background:#f8fafc;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;">
+          <div>
+            <span style="font-size:16px;font-weight:900;color:#4f46e5;font-family:monospace;">${v.licensePlate}</span>
+            <span style="font-size:12px;color:#64748b;margin-left:8px;">${v.model}</span>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;">Conductor</div>
+            <div style="font-size:12px;font-weight:800;color:#1e293b;">${v.driverName}</div>
+          </div>
+        </div>
+        <!-- Movimientos -->
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:10px 20px;color:#64748b;">Renta mensual esperada:</td>
+            <td style="padding:10px 20px;text-align:right;color:#1e293b;">$${v.rentaValue.toLocaleString('es-CO')}</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:10px 20px;color:#64748b;">Ingresos recibidos:</td>
+            <td style="padding:10px 20px;text-align:right;font-weight:800;color:#15803d;">$${v.income.toLocaleString('es-CO')}</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:10px 20px;color:#64748b;">Gastos del mes:</td>
+            <td style="padding:10px 20px;text-align:right;font-weight:800;color:#be123c;">$${v.expenses.toLocaleString('es-CO')}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 20px;color:#64748b;">Moras pendientes:</td>
+            <td style="padding:10px 20px;text-align:right;font-weight:800;color:${v.pendingDebt > 0 ? '#dc2626' : '#15803d'};">${v.pendingDebt > 0 ? '$' + v.pendingDebt.toLocaleString('es-CO') : '✓ Sin mora'}</td>
+          </tr>
+        </table>
+      </div>
+      `).join('')}
+
+      <!-- Footer -->
+      <div style="margin-top:40px;padding:16px;background:#eff6ff;border-radius:12px;text-align:center;border:1px solid #dbeafe;">
+        <p style="color:#1e40af;font-size:12px;margin:0;font-weight:bold;">Este reporte se genera automáticamente el día 1 de cada mes.</p>
+        <p style="color:#94a3b8;font-size:11px;margin:8px 0 0 0;">© 2026 FleetMaster Hub System. Para soporte, visita <a href="${ENV.FRONTEND_URL}" style="color:#4f46e5;text-decoration:none;">fleetmasterhub.com</a></p>
+      </div>
+    </div>
+  `,
   contactNotification: (name: string, email: string, message: string) => `
     <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
       ${LOGO_HTML}
