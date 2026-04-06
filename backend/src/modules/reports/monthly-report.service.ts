@@ -11,7 +11,7 @@ const getPreviousMonthRange = () => {
   return { start, end };
 };
 
-export const generateAndSendMonthlyReports = async () => {
+export const generateAndSendMonthlyReports = async (emailFilter?: string) => {
   console.log('--- INICIANDO ENVÍO DE REPORTES MENSUALES DE FLOTA ---');
 
   const { start, end } = getPreviousMonthRange();
@@ -22,12 +22,13 @@ export const generateAndSendMonthlyReports = async () => {
     timeZone: 'America/Bogota',
   });
 
-  // Todos los usuarios con suscripción activa
+  // Todos los usuarios con suscripción activa (con filtro opcional por email)
   const users = await prisma.user.findMany({
     where: {
       subscriptions: {
         some: { status: 'active' },
       },
+      ...(emailFilter ? { email: emailFilter } : {}),
     },
   });
 
