@@ -22,7 +22,8 @@
     "type-check:frontend": "cd frontend && npm run type-check",
     "hard:reset": "tsx backend/scripts/HardReset.ts",
     "create:superadmin": "tsx backend/scripts/CreateSuperAdmin.ts",
-    "preview:emails": "tsx --env-file backend/.env backend/scripts/PreviewEmails.ts"
+    "preview:emails": "tsx --env-file backend/.env backend/scripts/PreviewEmails.ts",
+    "send:octoberfest": "tsx --env-file backend/.env backend/scripts/SendOctoberfestPromo.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",

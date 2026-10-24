@@ -257,6 +257,11 @@ const scenarios = (to: string): Scenario[] => [
       }),
   },
   {
+    label: 'Promo Oktoberfest',
+    subject: '🍺 Oktoberfest de locura: planes desde $15.900/mes – FleetMaster Hub',
+    html: () => emailService.templates.octoberfestPromo({ username: 'juanperez' }),
+  },
+  {
     label: 'Mensaje de contacto desde el landing',
     subject: '📩 Nuevo Mensaje de Contacto – FleetMaster Hub',
     html: () =>

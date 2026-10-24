@@ -477,7 +477,7 @@ const Landing: React.FC = () => {
             <PriceCard 
               index={0}
               plan="Básico" 
-              price="59.900" 
+              price="15.900" 
               desc="Ideal para dueños con hasta 3 vehículos."
               features={[
                 'Hasta 3 Vehículos', 
@@ -490,7 +490,7 @@ const Landing: React.FC = () => {
             <PriceCard 
               index={1}
               plan="Pro" 
-              price="95.900" 
+              price="28.000" 
               featured 
               desc="Perfecto para flotas en crecimiento (5-10 vehículos)."
               features={[
@@ -505,7 +505,7 @@ const Landing: React.FC = () => {
             <PriceCard 
               index={2}
               plan="Enterprise" 
-              price="145.900" 
+              price="65.000" 
               desc="Control total para flotas grandes e ilimitadas."
               features={[
                 'Vehículos Ilimitados', 

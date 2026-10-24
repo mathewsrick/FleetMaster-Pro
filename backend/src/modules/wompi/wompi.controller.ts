@@ -3,6 +3,7 @@ import { prisma } from '../../shared/db.js';
 import { v4 as uuid } from 'uuid';
 import * as wompiService from './wompi.service.js';
 import * as subService from '../subscription/subscription.service.js';
+import * as recurringService from '../subscription/recurring.service.js';
 import * as emailService from '../../shared/email.service.js';
 import { ENV } from '../../config/env.js';
 
@@ -11,18 +12,7 @@ export const initializePayment = async (req: any, res: any) => {
     const { plan, duration } = req.body;
     const userId = req.user.userId;
 
-    const BASE_PRICES: Record<string, number> = {
-      'basico': 59900,
-      'pro': 95900,
-      'enterprise': 145900
-    };
-
-    let basePrice = BASE_PRICES[plan.toLowerCase()];
-    if (!basePrice) throw new Error('Plan inválido');
-
-    let amount = basePrice;
-    if (duration === 'yearly') amount = basePrice * 10;
-    else if (duration === 'semiannual') amount = basePrice * 5;
+    const { amount } = subService.getPlanPricing(plan, duration);
 
     const amountInCents = amount * 100;
     const reference = `FMP-${uuid().substring(0, 8).toUpperCase()}`;
@@ -141,6 +131,8 @@ export const handleWebhook = async (req: any, res: any) => {
           ? 'DECLINED'
           : 'ERROR';
 
+      const wasPending = localTx.status === 'PENDING';
+
       await tx.transaction.update({
         where: { reference },
         data: {
@@ -151,12 +143,19 @@ export const handleWebhook = async (req: any, res: any) => {
       });
 
       if (status === 'APPROVED') {
-        await subService.fulfillPurchase(
-          localTx.userId,
-          localTx.plan,
-          localTx.duration as any,
-          reference
-        );
+        if (localTx.recurringSubscriptionId) {
+          await recurringService.handleRecurringResult(
+            { ...localTx, status: newStatus },
+            'APPROVED'
+          );
+        } else {
+          await subService.fulfillPurchase(
+            localTx.userId,
+            localTx.plan,
+            localTx.duration as any,
+            reference
+          );
+        }
 
         // 📧 Notificar al Usuario - Pago Exitoso
         await emailService.sendEmail({
@@ -188,15 +187,22 @@ export const handleWebhook = async (req: any, res: any) => {
           })
         });
       } else if (status === 'DECLINED' || status === 'ERROR') {
-        // 📧 Email al Usuario - Fallo
-        await emailService.sendEmail({
-          to: localTx.user.email,
-          subject: `Pago Declinado - FleetMaster Hub`,
-          html: emailService.templates.paymentFailed({
-            plan: localTx.plan,
-            reference: localTx.reference
-          })
-        });
+        if (localTx.recurringSubscriptionId && wasPending) {
+          await recurringService.handleRecurringResult(
+            { ...localTx, status: newStatus },
+            newStatus
+          );
+        } else if (!localTx.recurringSubscriptionId) {
+          // 📧 Email al Usuario - Fallo
+          await emailService.sendEmail({
+            to: localTx.user.email,
+            subject: `Pago Declinado - FleetMaster Hub`,
+            html: emailService.templates.paymentFailed({
+              plan: localTx.plan,
+              reference: localTx.reference
+            })
+          });
+        }
       }
 
     });
@@ -206,5 +212,58 @@ export const handleWebhook = async (req: any, res: any) => {
   } catch (error: any) {
     console.error('Webhook Error:', error.message);
     res.status(500).end();
+  }
+};
+
+export const getAcceptance = async (_req: any, res: any) => {
+  try {
+    const tokens = await wompiService.getAcceptanceTokens();
+    res.json({
+      publicKey: ENV.WOMPI_PUBLIC_KEY,
+      ...tokens
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const createSubscription = async (req: any, res: any) => {
+  try {
+    const { plan, duration, type, token, acceptanceToken, personalAuthToken } = req.body;
+
+    if (!plan || !duration || !type || !token || !acceptanceToken || !personalAuthToken) {
+      return res.status(400).json({ error: 'Datos de pago incompletos' });
+    }
+
+    const result = await recurringService.createRecurring(req.user.userId, {
+      plan,
+      duration,
+      type,
+      token,
+      acceptanceToken,
+      personalAuthToken
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const getMySubscription = async (req: any, res: any) => {
+  try {
+    const subscription = await recurringService.getRecurring(req.user.userId);
+    res.json(subscription);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const cancelSubscription = async (req: any, res: any) => {
+  try {
+    const subscription = await recurringService.cancelRecurring(req.user.userId);
+    res.json(subscription);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
   }
 };

@@ -182,16 +182,42 @@ export const templates = {
       </div>
     </div>
   `,
-  paymentFailed: (data: { plan: string; reference: string }) => `
+  paymentFailed: (data: { plan: string; reference: string; attempt?: number; maxAttempts?: number; suspended?: boolean }) => `
     <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
       ${LOGO_HTML}
       <div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 32px;">
-        <h2 style="color: #b91c1c; margin: 0; font-size: 20px;">Pago no procesado</h2>
+        <h2 style="color: #b91c1c; margin: 0; font-size: 20px;">${data.suspended ? 'Suscripción suspendida' : 'Pago no procesado'}</h2>
         <p style="color: #991b1b; font-size: 14px; margin: 8px 0 0 0;">Lamentablemente tu pago para el plan <strong>${data.plan.toUpperCase()}</strong> fue declinado.</p>
       </div>
+      ${data.attempt !== undefined ? `
+        <div style="background-color: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: center;">
+          <p style="margin: 0; font-size: 13px; color: #9a3412; font-weight: 700;">
+            Intento ${data.attempt} de ${data.maxAttempts ?? 3}
+          </p>
+          ${data.suspended
+            ? `<p style="margin: 8px 0 0 0; font-size: 13px; color: #9a3412;">Tu suscripción recurrente fue suspendida. Actualiza tu método de pago y vuelve a suscribirte para recuperar el acceso.</p>`
+            : `<p style="margin: 8px 0 0 0; font-size: 13px; color: #9a3412;">Reintentaremos automáticamente el cobro en 2 días.</p>`}
+        </div>
+      ` : ''}
       <p style="font-size: 14px; color: #64748b; text-align: center;">Referencia: ${data.reference}</p>
       <div style="text-align: center; margin-top: 24px;">
         <a href="${ENV.APP_URL}/pricing-checkout" style="color: #4f46e5; font-weight: bold; text-decoration: underline;">Intentar de nuevo</a>
+      </div>
+    </div>
+  `,
+  recurringSuspended: (data: { plan: string; reference: string }) => `
+    <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
+      ${LOGO_HTML}
+      <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 32px;">
+        <h2 style="color: #b91c1c; margin: 0; font-size: 20px;">Suscripción suspendida</h2>
+        <p style="color: #991b1b; font-size: 14px; margin: 8px 0 0 0;">
+          No pudimos cobrar tu plan <strong>${data.plan.toUpperCase()}</strong> después de 3 intentos.
+          Tu acceso queda suspendido hasta que actives un nuevo método de pago.
+        </p>
+      </div>
+      <p style="font-size: 14px; color: #64748b; text-align: center;">Referencia: ${data.reference}</p>
+      <div style="text-align: center; margin-top: 24px;">
+        <a href="${ENV.APP_URL}/pricing-checkout" style="background-color: #4f46e5; color: #ffffff; padding: 14px 28px; border-radius: 12px; font-weight: bold; text-decoration: none; display: inline-block;">Reactivar mi plan</a>
       </div>
     </div>
   `,
@@ -586,6 +612,66 @@ export const templates = {
       </div>
     </div>
   `,
+
+  /* ================= MARKETING ================= */
+  octoberfestPromo: (data: { username: string }) => {
+    const PLANS = [
+      { name: 'Básico', oldPrice: 59900, price: 15900, limits: '3 vehículos · 5 conductores' },
+      { name: 'Pro', oldPrice: 95900, price: 28000, limits: '6 vehículos · 10 conductores' },
+      { name: 'Enterprise', oldPrice: 145900, price: 65000, limits: 'Vehículos y conductores ilimitados' },
+    ];
+
+    return `
+    <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e2e8f0;padding:48px;border-radius:24px;color:#334155;background:#ffffff;">
+      ${LOGO_HTML}
+
+      <!-- Banner festivo -->
+      <div style="background:linear-gradient(135deg,#f59e0b 0%,#d97706 50%,#b45309 100%);border-radius:20px;padding:32px;text-align:center;color:white;margin-bottom:32px;box-shadow:0 8px 24px rgba(217,119,6,0.3);">
+        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.15em;opacity:0.9;">Precios permanentemente bajos</div>
+        <h2 style="margin:10px 0 6px 0;font-size:26px;font-weight:900;line-height:1.2;">🍺 ¡Oktoberfest de locura en FleetMaster Hub!</h2>
+        <p style="opacity:0.9;font-size:14px;margin:0;">Celebra con nosotros y gestiona tu flota por mucho menos.</p>
+      </div>
+
+      <p style="font-size:16px;line-height:1.6;margin:0 0 8px 0;">Hola <strong>${data.username}</strong>,</p>
+      <p style="font-size:16px;line-height:1.6;margin:0 0 28px 0;">Durante esta Oktoberfest bajamos los precios de todos nuestros planes <strong>de forma permanente</strong>. Estos son los nuevos precios mensuales:</p>
+
+      <!-- Tarjetas de planes -->
+      <table style="width:100%;border-collapse:separate;border-spacing:0 12px;">
+        ${PLANS.map((p) => `
+        <tr>
+          <td style="background:#fffbeb;border:1px solid #fde68a;border-radius:16px;padding:20px;">
+            <table style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td style="vertical-align:middle;">
+                  <div style="font-size:16px;font-weight:900;color:#1e293b;">Plan ${p.name}</div>
+                  <div style="font-size:12px;color:#64748b;margin-top:4px;">${p.limits}</div>
+                </td>
+                <td style="text-align:right;vertical-align:middle;white-space:nowrap;">
+                  <div style="font-size:13px;color:#94a3b8;"><s>$${p.oldPrice.toLocaleString('es-CO')}</s></div>
+                  <div style="font-size:24px;font-weight:900;color:#b45309;line-height:1.2;">$${p.price.toLocaleString('es-CO')}<span style="font-size:12px;font-weight:700;color:#64748b;"> /mes</span></div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        `).join('')}
+      </table>
+
+      <!-- Nota de duraciones -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin:8px 0 28px 0;">
+        <p style="margin:0;font-size:13px;color:#475569;line-height:1.6;">🍻 <strong>6 meses</strong> = 1 mes gratis &nbsp;·&nbsp; <strong>Anual</strong> = 2 meses gratis</p>
+      </div>
+
+      <div style="text-align:center;margin:32px 0;">
+        <a href="${ENV.APP_URL}/pricing-checkout" style="background:linear-gradient(135deg,#d97706 0%,#b45309 100%);color:#ffffff;padding:16px 40px;text-decoration:none;border-radius:12px;font-weight:900;display:inline-block;font-size:16px;box-shadow:0 4px 12px rgba(217,119,6,0.35);">Aprovechar ahora</a>
+      </div>
+
+      <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0;text-align:center;">
+        <p style="font-size:12px;color:#94a3b8;margin:0;">FleetMaster Hub · contacto@fleetmasterhub.com</p>
+      </div>
+    </div>
+    `;
+  },
   contactNotification: (name: string, email: string, message: string) => `
     <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 48px; border-radius: 24px; color: #334155;">
       ${LOGO_HTML}

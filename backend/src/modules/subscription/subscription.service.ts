@@ -9,31 +9,55 @@ const PLAN_WEIGHTS: Record<string, number> = {
 };
 
 const BASE_PRICES: Record<string, number> = {
-  'basico': 59900,
-  'pro': 95900,
-  'enterprise': 145900
+  'basico': 15900,
+  'pro': 28000,
+  'enterprise': 65000
 };
 
-export const fulfillPurchase = async (userId: string, plan: string, duration: 'monthly' | 'semiannual' | 'yearly', transactionRef: string) => {
-  const startDate = new Date();
-  const dueDate = new Date();
-  
-  let monthsCount = 1;
-  let totalPrice = BASE_PRICES[plan.toLowerCase()] || 0;
+export type SubscriptionDuration = 'monthly' | 'semiannual' | 'yearly';
 
-  if (duration === 'yearly') {
-    dueDate.setFullYear(dueDate.getFullYear() + 1);
-    monthsCount = 12;
-    totalPrice = (BASE_PRICES[plan.toLowerCase()] || 0) * 10;
-  } else if (duration === 'semiannual') {
-    dueDate.setMonth(dueDate.getMonth() + 6);
-    monthsCount = 6;
-    totalPrice = (BASE_PRICES[plan.toLowerCase()] || 0) * 5;
-  } else {
-    dueDate.setMonth(dueDate.getMonth() + 1);
-    monthsCount = 1;
-    totalPrice = BASE_PRICES[plan.toLowerCase()] || 0;
-  }
+const DURATION_MULTIPLIERS: Record<SubscriptionDuration, number> = {
+  monthly: 1,
+  semiannual: 5,
+  yearly: 10
+};
+
+const DURATION_MONTHS: Record<SubscriptionDuration, number> = {
+  monthly: 1,
+  semiannual: 6,
+  yearly: 12
+};
+
+/**
+ * Precio y meses de un plan según su duración.
+ * Fuente única de verdad para los cobros (widget y recurrencia).
+ */
+export const getPlanPricing = (plan: string, duration: SubscriptionDuration) => {
+  const basePrice = plan ? BASE_PRICES[plan.toLowerCase()] : undefined;
+  if (!basePrice) throw new Error('Plan inválido');
+
+  const months = DURATION_MONTHS[duration] ?? 1;
+  const amount = basePrice * (DURATION_MULTIPLIERS[duration] ?? 1);
+
+  return { amount, months };
+};
+
+export const fulfillPurchase = async (
+  userId: string,
+  plan: string,
+  duration: 'monthly' | 'semiannual' | 'yearly',
+  transactionRef: string,
+  startFrom?: Date
+) => {
+  const now = new Date();
+  const startDate = now;
+  // En una renovación, extender desde el vencimiento vigente si aún es futuro
+  const baseDate = startFrom && startFrom.getTime() > now.getTime() ? startFrom : now;
+  const dueDate = new Date(baseDate);
+
+  const { amount: totalPrice, months: monthsCount } = getPlanPricing(plan, duration);
+
+  dueDate.setMonth(dueDate.getMonth() + monthsCount);
 
   await repo.deactivateUserKeys(userId);
 
