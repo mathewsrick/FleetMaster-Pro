@@ -43,6 +43,13 @@ enum ExpenseType {
   otro
 }
 
+enum RecurringStatus {
+  active
+  past_due
+  suspended
+  canceled
+}
+
 // --- MODELOS ---
 
 model User {
@@ -64,6 +71,7 @@ model User {
   subscriptions     SubscriptionKey[]
   transactions      Transaction[]
   vehicles          Vehicle[]
+  recurringSubscription RecurringSubscription?
 
   @@index([email])
   @@index([username])
@@ -98,19 +106,43 @@ model SubscriptionKey {
 }
 
 model Transaction {
-  id            String   @id @default(uuid())
-  userId        String
-  reference     String   @unique
-  amount        Decimal  @db.Decimal(12, 2)
-  plan          String
-  duration      String
-  status        String   @default("PENDING")
-  wompiId       String?  @unique
-  paymentMethod String?
-  createdAt     DateTime @default(now())
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String               @id @default(uuid())
+  userId                String
+  reference             String               @unique
+  amount                Decimal              @db.Decimal(12, 2)
+  plan                  String
+  duration              String
+  status                String               @default("PENDING")
+  wompiId               String?              @unique
+  paymentMethod         String?
+  recurringSubscriptionId String?
+  createdAt             DateTime             @default(now())
+  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recurringSubscription RecurringSubscription? @relation(fields: [recurringSubscriptionId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([recurringSubscriptionId])
+}
+
+model RecurringSubscription {
+  id                   String          @id @default(uuid())
+  userId               String          @unique
+  plan                 String
+  duration             String
+  amount               Decimal         @db.Decimal(12, 2)
+  wompiPaymentSourceId Int
+  paymentMethodType    String
+  status               RecurringStatus @default(active)
+  nextChargeAt         DateTime?
+  failedAttempts       Int             @default(0)
+  lastAttemptAt        DateTime?
+  canceledAt           DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions         Transaction[]
+
+  @@index([status, nextChargeAt])
 }
 
 model Driver {

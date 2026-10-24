@@ -12,6 +12,7 @@ export const ENV = {
   APP_URL: process.env.APP_URL || 'http://localhost:3000',
   // WOMPI Config
   WOMPI_PUBLIC_KEY: process.env.WOMPI_PUBLIC_KEY || 'pub_test_Q5yDA9xoKdePzhS8qn969p6M7Y6eT96e',
+  WOMPI_PRIVATE_KEY: process.env.WOMPI_PRIVATE_KEY,
   WOMPI_INTEGRITY_SECRET: process.env.WOMPI_INTEGRITY_SECRET,
   WOMPI_WEBHOOK_SECRET: process.env.WOMPI_WEBHOOK_SECRET,
   WOMPI_API_URL: process.env.WOMPI_API_URL || 'https://sandbox.wompi.co/v1'

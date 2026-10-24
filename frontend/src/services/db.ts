@@ -117,6 +117,19 @@ export const db = {
   // Wompi Payment
   initWompiPayment: (plan: string, duration: string) => request<any>('/wompi/initialize', 'POST', { plan, duration }),
   checkWompiStatus: (id: string) => request<any>(`/wompi/verify/${id}`, 'GET'),
+
+  // Wompi Recurring Subscriptions
+  getWompiAcceptance: () => request<any>('/wompi/acceptance', 'GET'),
+  createRecurringSubscription: (data: {
+    plan: string;
+    duration: string;
+    type: 'CARD' | 'NEQUI';
+    token: string;
+    acceptanceToken: string;
+    personalAuthToken: string;
+  }) => request<any>('/wompi/subscriptions', 'POST', data),
+  getMyRecurringSubscription: () => request<any>('/wompi/subscriptions/me', 'GET'),
+  cancelRecurringSubscription: () => request<any>('/wompi/subscriptions/cancel', 'POST'),
   
   purchasePlan: (plan: string, duration: 'monthly' | 'semiannual' | 'yearly') => request<any>('/subscription/purchase', 'POST', { plan, duration }),
 

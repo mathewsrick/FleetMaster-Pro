@@ -8,6 +8,7 @@ import { runSeeders } from './shared/db.js';
 import { generateAndSendWeeklyReports } from './modules/reports/automated-reports.service.js';
 import { generateAndSendMonthlyReports } from './modules/reports/monthly-report.service.js';
 import { sendExpirationNotifications } from './modules/notifications/notification.service.js';
+import { runDueCharges } from './modules/subscription/recurring.service.js';
 
 const port = Number(process.env.PORT) || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -68,11 +69,23 @@ const bootstrap = async () => {
             log.error('Error generando reportes mensuales:', error);
           }
         }, { timezone: 'America/Bogota' });
+
+        // 💳 Cobros recurrentes de suscripciones (Diario 9:00 AM)
+        cron.schedule('0 9 * * *', async () => {
+          log.info('💳 Ejecutando cobros recurrentes de suscripciones...');
+          try {
+            const count = await runDueCharges();
+            log.success(`Cobros recurrentes procesados: ${count}`);
+          } catch (error) {
+            log.error('Error en cobros recurrentes:', error);
+          }
+        }, { timezone: 'America/Bogota' });
         
         log.info('⏰ Tareas programadas iniciadas:');
         log.info('  📊 Reportes semanales: Lunes 8:00 AM');
         log.info('  🔔 Notificaciones vencimientos: Diario 8:00 AM');
         log.info('  📋 Reportes mensuales de flota: Día 1 de cada mes 8:00 AM');
+        log.info('  💳 Cobros recurrentes: Diario 9:00 AM');
       });
     });
   } catch (error) {
