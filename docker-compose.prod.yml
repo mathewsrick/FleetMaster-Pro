@@ -4,10 +4,11 @@ services:
       context: .
       dockerfile: Dockerfile
     image: fleetmaster-hub:latest
+    # Caddy (edge-caddy) resuelve este nombre: no cambiar
     container_name: fleetmaster
     restart: unless-stopped
-    ports:
-      - "3001:3001"
+    expose:
+      - "3001"
     environment:
       - NODE_ENV=production
       - PORT=3001
@@ -28,32 +29,17 @@ services:
         max-file: "3"
     networks:
       - fleetmaster-network
-
-  nginx:
-    image: nginx:alpine
-    container_name: fleetmaster-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    depends_on:
-      fleetmaster:
-        condition: service_healthy
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    networks:
-      - fleetmaster-network
+      - edge
 
 volumes:
   uploads:
     driver: local
+    # volumen real con las fotos/documentos en el VPS
+    name: fleetmasterhub_uploads
 
 networks:
   fleetmaster-network:
     driver: bridge
+  # red de edge-caddy (creada fuera de este stack)
+  edge:
+    external: true

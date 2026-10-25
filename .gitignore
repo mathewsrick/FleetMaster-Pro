@@ -7,6 +7,7 @@ backend/.env
 .env.production
 *.env
 *.md
+!README-VPS.md
 backend/dist
 dist
 
