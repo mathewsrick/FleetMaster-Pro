@@ -2,6 +2,10 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { db } from '@/services/db';
 import Swal from 'sweetalert2';
 
+// El username lo elige el usuario al registrarse: escaparlo antes de meterlo en el html de Swal
+const escapeHtml = (value: string) =>
+  value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+
 const SuperAdmin: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
@@ -53,7 +57,7 @@ const SuperAdmin: React.FC = () => {
       title: `<span class="text-indigo-600">Conceder Licencia</span>`,
       html: `
         <div class="text-left space-y-4 px-2">
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Usuario: ${user.username}</p>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Usuario: ${escapeHtml(user.username)}</p>
           <div class="space-y-1">
             <label class="text-[10px] font-black uppercase text-slate-400">Plan a otorgar</label>
             <select id="swal-plan" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold">
@@ -120,6 +124,54 @@ const SuperAdmin: React.FC = () => {
       } catch (err: any) {
         Swal.fire('Error', err.message, 'error');
       }
+    }
+  };
+
+  const handleDeleteUser = async (user: any) => {
+    const { isConfirmed } = await Swal.fire({
+      icon: 'warning',
+      title: 'Eliminar usuario',
+      html: `
+        <div class="text-left space-y-3 px-2">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Usuario: ${escapeHtml(user.username)}</p>
+          <p class="text-sm text-slate-600 font-medium">
+            Se eliminarán de forma permanente sus vehículos, conductores, pagos, moras, gastos, suscripciones, transacciones y fotos.
+          </p>
+          <p class="text-sm text-rose-600 font-black">Esta acción no se puede deshacer.</p>
+          <p class="text-xs text-slate-500 font-bold">Escribe el username para confirmar:</p>
+        </div>
+      `,
+      input: 'text',
+      inputPlaceholder: user.username,
+      showCancelButton: true,
+      reverseButtons: true,
+      confirmButtonText: 'Eliminar definitivamente',
+      confirmButtonColor: '#e11d48',
+      cancelButtonText: 'Cancelar',
+      preConfirm: (value: string) => {
+        if (value !== user.username) {
+          Swal.showValidationMessage('El username no coincide');
+          return false;
+        }
+        return true;
+      }
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      await db.deleteAdminUser(user.id);
+      Swal.fire({
+        icon: 'success',
+        title: 'Usuario eliminado',
+        text: `La cuenta ${user.username} fue eliminada definitivamente.`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+      loadData(searchQuery);
+    } catch (err: any) {
+      Swal.fire('Error', err.message, 'error');
     }
   };
 
@@ -236,12 +288,20 @@ const SuperAdmin: React.FC = () => {
                     </td>
                     <td className="px-8 py-6 text-right">
                       {u.role !== 'SUPERADMIN' && (
-                        <button 
-                          onClick={() => handleGrantLicense(u)}
-                          className="px-5 py-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95"
-                        >
-                          <i className="fa-solid fa-wand-magic-sparkles mr-2"></i>Licencia Gratis
-                        </button>
+                        <>
+                          <button 
+                            onClick={() => handleGrantLicense(u)}
+                            className="px-5 py-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                          >
+                            <i className="fa-solid fa-wand-magic-sparkles mr-2"></i>Licencia Gratis
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(u)}
+                            className="ml-2 px-5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                          >
+                            <i className="fa-solid fa-trash mr-2"></i>Eliminar
+                          </button>
+                        </>
                       )}
                       {u.role === 'SUPERADMIN' && (
                         <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Master Admin</span>

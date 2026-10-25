@@ -148,6 +148,7 @@ export const db = {
 
   getAdminStats: () => request<any>('/superadmin/stats'),
   getAdminUsers: (search?: string) => request<User[]>(`/superadmin/users${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+  deleteAdminUser: (id: string) => request<any>(`/superadmin/users/${id}`, 'DELETE'),
 
   getVehicles: (page = 1, limit = 100) => request<PaginatedResponse<Vehicle>>(`/vehicles?page=${page}&limit=${limit}`),
   saveVehicle: (v: Vehicle) => request('/vehicles', 'POST', v),

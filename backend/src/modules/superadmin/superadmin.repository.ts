@@ -19,6 +19,35 @@ export const getSaaSStats = async () => {
   };
 };
 
+export const deleteUserCascade = async (userId: string): Promise<string[]> => {
+  return prisma.$transaction(async (tx: any) => {
+    const drivers = await tx.driver.findMany({
+      where: { userId },
+      select: { licensePhoto: true, idPhoto: true }
+    });
+    const vehicles = await tx.vehicle.findMany({
+      where: { userId },
+      select: { photos: true }
+    });
+
+    await tx.subscriptionKey.deleteMany({ where: { userId } });
+    await tx.user.delete({ where: { id: userId } });
+
+    const photos: string[] = [];
+    for (const driver of drivers) {
+      if (driver.licensePhoto) photos.push(driver.licensePhoto);
+      if (driver.idPhoto) photos.push(driver.idPhoto);
+    }
+    for (const vehicle of vehicles) {
+      for (const photo of vehicle.photos || []) {
+        if (photo) photos.push(photo);
+      }
+    }
+
+    return photos;
+  });
+};
+
 export const findAllFleets = async (filter: string) => {
   const where: any = { role: 'USER' };
   if (filter) {

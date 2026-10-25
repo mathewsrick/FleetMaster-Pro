@@ -7,11 +7,13 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export const UPLOADS_ROOT = path.join(__dirname, '../../public/uploads');
+
 // Storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const subfolder = file.fieldname === 'photos' ? 'vehicles' : 'drivers';
-    cb(null, path.join(__dirname, '../../public/uploads', subfolder));
+    cb(null, path.join(UPLOADS_ROOT, subfolder));
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();

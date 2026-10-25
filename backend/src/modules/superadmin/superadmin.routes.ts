@@ -14,5 +14,6 @@ const requireSuperAdmin = (req: any, res: any, next: any) => {
 router.get('/stats', authenticate, requireSuperAdmin, controller.getGlobalStats);
 router.get('/users', authenticate, requireSuperAdmin, controller.getUsers);
 router.post('/grant-license', authenticate, requireSuperAdmin, controller.grantLicense);
+router.delete('/users/:id', authenticate, requireSuperAdmin, controller.deleteUser);
 
 export default router;
