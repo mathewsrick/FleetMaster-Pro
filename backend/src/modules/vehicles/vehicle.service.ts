@@ -1,5 +1,7 @@
 import * as repo from './vehicle.repository.js';
 import * as authRepo from '../auth/auth.repository.js';
+import { prisma } from '../../shared/db.js';
+import { recordAssignmentChange } from '../assignment/assignment-history.js';
 
 const PLAN_MAX_VEHICLES: Record<string, number> = {
   'free_trial': 1,
@@ -61,5 +63,15 @@ export const save = async (userId: string, data: any) => {
 };
 
 export const remove = async (userId: string, id: string) => {
+  // Identificar al conductor que quedará desasignado por el soft delete
+  const assignedDriver = await prisma.driver.findFirst({
+    where: { vehicleId: id },
+    select: { id: true },
+  });
+
   await repo.remove(userId, id);
+
+  if (assignedDriver) {
+    await recordAssignmentChange(prisma, userId, assignedDriver.id, null);
+  }
 };

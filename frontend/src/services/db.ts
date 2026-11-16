@@ -1,4 +1,17 @@
-import { Vehicle, Driver, Payment, Expense, Arrear, User, PaginatedResponse } from '@/types/types';
+import {
+  Vehicle,
+  Driver,
+  Payment,
+  Expense,
+  Arrear,
+  User,
+  PaginatedResponse,
+  ReportRangeParams,
+  FleetSummaryReport,
+  VehicleProfitabilityReport,
+  DriverBehaviorReport,
+  MaintenanceReport
+} from '@/types/types';
 
 const getApiBase = () => {
   try {
@@ -77,6 +90,15 @@ export const formatDateDisplay = (dateStr: string) => {
 const getAuth = () => {
   const auth = sessionStorage.getItem('fmp_auth');
   return auth ? JSON.parse(auth) : null;
+};
+
+/** Query string de rango (YYYY-MM-DD) para los endpoints de reportes. */
+const reportRangeQuery = (params?: ReportRangeParams) => {
+  const query = new URLSearchParams();
+  if (params?.startDate) query.set('startDate', params.startDate);
+  if (params?.endDate) query.set('endDate', params.endDate);
+  const qs = query.toString();
+  return qs ? `?${qs}` : '';
 };
 
 const request = async <T>(url: string, method: string = 'GET', body?: any): Promise<T> => {
@@ -179,5 +201,36 @@ export const db = {
   createArrear: (data: { amountOwed: number; driverId: string; vehicleId: string; dueDate: string; description?: string; originPaymentId?: string }) => 
     request('/arrears', 'POST', data),
   deleteArrear: (arrearId: string) => request(`/arrears/${arrearId}`, 'DELETE'),
-  assignDriver: (driverId: string, vehicleId: string | null) => request('/assign', 'POST', { driverId, vehicleId })
+  assignDriver: (driverId: string, vehicleId: string | null) => request('/assign', 'POST', { driverId, vehicleId }),
+
+  // Reportes analíticos (requieren plan pago; 403 = free_trial)
+  getReportSummary: (params?: ReportRangeParams) =>
+    request<FleetSummaryReport>(`/reports/summary${reportRangeQuery(params)}`),
+  getReportVehicles: (params?: ReportRangeParams) =>
+    request<VehicleProfitabilityReport>(`/reports/vehicles${reportRangeQuery(params)}`),
+  getReportDrivers: (params?: ReportRangeParams) =>
+    request<DriverBehaviorReport>(`/reports/drivers${reportRangeQuery(params)}`),
+  getReportMaintenance: (params?: ReportRangeParams) =>
+    request<MaintenanceReport>(`/reports/maintenance${reportRangeQuery(params)}`),
+  /** Descarga el PDF mensual como blob (mismo token Bearer de la sesión). */
+  getMonthlyReportPdf: async (month: string): Promise<Blob> => {
+    const auth = getAuth();
+    const token = auth?.token;
+
+    const response = await fetch(
+      `${API_BASE}/reports/monthly.pdf?month=${encodeURIComponent(month)}`,
+      {
+        method: 'GET',
+        headers: { Authorization: token ? `Bearer ${token}` : '' }
+      }
+    );
+
+    if (!response.ok) {
+      let data: any = null;
+      try { data = await response.json(); } catch {}
+      throw { status: response.status, data };
+    }
+
+    return response.blob();
+  }
 };

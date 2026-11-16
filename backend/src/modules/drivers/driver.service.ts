@@ -2,6 +2,8 @@ import { v4 as uuid } from 'uuid';
 import * as repo from './driver.repository.js';
 import * as authRepo from '../auth/auth.repository.js';
 import * as emailService from '../../shared/email.service.js';
+import { prisma } from '../../shared/db.js';
+import { recordAssignmentChange } from '../assignment/assignment-history.js';
 
 const PLAN_MAX_DRIVERS: Record<string, number> = {
   'free_trial': 1,
@@ -37,11 +39,13 @@ export const create = async (userId: string, data: any) => {
       const driverWithVehicle = await repo.findByVehicleId(data.vehicleId);
       if (driverWithVehicle && driverWithVehicle.id !== existingDriver.id) {
         await repo.update(userId, driverWithVehicle.id, { vehicleId: null });
+        await recordAssignmentChange(prisma, userId, driverWithVehicle.id, null);
       }
     }
 
     // Restaurar conductor con nuevos datos
     const restoredDriver = await repo.restore(userId, existingDriver.id, data);
+    await recordAssignmentChange(prisma, userId, existingDriver.id, data.vehicleId || null);
 
     // Enviar email de bienvenida si tiene email
     if (restoredDriver.email) {
@@ -73,11 +77,13 @@ export const create = async (userId: string, data: any) => {
     if (driverWithVehicle) {
       console.log(`🔄 Desasignando vehículo ${data.vehicleId} del conductor ${driverWithVehicle.id} antes de crear nuevo conductor`);
       await repo.update(userId, driverWithVehicle.id, { vehicleId: null });
+      await recordAssignmentChange(prisma, userId, driverWithVehicle.id, null);
     }
   }
 
   const driver = { id: uuid(), userId, ...data };
   await repo.create(driver);
+  await recordAssignmentChange(prisma, userId, driver.id, data.vehicleId || null);
 
   // Alerta automática: Bienvenida al conductor
   if (driver.email) {
@@ -100,13 +106,22 @@ export const update = async (userId: string, id: string, data: any) => {
     // Si existe y no es el mismo conductor que estamos editando, desasignarlo
     if (existingDriver && existingDriver.id !== id) {
       await repo.update(userId, existingDriver.id, { vehicleId: null });
+      await recordAssignmentChange(prisma, userId, existingDriver.id, null);
     }
   }
   
+  const current = await prisma.driver.findFirst({ where: { id, userId }, select: { vehicleId: true } });
   await repo.update(userId, id, data);
+
+  // repo.update siempre escribe vehicleId (null si falta); registrar solo si cambió
+  const nextVehicleId = data.vehicleId || null;
+  if ((current?.vehicleId ?? null) !== nextVehicleId) {
+    await recordAssignmentChange(prisma, userId, id, nextVehicleId);
+  }
 };
 
 export const remove = async (userId: string, id: string) => {
   await repo.unassignVehicles(userId, id);
+  await recordAssignmentChange(prisma, userId, id, null);
   await repo.remove(userId, id);
 };

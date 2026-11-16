@@ -247,13 +247,45 @@ const scenarios = (to: string): Scenario[] => [
       emailService.templates.monthlyFleetReport({
         username: 'juanperez',
         monthName: 'marzo de 2026',
-        totalIncome: 3_800_000,
-        totalExpenses: 430_000,
-        net: 3_370_000,
-        totalDebt: 500_000,
-        totalVehicles: 3,
-        activeVehicles: 2,
-        vehicleDetails: MOCK_VEHICLE_DETAILS,
+        summary: {
+          income: { total: 3_800_000, renta: 3_400_000, abonos: 400_000, other: 0 },
+          expenses: { total: 430_000 },
+          net: 3_370_000,
+          pendingDebt: 500_000,
+          expectedRent: 4_000_000,
+          collectionRatePct: 85,
+          vehicles: { total: 3, assigned: 2, idle: 1 },
+        },
+        topProfitableVehicles: MOCK_VEHICLE_DETAILS.slice(0, 2).map((vehicle) => ({
+          licensePlate: vehicle.licensePlate,
+          driverName: vehicle.driverName,
+          income: vehicle.income,
+          expenses: vehicle.expenses,
+          net: vehicle.income - vehicle.expenses,
+        })),
+        topCostlyVehicles: [...MOCK_VEHICLE_DETAILS]
+          .sort((a, b) => b.expenses - a.expenses)
+          .slice(0, 2)
+          .map((vehicle) => ({
+            licensePlate: vehicle.licensePlate,
+            driverName: vehicle.driverName,
+            income: vehicle.income,
+            expenses: vehicle.expenses,
+            net: vehicle.income - vehicle.expenses,
+          })),
+        riskDrivers: [
+          {
+            driverName: 'Carlos Ramírez',
+            score: 42,
+            label: 'Riesgo',
+            currentPendingDebt: 500_000,
+            weeksUnpaid: 2,
+          },
+        ],
+        repeatedRepairs: [
+          { licensePlate: 'ABC123', component: 'frenos', count: 3 },
+          { licensePlate: 'XYZ789', component: 'suspension', count: 2 },
+        ],
       }),
   },
   {

@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { db, formatDateDisplay, getTodayDateDisplay, formatDateToISO } from '@/services/db';
-import { Expense, Vehicle } from '@/types/types';
+import {
+  Expense,
+  ExpenseComponent,
+  ExpenseType,
+  Vehicle,
+  EXPENSE_COMPONENT_OPTIONS,
+  EXPENSE_COMPONENT_TYPES,
+  expenseComponentLabel
+} from '@/types/types';
 import Swal from 'sweetalert2';
 import ResponsiveTable from '@/components/ResponsiveTable';
 import ResponsiveModal from '@/components/ResponsiveModal';
@@ -24,8 +32,13 @@ const Expenses: React.FC = () => {
     amount: 0,
     date: formatDateToISO(getTodayDateDisplay()),
     vehicleId: '',
-    type: 'reparacion'
+    type: 'reparacion',
+    component: undefined
   });
+
+  const requiresComponent = EXPENSE_COMPONENT_TYPES.includes(
+    (formData.type || 'reparacion') as ExpenseType
+  );
 
   useEffect(() => { loadData(); }, [page, limit, search]);
 
@@ -72,11 +85,27 @@ const Expenses: React.FC = () => {
     e.preventDefault();
     if (!formData.vehicleId || saving) return;
 
+    if (requiresComponent && !formData.component) {
+      alert('Selecciona el componente afectado para clasificar el gasto.');
+      return;
+    }
+
     setSaving(true);
     try {
-      await db.saveExpense({ ...formData, id: crypto.randomUUID() } as Expense);
+      await db.saveExpense({
+        ...formData,
+        component: requiresComponent ? formData.component : undefined,
+        id: crypto.randomUUID()
+      } as Expense);
       setIsModalOpen(false);
-      setFormData({ description: '', amount: 0, date: formatDateToISO(getTodayDateDisplay()), vehicleId: '', type: 'reparacion' });
+      setFormData({
+        description: '',
+        amount: 0,
+        date: formatDateToISO(getTodayDateDisplay()),
+        vehicleId: '',
+        type: 'reparacion',
+        component: undefined
+      });
       loadData();
     } catch (err: any) {
       alert('Error al guardar el gasto');
@@ -173,6 +202,20 @@ const Expenses: React.FC = () => {
               }
             },
             {
+              key: 'component',
+              label: 'Componente',
+              mobileOrder: 2,
+              render: (component: string | null | undefined) =>
+                component ? (
+                  <span className="inline-flex items-center gap-1 text-[9px] font-black px-2 py-1 rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-600 uppercase tracking-wider">
+                    <i className="fa-solid fa-screwdriver-wrench"></i>
+                    {expenseComponentLabel(component)}
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-slate-300 italic">—</span>
+                )
+            },
+            {
               key: 'description',
               label: 'Descripción',
               mobileOrder: 0,
@@ -265,7 +308,14 @@ const Expenses: React.FC = () => {
             </div>
             <div>
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Tipo de Gasto</label>
-              <select required value={formData.type} onChange={e => setFormData({...formData, type: e.target.value as any})} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm">
+              <select required value={formData.type} onChange={e => {
+                const nextType = e.target.value as ExpenseType;
+                setFormData(prev => ({
+                  ...prev,
+                  type: nextType,
+                  ...(EXPENSE_COMPONENT_TYPES.includes(nextType) ? {} : { component: undefined })
+                }));
+              }} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm">
                 <option value="reparacion">🔧 Reparación</option>
                 <option value="repuesto">⚙️ Repuesto</option>
                 <option value="combustible">⛽ Combustible</option>
@@ -277,6 +327,30 @@ const Expenses: React.FC = () => {
                 <option value="otro">📦 Otro</option>
               </select>
             </div>
+
+            {/* Clasificación por componente para análisis de mantenimiento */}
+            {requiresComponent && (
+              <div className="bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4">
+                <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 block flex items-center gap-2">
+                  <i className="fa-solid fa-screwdriver-wrench"></i>
+                  Componente Afectado <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  required
+                  value={formData.component || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, component: (e.target.value || undefined) as ExpenseComponent | undefined }))}
+                  className="w-full p-4 bg-white rounded-xl border-2 border-indigo-200 font-bold outline-none text-sm focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Seleccione el componente...</option>
+                  {EXPENSE_COMPONENT_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-indigo-600 mt-2 font-medium">
+                  📊 Permite detectar los repuestos más consumidos y las reparaciones repetidas por vehículo
+                </p>
+              </div>
+            )}
 
             {/* Campo de Kilometraje para mantenimientos y repuestos */}
             {(formData.type === 'mantenimiento' || formData.type === 'repuesto') && (

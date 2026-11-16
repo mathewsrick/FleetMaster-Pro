@@ -19,6 +19,7 @@ import assignmentRoutes from './modules/assignment/assignment.routes.js';
 import uploadRoutes from './modules/uploads/upload.routes.js';
 import contactRoutes from './modules/contact/contact.routes.js';
 import wompiRoutes from './modules/wompi/wompi.routes.js';
+import reportsRoutes from './modules/reports/reports.routes.js';
 import { authenticate } from './middlewares/auth.middleware.js';
 import { requireActiveSubscription } from './middlewares/subscription.middleware.js';
 
@@ -178,6 +179,7 @@ app.use('/api/expenses', authenticate as any, requireActiveSubscription as any, 
 app.use('/api/payments', authenticate as any, requireActiveSubscription as any, paymentRoutes as any);
 app.use('/api/arrears', authenticate as any, requireActiveSubscription as any, arrearRoutes as any);
 app.use('/api/assign', authenticate as any, requireActiveSubscription as any, assignmentRoutes as any);
+app.use('/api/reports', authenticate as any, requireActiveSubscription as any, reportsRoutes as any);
 
 // Servir frontend en producción
 const frontendPath = path.join(process.cwd(), 'dist');

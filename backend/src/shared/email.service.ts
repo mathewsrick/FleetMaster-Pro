@@ -16,9 +16,14 @@ interface EmailOptions {
   to: string;
   subject: string;
   html: string;
+  attachments?: Array<{
+    filename: string;
+    content: Buffer;
+    contentType?: string;
+  }>;
 }
 
-export const sendEmail = async ({ to, subject, html }: EmailOptions) => {
+export const sendEmail = async ({ to, subject, html, attachments }: EmailOptions) => {
   if (!to) return false;
   try {
     const info = await transporter.sendMail({
@@ -26,6 +31,7 @@ export const sendEmail = async ({ to, subject, html }: EmailOptions) => {
       to,
       subject,
       html,
+      ...(attachments ? { attachments } : {}),
     });
     console.log('Message sent: %s', info.messageId);
     return true;
@@ -498,117 +504,168 @@ export const templates = {
   monthlyFleetReport: (data: {
     username: string;
     monthName: string;
-    totalIncome: number;
-    totalExpenses: number;
-    net: number;
-    totalDebt: number;
-    totalVehicles: number;
-    activeVehicles: number;
-    vehicleDetails: Array<{
+    summary: {
+      income: { total: number; renta: number; abonos: number; other: number };
+      expenses: { total: number };
+      net: number;
+      pendingDebt: number;
+      expectedRent: number;
+      collectionRatePct: number;
+      vehicles: { total: number; assigned: number; idle: number };
+    };
+    topProfitableVehicles: Array<{
       licensePlate: string;
-      model: string;
-      driverName: string;
-      rentaValue: number;
+      driverName: string | null;
       income: number;
       expenses: number;
-      pendingDebt: number;
+      net: number;
     }>;
+    topCostlyVehicles: Array<{
+      licensePlate: string;
+      driverName: string | null;
+      income: number;
+      expenses: number;
+      net: number;
+    }>;
+    riskDrivers: Array<{
+      driverName: string;
+      score: number;
+      label: string;
+      currentPendingDebt: number;
+      weeksUnpaid: number;
+    }>;
+    repeatedRepairs: Array<{ licensePlate: string; component: string; count: number }>;
   }) => `
-    <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;max-width:640px;margin:auto;border:1px solid #e2e8f0;padding:48px;border-radius:24px;color:#334155;background:#ffffff;">
+    <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;max-width:640px;margin:auto;border:1px solid #e2e8f0;padding:40px;border-radius:24px;color:#334155;background:#ffffff;">
       ${LOGO_HTML}
 
       <!-- Cabecera -->
-      <div style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);border-radius:20px;padding:32px;text-align:center;color:white;margin-bottom:32px;box-shadow:0 8px 24px rgba(79,70,229,0.25);">
+      <div style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);border-radius:20px;padding:30px;text-align:center;color:white;margin-bottom:28px;box-shadow:0 8px 24px rgba(79,70,229,0.25);">
         <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.15em;opacity:0.85;">Extracto Mensual de Flota</div>
         <h2 style="margin:10px 0 4px 0;font-size:26px;font-weight:900;text-transform:capitalize;">${data.monthName}</h2>
-        <p style="opacity:0.85;font-size:14px;margin:0;">Hola <strong>${data.username}</strong>, aquí está el resumen de tu operación.</p>
+        <p style="opacity:0.85;font-size:14px;margin:0;">Hola <strong>${data.username}</strong>, este es el resumen de tu operación.</p>
       </div>
 
       <!-- KPIs generales -->
       <h3 style="font-size:11px;text-transform:uppercase;color:#94a3b8;letter-spacing:0.12em;margin:0 0 14px 0;">Resumen General</h3>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:32px;">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+        <tr>
+          <td style="width:50%;padding-right:8px;padding-bottom:8px;">
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:16px;text-align:center;">
+              <div style="font-size:10px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:0.08em;">Ingresos del mes</div>
+              <div style="font-size:21px;font-weight:900;color:#15803d;margin-top:6px;">$${data.summary.income.total.toLocaleString('es-CO')}</div>
+            </div>
+          </td>
+          <td style="width:50%;padding-left:8px;padding-bottom:8px;">
+            <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:14px;padding:16px;text-align:center;">
+              <div style="font-size:10px;font-weight:800;color:#be123c;text-transform:uppercase;letter-spacing:0.08em;">Gastos del mes</div>
+              <div style="font-size:21px;font-weight:900;color:#be123c;margin-top:6px;">$${data.summary.expenses.total.toLocaleString('es-CO')}</div>
+            </div>
+          </td>
+        </tr>
         <tr>
           <td style="width:50%;padding-right:8px;">
-            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:18px;text-align:center;">
-              <div style="font-size:10px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:0.08em;">Ingresos del mes</div>
-              <div style="font-size:22px;font-weight:900;color:#15803d;margin-top:6px;">$${data.totalIncome.toLocaleString('es-CO')}</div>
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;text-align:center;">
+              <div style="font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.08em;">Utilidad neta</div>
+              <div style="font-size:21px;font-weight:900;color:${data.summary.net >= 0 ? '#1e293b' : '#dc2626'};margin-top:6px;">$${data.summary.net.toLocaleString('es-CO')}</div>
             </div>
           </td>
           <td style="width:50%;padding-left:8px;">
-            <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:14px;padding:18px;text-align:center;">
-              <div style="font-size:10px;font-weight:800;color:#be123c;text-transform:uppercase;letter-spacing:0.08em;">Gastos del mes</div>
-              <div style="font-size:22px;font-weight:900;color:#be123c;margin-top:6px;">$${data.totalExpenses.toLocaleString('es-CO')}</div>
+            <div style="background:${data.summary.pendingDebt > 0 ? '#fff1f2' : '#f0fdf4'};border:1px solid ${data.summary.pendingDebt > 0 ? '#fecdd3' : '#bbf7d0'};border-radius:14px;padding:16px;text-align:center;">
+              <div style="font-size:10px;font-weight:800;color:${data.summary.pendingDebt > 0 ? '#be123c' : '#15803d'};text-transform:uppercase;letter-spacing:0.08em;">Moras pendientes</div>
+              <div style="font-size:21px;font-weight:900;color:${data.summary.pendingDebt > 0 ? '#be123c' : '#15803d'};margin-top:6px;">${data.summary.pendingDebt > 0 ? '$' + data.summary.pendingDebt.toLocaleString('es-CO') : '✓ Al día'}</div>
             </div>
           </td>
         </tr>
       </table>
 
-      <!-- Neto y deuda -->
-      <div style="background:#f1f5f9;border-radius:16px;padding:20px 24px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;">
-        <div>
-          <div style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.08em;">Utilidad Neta del Mes</div>
-          <div style="font-size:28px;font-weight:900;color:${data.net >= 0 ? '#1e293b' : '#dc2626'};">$${data.net.toLocaleString('es-CO')}</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.08em;">Moras Pendientes</div>
-          <div style="font-size:20px;font-weight:900;color:${data.totalDebt > 0 ? '#dc2626' : '#15803d'};">${data.totalDebt > 0 ? '$' + data.totalDebt.toLocaleString('es-CO') : '✓ Al día'}</div>
-        </div>
-      </div>
-
-      <!-- Estado flota -->
-      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:40px;">
+      <!-- Recaudo y flota -->
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:28px;">
         <tr style="border-bottom:1px solid #f1f5f9;">
-          <td style="padding:12px 0;color:#64748b;">Vehículos activos en flota:</td>
-          <td style="padding:12px 0;text-align:right;font-weight:800;color:#1e293b;">${data.activeVehicles} de ${data.totalVehicles}</td>
+          <td style="padding:10px 0;color:#64748b;">Renta esperada del período:</td>
+          <td style="padding:10px 0;text-align:right;font-weight:800;color:#1e293b;">$${data.summary.expectedRent.toLocaleString('es-CO')}</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 0;color:#64748b;">Tasa de recaudo:</td>
+          <td style="padding:10px 0;text-align:right;font-weight:800;color:${data.summary.collectionRatePct >= 90 ? '#15803d' : '#b45309'};">${data.summary.collectionRatePct.toLocaleString('es-CO')}%</td>
         </tr>
         <tr>
-          <td style="padding:12px 0;color:#64748b;">Vehículos sin conductor:</td>
-          <td style="padding:12px 0;text-align:right;font-weight:800;color:${data.totalVehicles - data.activeVehicles > 0 ? '#f59e0b' : '#15803d'};">${data.totalVehicles - data.activeVehicles}</td>
+          <td style="padding:10px 0;color:#64748b;">Vehículos asignados / total:</td>
+          <td style="padding:10px 0;text-align:right;font-weight:800;color:#1e293b;">${data.summary.vehicles.assigned} de ${data.summary.vehicles.total} <span style="color:#94a3b8;font-weight:600;">(${data.summary.vehicles.idle} sin conductor)</span></td>
         </tr>
       </table>
 
-      <!-- Detalle por vehículo -->
-      <h3 style="font-size:11px;text-transform:uppercase;color:#94a3b8;letter-spacing:0.12em;margin:0 0 16px 0;">Detalle por Vehículo</h3>
+      <!-- Top vehículos -->
+      <h3 style="font-size:11px;text-transform:uppercase;color:#94a3b8;letter-spacing:0.12em;margin:0 0 14px 0;">Vehículos Destacados</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:28px;">
+        <tr>
+          <td style="width:50%;padding-right:8px;vertical-align:top;">
+            <div style="font-size:10px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Top rentables</div>
+            ${data.topProfitableVehicles.length === 0
+              ? '<div style="color:#94a3b8;font-size:12px;">Sin datos</div>'
+              : data.topProfitableVehicles.map((vehicle) => `
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+                  <div style="font-weight:900;color:#1e293b;font-family:monospace;">${vehicle.licensePlate}</div>
+                  <div style="font-size:11px;color:#64748b;">${vehicle.driverName || 'Sin conductor'}</div>
+                  <div style="font-size:13px;font-weight:800;color:#15803d;">$${vehicle.net.toLocaleString('es-CO')}</div>
+                </div>
+              `).join('')}
+          </td>
+          <td style="width:50%;padding-left:8px;vertical-align:top;">
+            <div style="font-size:10px;font-weight:800;color:#be123c;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Mayor gasto</div>
+            ${data.topCostlyVehicles.length === 0
+              ? '<div style="color:#94a3b8;font-size:12px;">Sin datos</div>'
+              : data.topCostlyVehicles.map((vehicle) => `
+                <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+                  <div style="font-weight:900;color:#1e293b;font-family:monospace;">${vehicle.licensePlate}</div>
+                  <div style="font-size:11px;color:#64748b;">${vehicle.driverName || 'Sin conductor'}</div>
+                  <div style="font-size:13px;font-weight:800;color:#be123c;">$${vehicle.expenses.toLocaleString('es-CO')}</div>
+                </div>
+              `).join('')}
+          </td>
+        </tr>
+      </table>
 
-      ${data.vehicleDetails.map((v) => `
-      <div style="border:1px solid #e2e8f0;border-radius:16px;margin-bottom:16px;overflow:hidden;">
-        <!-- Cabecera vehículo -->
-        <div style="background:#f8fafc;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;">
-          <div>
-            <span style="font-size:16px;font-weight:900;color:#4f46e5;font-family:monospace;">${v.licensePlate}</span>
-            <span style="font-size:12px;color:#64748b;margin-left:8px;">${v.model}</span>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;">Conductor</div>
-            <div style="font-size:12px;font-weight:800;color:#1e293b;">${v.driverName}</div>
-          </div>
-        </div>
-        <!-- Movimientos -->
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:10px 20px;color:#64748b;">Renta mensual esperada:</td>
-            <td style="padding:10px 20px;text-align:right;color:#1e293b;">$${v.rentaValue.toLocaleString('es-CO')}</td>
-          </tr>
-          <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:10px 20px;color:#64748b;">Ingresos recibidos:</td>
-            <td style="padding:10px 20px;text-align:right;font-weight:800;color:#15803d;">$${v.income.toLocaleString('es-CO')}</td>
-          </tr>
-          <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:10px 20px;color:#64748b;">Gastos del mes:</td>
-            <td style="padding:10px 20px;text-align:right;font-weight:800;color:#be123c;">$${v.expenses.toLocaleString('es-CO')}</td>
-          </tr>
-          <tr>
-            <td style="padding:10px 20px;color:#64748b;">Moras pendientes:</td>
-            <td style="padding:10px 20px;text-align:right;font-weight:800;color:${v.pendingDebt > 0 ? '#dc2626' : '#15803d'};">${v.pendingDebt > 0 ? '$' + v.pendingDebt.toLocaleString('es-CO') : '✓ Sin mora'}</td>
-          </tr>
+      ${data.riskDrivers.length > 0 ? `
+      <h3 style="font-size:11px;text-transform:uppercase;color:#94a3b8;letter-spacing:0.12em;margin:0 0 12px 0;">Conductores en Riesgo</h3>
+      <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:14px;padding:16px 18px;margin-bottom:24px;">
+        ${data.riskDrivers.map((driver) => `
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px;">
+            <tr>
+              <td style="padding:2px 0;color:#1e293b;font-weight:800;">${driver.driverName}</td>
+              <td style="padding:2px 0;text-align:right;color:#be123c;font-weight:800;">Score ${driver.score} · ${driver.label}</td>
+            </tr>
+            <tr>
+              <td style="padding:0;color:#9f1239;font-size:11px;">${driver.weeksUnpaid} semana(s) sin pago</td>
+              <td style="padding:0;text-align:right;color:#be123c;font-size:11px;">Deuda: $${driver.currentPendingDebt.toLocaleString('es-CO')}</td>
+            </tr>
+          </table>
+        `).join('')}
+      </div>
+      ` : ''}
+
+      ${data.repeatedRepairs.length > 0 ? `
+      <h3 style="font-size:11px;text-transform:uppercase;color:#94a3b8;letter-spacing:0.12em;margin:0 0 12px 0;">Alerta de Reparaciones Repetidas</h3>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:16px 18px;margin-bottom:24px;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          ${data.repeatedRepairs.map((repair) => `
+            <tr>
+              <td style="padding:4px 0;color:#78350f;"><strong style="font-family:monospace;">${repair.licensePlate}</strong> · ${repair.component.replace(/_/g, ' ')}</td>
+              <td style="padding:4px 0;text-align:right;color:#b45309;font-weight:800;">${repair.count} eventos</td>
+            </tr>
+          `).join('')}
         </table>
       </div>
-      `).join('')}
+      ` : ''}
 
-      <!-- Footer -->
-      <div style="margin-top:40px;padding:16px;background:#eff6ff;border-radius:12px;text-align:center;border:1px solid #dbeafe;">
-        <p style="color:#1e40af;font-size:12px;margin:0;font-weight:bold;">Este reporte se genera automáticamente el día 1 de cada mes.</p>
-        <p style="color:#94a3b8;font-size:11px;margin:8px 0 0 0;">© 2026 FleetMaster Hub System. Para soporte, visita <a href="${ENV.FRONTEND_URL}" style="color:#4f46e5;text-decoration:none;">fleetmasterhub.com</a></p>
+      <div style="margin-top:8px;padding:16px;background:#eff6ff;border-radius:12px;text-align:center;border:1px solid #dbeafe;">
+        <p style="color:#1e40af;font-size:13px;margin:0;font-weight:800;">📎 Detalle completo en el PDF adjunto</p>
+        <p style="color:#64748b;font-size:11px;margin:6px 0 0 0;">Incluye rentabilidad por vehículo, cumplimiento semana a semana, mantenimiento y todos los pagos del mes.</p>
+      </div>
+
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0;text-align:center;">
+        <p style="color:#94a3b8;font-size:11px;margin:0;">Este reporte se genera automáticamente el día 1 de cada mes.</p>
+        <p style="color:#94a3b8;font-size:11px;margin:6px 0 0 0;">© 2026 FleetMaster Hub System. Para soporte, visita <a href="${ENV.FRONTEND_URL}" style="color:#4f46e5;text-decoration:none;">fleetmasterhub.com</a></p>
       </div>
     </div>
   `,

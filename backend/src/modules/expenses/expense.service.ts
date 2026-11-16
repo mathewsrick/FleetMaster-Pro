@@ -7,6 +7,21 @@ const PLAN_RESTRICTIONS: any = {
   enterprise: { maxHistoryDays: null, maxRangeDays: null }
 };
 
+const EXPENSE_COMPONENTS = new Set([
+  'motor',
+  'frenos',
+  'suspension',
+  'llantas',
+  'embrague_transmision',
+  'electrico_bateria',
+  'aceite_filtros',
+  'refrigeracion',
+  'direccion',
+  'carroceria',
+  'vidrios_luces',
+  'otro'
+]);
+
 export const getAll = async (userId: string, query: any, plan: string) => {
   const page = parseInt(query.page) || 1;
   const limit = Math.min(parseInt(query.limit) || 10, 100); // 🔒 Límite máximo de 100
@@ -43,7 +58,19 @@ export const getAll = async (userId: string, query: any, plan: string) => {
 
 export const updateOrCreate = async (userId: string, data: any) => {
   const existing = await repo.findById(data.id);
-  const expense = { ...data, userId };
+  const expense: any = { ...data, userId };
+
+  if ('component' in data) {
+    const component = typeof data.component === 'string' ? data.component.trim() : data.component;
+    if (component === null || component === undefined || component === '') {
+      expense.component = null;
+    } else if (EXPENSE_COMPONENTS.has(component)) {
+      expense.component = component;
+    } else {
+      throw new Error('Componente de gasto inválido');
+    }
+  }
+
   if (existing) {
     await repo.update(userId, expense);
   } else {
