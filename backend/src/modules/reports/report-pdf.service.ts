@@ -374,7 +374,7 @@ export const buildMonthlyReportPdf = (data: MonthlyReportData): Promise<Buffer> 
     }
 
     /* ------------------ Comportamiento conductores ------------------ */
-    sectionTitle(doc, 'Comportamiento de conductores', 'Semana = lunes a domingo (Bogotá)');
+    sectionTitle(doc, 'Comportamiento de conductores', 'Semana de cobro = martes a lunes (Bogotá)');
     drawTable(doc, {
       headers: ['Conductor', 'Semanas C / P / S', 'Cumplimiento', 'Abonos', 'Deuda pendiente', 'Score'],
       widths: [118, 100, 70, 75, 85, 62],
@@ -564,6 +564,10 @@ export const buildMonthlyReportPdf = (data: MonthlyReportData): Promise<Buffer> 
     const pageRange = doc.bufferedPageRange();
     for (let index = pageRange.start; index < pageRange.start + pageRange.count; index += 1) {
       doc.switchToPage(index);
+      // El footer se escribe debajo del margen inferior: se anula temporalmente
+      // para que pdfkit no agregue una página automática.
+      const bottomMargin = doc.page.margins.bottom;
+      doc.page.margins.bottom = 0;
       doc
         .fillColor('#94a3b8')
         .font('Helvetica')
@@ -574,6 +578,7 @@ export const buildMonthlyReportPdf = (data: MonthlyReportData): Promise<Buffer> 
           doc.page.height - 24,
           { width: contentWidth(doc), align: 'center', lineBreak: false }
         );
+      doc.page.margins.bottom = bottomMargin;
     }
 
     doc.end();

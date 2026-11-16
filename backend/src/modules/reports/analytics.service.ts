@@ -4,7 +4,7 @@ import { prisma } from '../../shared/db.js';
  * Reportes analíticos de flota y conductores.
  *
  * Todas las fechas se calculan con límites de America/Bogota (UTC-5, sin DST).
- * Las semanas van de lunes a domingo (Bogota).
+ * Las semanas de cobro van de martes a lunes (Bogota): cada cuota se paga el martes.
  */
 
 const BOGOTA_OFFSET_MS = 5 * 60 * 60 * 1000;
@@ -128,23 +128,35 @@ export const monthRangeBogota = (month: string): RangeInfo => {
   return { ...buildRange(startDate, endDate), month };
 };
 
-/** Lunes 00:00 Bogota de la semana que contiene la fecha. */
-export const bogotaWeekStart = (date: Date): Date => {
+/**
+ * Martes 00:00 Bogota de la semana de cobro que contiene la fecha.
+ * La semana de cobro va del martes al lunes siguiente.
+ * Un pago cuenta para el martes más reciente ≤ fecha del pago
+ * (un pago tardío de miércoles a lunes abona a esa misma cuota).
+ */
+export const bogotaWeekAnchor = (date: Date): Date => {
   const local = toBogotaShifted(date);
   const dow = local.getUTCDay(); // 0 = domingo
-  const diff = (dow + 6) % 7;
+  const diff = (dow - 2 + 7) % 7;
   return fromBogota(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() - diff);
 };
 
-const listWeeks = (range: AnalyticsRange) => {
+/**
+ * Lista las semanas de cobro del rango: solo las que tienen su martes dentro
+ * del rango y que ya llegaron (martes ≤ hoy en Bogota). Las semanas futuras no
+ * cuentan como esperado ni como "sin pago".
+ */
+export const listWeeks = (range: AnalyticsRange) => {
   const weeks: Array<{ start: Date; end: Date; label: string }> = [];
-  let cursor = bogotaWeekStart(range.start);
+  const today = bogotaMidnight(new Date());
+  let cursor = bogotaWeekAnchor(range.start);
 
-  // Solo semanas cuyo lunes cae dentro del rango (evita contar dos veces
+  // Solo semanas cuyo martes cae dentro del rango (evita contar dos veces
   // las semanas parciales de los extremos del mes).
   if (cursor < range.start) cursor = shiftDays(cursor, 7);
 
   while (cursor < range.end) {
+    if (cursor > today) break;
     const end = shiftDays(cursor, 7);
     weeks.push({
       start: cursor,
@@ -465,7 +477,7 @@ export const getVehicleProfitability = async (userId: string, range: RangeInfo) 
 export const getDriverBehavior = async (userId: string, range: RangeInfo) => {
   const [drivers, assignments, payments, arrearsInRange, pendingArrears] = await Promise.all([
     prisma.driver.findMany({
-      where: { userId },
+      where: { userId, deletedAt: null, vehicleId: { not: null } },
       select: { id: true, firstName: true, lastName: true, deletedAt: true },
     }),
     prisma.vehicleAssignment.findMany({
@@ -687,7 +699,7 @@ export const getMaintenanceAnalysis = async (userId: string, range: RangeInfo) =
       select: { id: true, licensePlate: true },
     }),
     prisma.driver.findMany({
-      where: { userId },
+      where: { userId, deletedAt: null, vehicleId: { not: null } },
       select: { id: true, firstName: true, lastName: true },
     }),
   ]);
@@ -876,6 +888,7 @@ export const getMaintenanceAnalysis = async (userId: string, range: RangeInfo) =
   const fleetSpendPerKm = totalKm > 0 ? round2(totalMaintenanceSpend / totalKm) : null;
 
   const driverRows = [...new Set([...driverSpend.keys(), ...driverWeekSets.keys()])]
+    .filter((driverId) => driverMap.has(driverId))
     .map((driverId) => {
       const weeksAssigned = driverWeekSets.get(driverId)?.size || 0;
       const km = driverKm.get(driverId) || 0;
@@ -954,7 +967,7 @@ export const getMonthlyReportData = async (userId: string, month: string) => {
   });
 
   const drivers = await prisma.driver.findMany({
-    where: { userId },
+    where: { userId, deletedAt: null, vehicleId: { not: null } },
     select: { id: true, firstName: true, lastName: true },
   });
   const driverMap = new Map(drivers.map((driver) => [driver.id, driver]));
@@ -998,6 +1011,9 @@ export const getMonthlyReportData = async (userId: string, month: string) => {
   >();
 
   for (const payment of payments) {
+    // Solo se detalla el pago por conductor de quienes tienen vehículo asignado.
+    if (!driverMap.has(payment.driverId)) continue;
+
     const current = paymentsByDriverMap.get(payment.driverId) || {
       driverId: payment.driverId,
       driverName: driverName(driverMap.get(payment.driverId)) || 'Conductor',
